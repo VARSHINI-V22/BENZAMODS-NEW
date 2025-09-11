@@ -393,9 +393,9 @@ function HeroBanner() {
       </main>
 
       {/* Floating inquiry form button */}
-      <div style={styles.inquiryButton} onClick={() => navigate('/contact')}>
-        <span>Inquiry Form</span>
-      </div>
+      {/* <div style={styles.inquiryButton} onClick={() => navigate('/contact')}> */}
+        {/* <span>Inquiry Form</span> */}
+      {/* </div> */}
     </div>
   );
 }
