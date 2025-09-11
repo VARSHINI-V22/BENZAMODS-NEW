@@ -2,8 +2,5 @@
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
     "react-helmet-async": "^2.0.5"
-  },
-  "devDependencies": {
-    "gh-pages": "^6.3.0"
   }
 }
