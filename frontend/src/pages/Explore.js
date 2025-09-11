@@ -5,13 +5,24 @@ export default function Explore() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-4xl font-bold mb-10 text-gray-800">Explore</h1>
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center p-6 relative"
+      style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1536240478700-b869070f9279?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1540&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Dark overlay for better text visibility */}
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+      
+      <h1 className="text-4xl font-bold mb-10 text-white z-10">Explore</h1>
 
-      <div className="flex flex-col md:flex-row gap-10 w-full max-w-6xl">
+      <div className="flex flex-col md:flex-row gap-10 w-full max-w-6xl z-10">
         {/* Car Card */}
         <div
-          className="relative cursor-pointer flex-1 rounded-xl overflow-hidden shadow-lg transform transition-transform hover:scale-105 bg-white"
+          className="relative cursor-pointer flex-1 rounded-xl overflow-hidden shadow-lg transform transition-transform hover:scale-105 bg-gray-800"
           onClick={() => navigate("/explore/cars")}
         >
           <img
@@ -29,7 +40,7 @@ export default function Explore() {
 
         {/* Bike Card */}
         <div
-          className="relative cursor-pointer flex-1 rounded-xl overflow-hidden shadow-lg transform transition-transform hover:scale-105 bg-white"
+          className="relative cursor-pointer flex-1 rounded-xl overflow-hidden shadow-lg transform transition-transform hover:scale-105 bg-gray-800"
           onClick={() => navigate("/explore/bikes")}
         >
           <img
