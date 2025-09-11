@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+/* Mobile Compatibility Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  font-size: 16px; /* Base font size for mobile */
+}
+
+/* Responsive images */
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Remove default button styles and make touch-friendly */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px; /* Minimum touch target size */
+  min-width: 44px;
+}
+
+/* Form element improvements */
+input, textarea, select {
+  font-size: 16px; /* Prevents zoom on iOS */
+  width: 100%;
+  max-width: 100%;
+}
+
+.App {
+  text-align: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  padding: 20px;
+  width: 100%;
+}
+
+.App-link {
+  color: #61dafb;
+  min-height: 44px; /* Make link touch-friendly */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive typography */
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Container for responsive layout */
+.container {
+  width: 100%;
+  padding: 0 15px;
+  margin: 0 auto;
+}
+
+/* Media Queries for different screen sizes */
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+  
+  h1 {
+    font-size: 2.25rem;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  .App-header {
+    padding: 40px;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+  
+  h1 {
+    font-size: 3rem;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .App-header {
+    font-size: calc(8px + 2vmin);
+    padding: 15px;
+  }
+  
+  .App-logo {
+    height: 30vmin;
+  }
+}
+
+/* Prevent horizontal scrolling on mobile */
+@media (max-width: 576px) {
+  .App-header {
+    font-size: calc(6px + 2vmin);
+  }
+  
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  body {
+    position: relative;
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Styles for touch devices */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on focus */
+  }
+}
+
+/* High-resolution displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Styles for high-resolution screens */
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  /* Optional: Add dark mode styles if needed */
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .App-logo {
+    animation: none;
+  }
+}
+
+/* Utility classes for responsive spacing */
+.mobile-padding {
+  padding: 1rem;
+}
+
+.tablet-padding {
+  padding: 1.5rem;
+}
+
+.desktop-padding {
+  padding: 2rem;
+}
+
+/* Flexbox grid for responsive layouts */
+.responsive-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -10px;
+}
+
+.responsive-grid > * {
+  flex: 1 0 100%;
+  padding: 10px;
+}
+
+@media (min-width: 576px) {
+  .responsive-grid > * {
+    flex: 1 0 50%;
+  }
+}
+
+@media (min-width: 992px) {
+  .responsive-grid > * {
+    flex: 1 0 33.333%;
+  }
+}
+
+/* Responsive text alignment */
+.text-center-mobile {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .text-left-tablet {
+    text-align: left;
+  }
+}
