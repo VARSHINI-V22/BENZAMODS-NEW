@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Search, ShoppingCart, Heart, Star, User, LogOut, Package, MessageSquare, Plus } from "lucide-react";
 
 /* ---------------------- sample products ---------------------- */
 const PRODUCTS = [
@@ -230,106 +230,138 @@ export default function PortfolioAllInOne() {
   const getSimilar = (prod) => PRODUCTS.filter(p => p.id !== prod.id && (p.type === prod.type || p.brand === prod.brand));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col font-sans">
+      {/* Google Fonts import */}
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+          body { font-family: 'Inter', sans-serif; }
+          h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
+        `}
+      </style>
+
       {/* header */}
-      <header className="bg-gradient-to-r from-gray-900 to-black text-white p-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Benzamods</h1>
-            <div className="text-sm text-gray-300">Cars, Bikes & Accessories</div>
+      <header className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Benzamods</h1>
+            <div className="text-sm text-gray-400 ml-3 hidden md:block">Premium Vehicle Customization</div>
           </div>
           
           {/* Search Bar */}
-          <div className="w-full md:w-auto flex items-center">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-64 px-4 py-2 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-r-lg transition">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+          <div className="w-full md:w-96 flex items-center">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-600"
+              />
+            </div>
           </div>
           
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap justify-center">
             {!currentUser && (
-              <div className="hidden md:flex gap-2 items-center bg-white/10 px-3 py-2 rounded">
-                <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition">Login</button>
-                <button onClick={() => { setAuthMode("signup"); setShowSignupModal(true); }} className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition">Signup</button>
+              <div className="hidden md:flex gap-2 items-center bg-gray-700 px-3 py-2 rounded-lg">
+                <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="px-3 py-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-sm font-medium">Login</button>
+                <button onClick={() => { setAuthMode("signup"); setShowSignupModal(true); }} className="px-3 py-1.5 bg-purple-600 rounded-lg hover:bg-purple-700 transition text-sm font-medium">Signup</button>
               </div>
             )}
 
             <>
-              <button onClick={() => setShowWishlistModal(true)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded transition flex items-center gap-1">
-                <span>Wishlist</span>
-                <span className="bg-red-600 px-2 py-0.5 rounded-full text-xs">{wishlist.length}</span>
+              <button onClick={() => setShowWishlistModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                <Heart size={18} />
+                <span className="hidden md:inline">Wishlist</span>
+                <span className="bg-pink-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{wishlist.length}</span>
               </button>
-              <button onClick={() => setShowCartModal(true)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded transition flex items-center gap-1">
-                <span>Cart</span>
-                <span className="bg-blue-600 px-2 py-0.5 rounded-full text-xs">{cart.length}</span>
+              <button onClick={() => setShowCartModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                <ShoppingCart size={18} />
+                <span className="hidden md:inline">Cart</span>
+                <span className="bg-blue-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{cart.length}</span>
               </button>
-              <button onClick={() => setShowReviewsModal(true)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded transition flex items-center gap-1">
-                <span>Reviews</span>
+              <button onClick={() => setShowReviewsModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                <Star size={18} />
+                <span className="hidden md:inline">Reviews</span>
               </button>
               {currentUser && (
                 <>
-                  <button onClick={() => setShowOrdersModal(true)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded transition flex items-center gap-1">
-                    <span>Orders</span>
-                    <span className="bg-purple-600 px-2 py-0.5 rounded-full text-xs">{userOrders.length}</span>
+                  <button onClick={() => setShowOrdersModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                    <Package size={18} />
+                    <span className="hidden md:inline">Orders</span>
+                    <span className="bg-purple-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{userOrders.length}</span>
                   </button>
-                  <button onClick={() => setShowAddReviewModal(true)} className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded transition flex items-center gap-1">
-                    <span>Add Review</span>
+                  <button onClick={() => setShowAddReviewModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                    <MessageSquare size={18} />
+                    <span className="hidden md:inline">Add Review</span>
                   </button>
                 </>
               )}
             </>
 
             {!currentUser && (
-              <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="bg-green-600 px-3 py-2 rounded hover:bg-green-700 transition">
-                Login / Signup
+              <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="bg-blue-600 px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-1">
+                <User size={16} />
+                <span>Login / Signup</span>
               </button>
             )}
 
             {currentUser && (
               <div className="flex items-center gap-2">
-                <div className="text-sm">Hi, <b>{currentUser.name}</b></div>
-                <button onClick={logout} className="bg-red-600 px-3 py-2 rounded hover:bg-red-700 transition">Logout</button>
+                <div className="text-sm hidden md:block">Hi, <b>{currentUser.name}</b></div>
+                <button onClick={logout} className="bg-red-600 px-3 py-2 rounded-lg hover:bg-red-700 transition text-sm font-medium flex items-center gap-1">
+                  <LogOut size={16} />
+                  <span className="hidden md:inline">Logout</span>
+                </button>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-4 flex-1">
+      <main className="max-w-7xl mx-auto p-4 flex-1 w-full">
         {/* Products grid */}
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Our Portfolio</h2>
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-blue-500 pl-3">Our Portfolio</h2>
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No products found matching your search.</p>
+            <div className="text-center py-12 bg-gray-800 rounded-xl">
+              <p className="text-gray-400">No products found matching your search.</p>
+              <button 
+                onClick={() => setSearchTerm("")} 
+                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-white font-medium"
+              >
+                Clear Search
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((p) => (
-                <article key={p.id} className="bg-white rounded-2xl shadow overflow-hidden transition-transform hover:scale-105">
-                  <div className="h-48 cursor-pointer" onClick={() => setProductModal(p)}>
-                    <img src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={p.title} className="w-full h-full object-cover" />
+                <article key={p.id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-[1.02] group border border-gray-700">
+                  <div className="h-48 cursor-pointer relative overflow-hidden" onClick={() => setProductModal(p)}>
+                    <img src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity"></div>
+                    <div className="absolute bottom-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      {p.type.toUpperCase()}
+                    </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold">{p.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">{p.description}</p>
-                    <div className="mt-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                      <div className="font-bold text-blue-700">{`₹${p.price.toLocaleString()}`}</div>
+                    <h3 className="font-semibold text-white mb-1">{p.title}</h3>
+                    <p className="text-sm text-gray-400 line-clamp-2 mb-3">{p.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-blue-400 text-lg">{`₹${p.price.toLocaleString()}`}</div>
                       <div className="flex gap-2">
-                        <button onClick={() => addToWishlist(p)} className="px-3 py-1 rounded bg-yellow-400 hover:bg-yellow-500 transition">Wishlist</button>
-                        <button onClick={() => addToCart(p)} className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition">Add to Cart</button>
-                        <button onClick={() => openBuy(p)} className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 transition">Buy Now</button>
+                        <button onClick={() => addToWishlist(p)} className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition" title="Add to wishlist">
+                          <Heart size={16} />
+                        </button>
+                        <button onClick={() => addToCart(p)} className="p-2 rounded-lg bg-gray-700 hover:bg-blue-600 transition" title="Add to cart">
+                          <ShoppingCart size={16} />
+                        </button>
                       </div>
                     </div>
+                    <button onClick={() => openBuy(p)} className="w-full mt-3 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition text-white font-medium">
+                      Buy Now
+                    </button>
                   </div>
                 </article>
               ))}
@@ -339,47 +371,38 @@ export default function PortfolioAllInOne() {
       </main>
 
       {/* Footer Section */}
-      <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 mt-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer className="bg-gray-800 border-t border-gray-700 py-12 px-4 mt-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-xl font-bold mb-4">About Benzamods</h3>
-            <p className="text-gray-300 mb-4">
+            <h3 className="text-xl font-bold mb-4 text-white">About Benzamods</h3>
+            <p className="text-gray-400 mb-4">
               We specialize in premium vehicle modifications, wraps, and customizations for cars and bikes. 
               Transform your vehicle with our expert services.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-gray-300 hover:text-white transition">
-                
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition">
-                
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition">
-                
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition">
-                
+              <a href="#" className="text-gray-400 hover:text-white transition">
+                {/* Social icons would go here */}
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4"></h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
+            <h3 className="text-xl font-bold mb-4 text-white">Quick Links</h3>
+            <ul className="space-y-3">
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Services</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Gallery</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Pricing</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">FAQ</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Contact Us</h3>
-            <ul className="space-y-3 text-gray-300">
+            <h3 className="text-xl font-bold mb-4 text-white">Contact Us</h3>
+            <ul className="space-y-3 text-gray-400">
               <li className="flex items-center gap-2">
                 <Phone size={18} /> 
                 <span>+91 8904708819</span>
@@ -405,7 +428,7 @@ export default function PortfolioAllInOne() {
         </div>
         
         {/* Copyright */}
-        <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-gray-700 text-center text-gray-400">
+        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-700 text-center text-gray-500">
           <p>© {new Date().getFullYear()} Benzamods. All rights reserved.</p>
         </div>
       </footer>
@@ -427,62 +450,75 @@ export default function PortfolioAllInOne() {
 
 /* ---------------------- reusable modals & components ---------------------- */
 const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, getSimilar, setProductModal, reviews, setShowAddReviewModal, setReviewForm }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-4xl p-4 max-h-[90vh] overflow-y-auto">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">{product.title}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-4 text-white">{product.title}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-4">
           {product.beforeAfter?.map((img, i) => (
-            <img key={i} src={img} alt={`${product.title} ${i === 0 ? 'Before' : 'After'}`} className="w-full rounded-lg object-cover shadow-md" />
+            <div key={i} className="rounded-xl overflow-hidden shadow-lg">
+              <div className="text-xs uppercase font-semibold bg-gray-700 text-gray-300 px-3 py-1">
+                {i === 0 ? 'Before' : 'After'}
+              </div>
+              <img src={img} alt={`${product.title} ${i === 0 ? 'Before' : 'After'}`} className="w-full h-64 object-cover" />
+            </div>
           ))}
         </div>
         <div>
-          <p className="mb-4 text-gray-700">{product.description}</p>
-          <div className="font-bold text-xl mb-4 text-blue-700">₹{product.price.toLocaleString()}</div>
+          <p className="mb-4 text-gray-300">{product.description}</p>
+          <div className="font-bold text-2xl mb-4 text-blue-400">₹{product.price.toLocaleString()}</div>
           <div className="flex flex-wrap gap-2 mb-4">
-            <button onClick={() => addToCart(product)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Add to Cart</button>
-            <button onClick={() => addToWishlist(product)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500 transition">Wishlist</button>
-            <button onClick={() => openBuy(product)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Buy Now</button>
+            <button onClick={() => addToCart(product)} className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">
+              <ShoppingCart size={16} /> Add to Cart
+            </button>
+            <button onClick={() => addToWishlist(product)} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">
+              <Heart size={16} /> Wishlist
+            </button>
+            <button onClick={() => openBuy(product)} className="flex items-center gap-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition font-medium">
+              Buy Now
+            </button>
             <button onClick={() => { 
               setShowAddReviewModal(true); 
               setReviewForm(prev => ({ ...prev, productId: product.id })); 
-            }} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">Add Review</button>
+            }} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">
+              <Star size={16} /> Add Review
+            </button>
           </div>
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <p className="italic text-gray-700">"{product.review || product.clientReview || 'No review available'}"</p>
+          <div className="bg-gray-700 p-4 rounded-lg">
+            <p className="italic text-gray-200">"{product.review || product.clientReview || 'No review available'}"</p>
           </div>
         </div>
       </div>
 
       {/* Client Reviews Section */}
       <div className="mt-8">
-        <h3 className="font-bold text-xl mb-4">Client Reviews</h3>
+        <h3 className="font-bold text-xl mb-4 text-white border-b border-gray-700 pb-2">Client Reviews</h3>
         {reviews && reviews.filter(r => r.status === "approved").length > 0 ? (
           <div className="space-y-4">
             {reviews.filter(r => r.status === "approved").map(review => (
-              <div key={review.id} className="border rounded-lg p-4">
+              <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="font-semibold">{review.userName}</div>
-                  <div className="text-sm text-gray-500">{review.date}</div>
+                  <div className="font-semibold text-white">{review.userName}</div>
+                  <div className="text-sm text-gray-400">{review.date}</div>
                 </div>
                 <div className="flex items-center mb-2">
                   {[...Array(5)].map((_, i) => (
-                    <svg key={i} className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                    <svg key={i} className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
                 </div>
-                <p className="mb-3">{review.comment}</p>
+                <p className="mb-3 text-gray-300">{review.comment}</p>
                 {review.beforeImage && review.afterImage && (
                   <div className="grid grid-cols-2 gap-4 mt-3">
                     <div>
-                      <p className="text-sm font-medium mb-1">Before</p>
-                      <img src={review.beforeImage} alt="Before" className="w-full h-40 object-cover rounded" />
+                      <p className="text-sm font-medium mb-1 text-gray-400">Before</p>
+                      <img src={review.beforeImage} alt="Before" className="w-full h-40 object-cover rounded-lg" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium mb-1">After</p>
-                      <img src={review.afterImage} alt="After" className="w-full h-40 object-cover rounded" />
+                      <p className="text-sm font-medium mb-1 text-gray-400">After</p>
+                      <img src={review.afterImage} alt="After" className="w-full h-40 object-cover rounded-lg" />
                     </div>
                   </div>
                 )}
@@ -490,23 +526,26 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No reviews yet. Be the first to review!</p>
+          <p className="text-gray-500 text-center py-4 bg-gray-700 rounded-lg">No reviews yet. Be the first to review!</p>
         )}
       </div>
 
       {getSimilar(product).length > 0 && (
-        <div className="mt-6">
-          <h3 className="font-bold mb-3 text-xl">Similar Products</h3>
+        <div className="mt-8">
+          <h3 className="font-bold mb-4 text-xl text-white border-b border-gray-700 pb-2">Similar Products</h3>
           <div className="flex gap-4 overflow-x-auto pb-4">
             {getSimilar(product).map(p => (
-              <div key={p.id} className="flex flex-col items-center min-w-[140px] cursor-pointer" onClick={() => setProductModal(p)}>
-                <img 
-                  src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} 
-                  alt={p.title} 
-                  className="w-32 h-24 object-cover rounded-lg shadow-md hover:shadow-lg transition" 
-                />
-                <span className="text-sm mt-2 text-center font-medium">{p.title}</span>
-                <span className="text-xs text-blue-600 font-bold">₹{p.price.toLocaleString()}</span>
+              <div key={p.id} className="flex flex-col items-center min-w-[180px] cursor-pointer group" onClick={() => setProductModal(p)}>
+                <div className="relative overflow-hidden rounded-lg w-full h-40">
+                  <img 
+                    src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} 
+                    alt={p.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity"></div>
+                </div>
+                <span className="text-sm mt-2 text-center font-medium text-white">{p.title}</span>
+                <span className="text-xs text-blue-400 font-bold">₹{p.price.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -517,37 +556,40 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
 );
 
 const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-3xl p-4 max-h-[90vh] overflow-y-auto">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Your Cart</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+        <ShoppingCart size={24} /> Your Cart
+      </h2>
       {cart.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Your cart is empty</p>
-          <button onClick={onClose} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Continue Shopping</button>
+        <div className="text-center py-8 bg-gray-700 rounded-xl">
+          <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-400 mb-4">Your cart is empty</p>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {cart.map(c => (
-            <div key={c.id} className="flex flex-col md:flex-row items-center justify-between border rounded-lg p-3 gap-3 shadow-sm">
-              <div className="flex items-center gap-3">
-                <img src={c.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={c.title} className="w-20 h-16 object-cover rounded" />
+            <div key={c.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700">
+              <div className="flex items-center gap-4">
+                <img src={c.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={c.title} className="w-20 h-16 object-cover rounded-lg" />
                 <div>
-                  <div className="font-medium">{c.title}</div>
-                  <div className="text-sm text-gray-600">₹{c.price.toLocaleString()}</div>
+                  <div className="font-medium text-white">{c.title}</div>
+                  <div className="text-sm text-gray-400">₹{c.price.toLocaleString()}</div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => { openBuy(c); onClose(); }} className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition">Checkout</button>
-                <button onClick={() => removeFromCart(c.id)} className="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition">Remove</button>
+                <button onClick={() => { openBuy(c); onClose(); }} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition font-medium">Checkout</button>
+                <button onClick={() => removeFromCart(c.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Remove</button>
               </div>
             </div>
           ))}
-          <div className="mt-6 flex justify-between items-center border-t pt-4">
-            <div className="font-bold text-lg">
+          <div className="mt-6 flex justify-between items-center border-t border-gray-700 pt-4">
+            <div className="font-bold text-lg text-white">
               Total: ₹{cart.reduce((total, item) => total + item.price, 0).toLocaleString()}
             </div>
-            <button onClick={onClose} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">Continue Shopping</button>
+            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">Continue Shopping</button>
           </div>
         </div>
       )}
@@ -556,34 +598,37 @@ const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
 );
 
 const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-3xl p-4 max-h-[90vh] overflow-y-auto">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Your Wishlist</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+        <Heart size={24} /> Your Wishlist
+      </h2>
       {wishlist.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Your wishlist is empty</p>
-          <button onClick={onClose} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Continue Shopping</button>
+        <div className="text-center py-8 bg-gray-700 rounded-xl">
+          <Heart size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-400 mb-4">Your wishlist is empty</p>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {wishlist.map(w => (
-            <div key={w.id} className="flex flex-col md:flex-row items-center justify-between border rounded-lg p-3 gap-3 shadow-sm">
-              <div className="flex items-center gap-3">
-                <img src={w.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={w.title} className="w-20 h-16 object-cover rounded" />
+            <div key={w.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700">
+              <div className="flex items-center gap-4">
+                <img src={w.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={w.title} className="w-20 h-16 object-cover rounded-lg" />
                 <div>
-                  <div className="font-medium">{w.title}</div>
-                  <div className="text-sm text-gray-600">₹{w.price.toLocaleString()}</div>
+                  <div className="font-medium text-white">{w.title}</div>
+                  <div className="text-sm text-gray-400">₹{w.price.toLocaleString()}</div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => addToCart(w)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition">Add to Cart</button>
-                <button onClick={() => removeFromWishlist(w.id)} className="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition">Remove</button>
+                <button onClick={() => addToCart(w)} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition font-medium">Add to Cart</button>
+                <button onClick={() => removeFromWishlist(w.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Remove</button>
               </div>
             </div>
           ))}
           <div className="mt-6">
-            <button onClick={onClose} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">Continue Shopping</button>
+            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">Continue Shopping</button>
           </div>
         </div>
       )}
@@ -592,33 +637,36 @@ const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => 
 );
 
 const OrdersModal = ({ orders, onClose, cancelOrder }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-3xl p-4 max-h-[90vh] overflow-y-auto">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Your Orders</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+        <Package size={24} /> Your Orders
+      </h2>
       {orders.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">You haven't placed any orders yet</p>
-          <button onClick={onClose} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Continue Shopping</button>
+        <div className="text-center py-8 bg-gray-700 rounded-xl">
+          <Package size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-400 mb-4">You haven't placed any orders yet</p>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {orders.map(order => (
-            <div key={order.id} className="border rounded-lg p-3 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <img src={order.image} alt={order.title} className="w-16 h-12 object-cover rounded" />
+            <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+              <div className="flex items-center gap-4 mb-3">
+                <img src={order.image} alt={order.title} className="w-16 h-12 object-cover rounded-lg" />
                 <div className="flex-1">
-                  <div className="font-medium">{order.title}</div>
-                  <div className="text-sm text-gray-600">₹{order.price.toLocaleString()}</div>
-                  <div className={`text-sm font-semibold ${order.status === 'Confirmed' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className="font-medium text-white">{order.title}</div>
+                  <div className="text-sm text-gray-400">₹{order.price.toLocaleString()}</div>
+                  <div className={`text-sm font-semibold ${order.status === 'Confirmed' ? 'text-green-400' : 'text-red-400'}`}>
                     Status: {order.status}
                   </div>
                 </div>
                 {order.status === 'Confirmed' && (
-                  <button onClick={() => cancelOrder(order.id)} className="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition">Cancel</button>
+                  <button onClick={() => cancelOrder(order.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Cancel</button>
                 )}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-400 space-y-1">
                 <div>Ordered on: {order.date}</div>
                 <div>Payment: {order.payment}</div>
                 <div>Address: {order.address}</div>
@@ -635,75 +683,80 @@ const ReviewsModal = ({ reviews, products, onClose }) => {
   const approvedReviews = reviews.filter(review => review.status === "approved");
   
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-4xl p-4 max-h-[90vh] overflow-y-auto">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Client Reviews</h2>
-      
-      {approvedReviews.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No reviews available yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {approvedReviews.map(review => {
-            const product = products.find(p => p.id == review.productId);
-            return (
-              <div key={review.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold">{product?.title || "Unknown Product"}</h3>
-                    <div className="flex items-center mt-1">
-                      <span className="font-medium mr-2">{review.userName}</span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <svg key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+      <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
+        <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+        <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+          <Star size={24} /> Client Reviews
+        </h2>
+        
+        {approvedReviews.length === 0 ? (
+          <div className="text-center py-8 bg-gray-700 rounded-xl">
+            <Star size={48} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-400">No reviews available yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {approvedReviews.map(review => {
+              const product = products.find(p => p.id == review.productId);
+              return (
+                <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-white">{product?.title || "Unknown Product"}</h3>
+                      <div className="flex items-center mt-1">
+                        <span className="font-medium mr-2 text-gray-300">{review.userName}</span>
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <svg key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
                       </div>
                     </div>
+                    <span className="text-sm text-gray-400">{review.date}</span>
                   </div>
-                  <span className="text-sm text-gray-500">{review.date}</span>
+                  
+                  <p className="mb-4 text-gray-300">{review.comment}</p>
+                  
+                  {review.beforeImage && review.afterImage && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium mb-1 text-gray-400">Before</p>
+                        <img src={review.beforeImage} alt="Before" className="w-full h-48 object-cover rounded-lg" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1 text-gray-400">After</p>
+                        <img src={review.afterImage} alt="After" className="w-full h-48 object-cover rounded-lg" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                <p className="mb-4">{review.comment}</p>
-                
-                {review.beforeImage && review.afterImage && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium mb-1">Before</p>
-                      <img src={review.beforeImage} alt="Before" className="w-full h-48 object-cover rounded" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium mb-1">After</p>
-                      <img src={review.afterImage} alt="After" className="w-full h-48 object-cover rounded" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 
 const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitReview, onClose, products }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl w-full max-w-md p-6">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Add Your Review</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-4 text-white flex items-center gap-2">
+        <Plus size={24} /> Add Your Review
+      </h2>
       
       <div className="flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Select Product</label>
+          <label className="block text-sm font-medium mb-1 text-gray-300">Select Product</label>
           <select 
             value={reviewForm.productId} 
             onChange={e => setReviewForm({...reviewForm, productId: e.target.value})}
-            className="border p-2 rounded w-full"
+            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             <option value="">Choose a product</option>
             {products.map(product => (
@@ -713,27 +766,30 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Rating</label>
+          <label className="block text-sm font-medium mb-1 text-gray-300">Rating</label>
           <div className="flex">
             {[1, 2, 3, 4, 5].map(star => (
               <button 
                 key={star}
                 type="button"
                 onClick={() => setReviewForm({...reviewForm, rating: star})}
-                className="text-2xl focus:outline-none"
+                className="text-2xl focus:outline-none text-gray-400 hover:text-yellow-400 transition"
               >
-                {star <= reviewForm.rating ? '★' : '☆'}
+                {star <= reviewForm.rating ? 
+                  <span className="text-yellow-400">★</span> : 
+                  <span>☆</span>
+                }
               </button>
             ))}
           </div>
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">Your Review</label>
+          <label className="block text-sm font-medium mb-1 text-gray-300">Your Review</label>
           <textarea 
             value={reviewForm.comment} 
             onChange={e => setReviewForm({...reviewForm, comment: e.target.value})}
-            className="border p-2 rounded w-full"
+            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
             rows="4"
             placeholder="Share your experience with this product..."
           ></textarea>
@@ -741,35 +797,35 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Before Image</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">Before Image</label>
             <input 
               type="file" 
               accept="image/*"
               onChange={e => handleImageUpload(e, 'before')}
-              className="border p-2 rounded w-full"
+              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs"
             />
             {reviewForm.beforeImagePreview && (
-              <img src={reviewForm.beforeImagePreview} alt="Before preview" className="mt-2 w-full h-32 object-cover rounded" />
+              <img src={reviewForm.beforeImagePreview} alt="Before preview" className="mt-2 w-full h-32 object-cover rounded-lg" />
             )}
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">After Image</label>
+            <label className="block text-sm font-medium mb-1 text-gray-300">After Image</label>
             <input 
               type="file" 
               accept="image/*"
               onChange={e => handleImageUpload(e, 'after')}
-              className="border p-2 rounded w-full"
+              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs"
             />
             {reviewForm.afterImagePreview && (
-              <img src={reviewForm.afterImagePreview} alt="After preview" className="mt-2 w-full h-32 object-cover rounded" />
+              <img src={reviewForm.afterImagePreview} alt="After preview" className="mt-2 w-full h-32 object-cover rounded-lg" />
             )}
           </div>
         </div>
         
         <button 
           onClick={submitReview}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition mt-4"
+          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium mt-4"
         >
           Submit Review
         </button>
@@ -779,47 +835,47 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
 );
 
 const OrderModal = ({ orderProduct, orderForm, setOrderForm, placeOrder, onClose }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
-    <div className="bg-white rounded-2xl w-full max-w-md p-4">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">Order: {orderProduct.title}</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-4 text-white">Order: {orderProduct.title}</h2>
       <div className="flex flex-col gap-3">
-        <input type="text" placeholder="Name" value={orderForm.name} onChange={e => setOrderForm(f => ({ ...f, name: e.target.value }))} className="border p-2 rounded w-full"/>
-        <input type="email" placeholder="Email" value={orderForm.email} onChange={e => setOrderForm(f => ({ ...f, email: e.target.value }))} className="border p-2 rounded w-full"/>
-        <textarea placeholder="Address" value={orderForm.address} onChange={e => setOrderForm(f => ({ ...f, address: e.target.value }))} className="border p-2 rounded w-full" rows="3"/>
-        <div className="border p-2 rounded w-full bg-gray-100">
+        <input type="text" placeholder="Name" value={orderForm.name} onChange={e => setOrderForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+        <input type="email" placeholder="Email" value={orderForm.email} onChange={e => setOrderForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+        <textarea placeholder="Address" value={orderForm.address} onChange={e => setOrderForm(f => ({ ...f, address: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3"/>
+        <div className="border border-gray-600 bg-gray-700 p-2.5 rounded-lg w-full text-gray-300">
           Payment Method: COD (Cash on Delivery)
         </div>
-        <div className="font-bold text-lg mt-2">Total: ₹{orderProduct.price.toLocaleString()}</div>
-        <button onClick={placeOrder} className="bg-green-600 text-white px-4 py-2 rounded mt-2 hover:bg-green-700 transition">Place Order</button>
+        <div className="font-bold text-lg mt-2 text-white">Total: ₹{orderProduct.price.toLocaleString()}</div>
+        <button onClick={placeOrder} className="bg-green-600 text-white px-4 py-2.5 rounded-lg mt-2 hover:bg-green-700 transition font-medium">Place Order</button>
       </div>
     </div>
   </div>
 );
 
 const AuthModal = ({ mode, authForm, setAuthForm, login, signup, switchMode, onClose }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl w-full max-w-md p-6">
-      <button className="float-right text-red-500 text-xl font-bold" onClick={onClose}>✕</button>
-      <h2 className="text-2xl font-bold mb-4">{mode === "login" ? "Login" : "Signup"}</h2>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+      <h2 className="text-2xl font-bold mb-4 text-white">{mode === "login" ? "Login" : "Signup"}</h2>
       <div className="flex flex-col gap-3">
-        {mode === "signup" && <input placeholder="Name" value={authForm.name} onChange={e => setAuthForm(f => ({ ...f, name: e.target.value }))} className="border p-2 rounded"/>}
-        <input placeholder="Email" type="email" value={authForm.email} onChange={e => setAuthForm(f => ({ ...f, email: e.target.value }))} className="border p-2 rounded"/>
-        <input placeholder="Password" type="password" value={authForm.password} onChange={e => setAuthForm(f => ({ ...f, password: e.target.value }))} className="border p-2 rounded"/>
-        <button onClick={mode === "login" ? login : signup} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">{mode === "login" ? "Login" : "Signup"}</button>
-        <p className="text-sm text-gray-600 text-center">Or <span className="text-blue-600 cursor-pointer hover:underline" onClick={switchMode}>{mode === "login" ? "Signup" : "Login"}</span></p>
+        {mode === "signup" && <input placeholder="Name" value={authForm.name} onChange={e => setAuthForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>}
+        <input placeholder="Email" type="email" value={authForm.email} onChange={e => setAuthForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+        <input placeholder="Password" type="password" value={authForm.password} onChange={e => setAuthForm(f => ({ ...f, password: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
+        <button onClick={mode === "login" ? login : signup} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">{mode === "login" ? "Login" : "Signup"}</button>
+        <p className="text-sm text-gray-400 text-center">Or <span className="text-blue-400 cursor-pointer hover:underline" onClick={switchMode}>{mode === "login" ? "Signup" : "Login"}</span></p>
       </div>
     </div>
   </div>
 );
 
 const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-xl p-4 w-full max-w-sm text-center">
-      <p className="mb-4">{message}</p>
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-sm text-center border border-gray-700">
+      <p className="mb-4 text-white">{message}</p>
       <div className="flex justify-center gap-4">
-        <button onClick={onConfirm} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">Yes</button>
-        <button onClick={onCancel} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">No</button>
+        <button onClick={onConfirm} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium">Yes</button>
+        <button onClick={onCancel} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">No</button>
       </div>
     </div>
   </div>
