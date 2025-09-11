@@ -27,7 +27,7 @@ const styles = {
   },
   heading: {
     marginBottom: "20px",
-    color: "#333",
+    color: "#1b1919ff",
     fontFamily: "Arial, sans-serif",
     textAlign: "center",
   },

@@ -6,6 +6,18 @@ function HeroBanner() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showSignupForm, setShowSignupForm] = useState(false);
+  const [loginData, setLoginData] = useState({ username: "", password: "" });
+  const [signupData, setSignupData] = useState({ 
+    username: "", 
+    password: "", 
+    confirmPassword: "",
+    email: "" 
+  });
+  const [authError, setAuthError] = useState("");
 
   // Background images
   const backgroundMedia = [
@@ -13,6 +25,16 @@ function HeroBanner() {
     { type: "image", src: "https://images.unsplash.com/photo-1542362567-b07e54358753?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" },
     { type: "image", src: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1725&q=80" },
   ];
+
+  // Check if user is already logged in (from localStorage)
+  useEffect(() => {
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      setIsLoggedIn(true);
+      setIsAdmin(parsedData.isAdmin || false);
+    }
+  }, []);
 
   // Background media rotation effect
   useEffect(() => {
@@ -31,6 +53,103 @@ function HeroBanner() {
       });
     }
   }, [currentBgIndex, backgroundMedia]);
+
+  // Handle login
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    // Check admin credentials
+    if (loginData.username === "admin" && loginData.password === "1234") {
+      setIsLoggedIn(true);
+      setIsAdmin(true);
+      localStorage.setItem('userData', JSON.stringify({ 
+        username: loginData.username, 
+        isAdmin: true 
+      }));
+      setShowLoginForm(false);
+      return;
+    }
+    
+    // Check regular user credentials
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.username === loginData.username && u.password === loginData.password);
+    
+    if (user) {
+      setIsLoggedIn(true);
+      setIsAdmin(false);
+      localStorage.setItem('userData', JSON.stringify({ 
+        username: loginData.username, 
+        isAdmin: false 
+      }));
+      setShowLoginForm(false);
+    } else {
+      setAuthError("Invalid username or password");
+    }
+  };
+
+  // Handle signup
+  const handleSignup = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    if (signupData.password !== signupData.confirmPassword) {
+      setAuthError("Passwords do not match");
+      return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    if (users.find(u => u.username === signupData.username)) {
+      setAuthError("Username already exists");
+      return;
+    }
+    
+    if (users.find(u => u.email === signupData.email)) {
+      setAuthError("Email already registered");
+      return;
+    }
+    
+    users.push({
+      username: signupData.username,
+      password: signupData.password,
+      email: signupData.email
+    });
+    
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Auto login after signup
+    setIsLoggedIn(true);
+    localStorage.setItem('userData', JSON.stringify({ 
+      username: signupData.username, 
+      isAdmin: false 
+    }));
+    setShowSignupForm(false);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    localStorage.removeItem('userData');
+  };
+
+  // Close auth forms when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showLoginForm && !e.target.closest('.auth-form')) {
+        setShowLoginForm(false);
+      }
+      if (showSignupForm && !e.target.closest('.auth-form')) {
+        setShowSignupForm(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLoginForm, showSignupForm]);
 
   return (
     <div style={styles.heroContainer}>
@@ -85,7 +204,7 @@ function HeroBanner() {
           <h2 style={styles.logoText}>Benzamods</h2>
         </div>
 
-        <div style={styles.heroButtons}>
+        <div style={styles.heroNavButtons}>
           <button onClick={() => navigate('/portfolio')} style={styles.btnOutline}>
             Portfolio
           </button>
@@ -96,9 +215,146 @@ function HeroBanner() {
             Contact
           </button>
         </div>
+
+        <div style={styles.heroAuthButtons}>
+          {/* Admin button - always visible but only functional for admins */}
+          <button 
+            onClick={() => isAdmin ? navigate('/admin') : setShowLoginForm(true)} 
+            style={isAdmin ? styles.btnAdmin : styles.btnOutline}
+            title={isAdmin ? "Admin Dashboard" : "Login as admin"}
+          >
+            {isAdmin ? "Admin" : "Admin Login"}
+          </button>
+          
+          {/* User auth buttons */}
+          {isLoggedIn ? (
+            <button onClick={handleLogout} style={styles.btnOutline}>
+              Logout
+            </button>
+          ) : (
+            <>
+              <button onClick={() => setShowLoginForm(true)} style={styles.btnOutline}>
+                Login
+              </button>
+              <button onClick={() => setShowSignupForm(true)} style={styles.btnPrimary}>
+                Sign Up
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
-      {/* Main */}
+      {/* Login Form Modal */}
+      {showLoginForm && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.authForm} className="auth-form">
+            <h3 style={styles.authTitle}>Login</h3>
+            <form onSubmit={handleLogin}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={loginData.username}
+                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              {authError && <p style={styles.errorText}>{authError}</p>}
+              <div style={styles.authFormButtons}>
+                <button type="submit" style={styles.btnPrimary}>Login</button>
+                <button 
+                  type="button" 
+                  style={styles.btnSecondary}
+                  onClick={() => {
+                    setShowLoginForm(false);
+                    setShowSignupForm(true);
+                  }}
+                >
+                  Create Account
+                </button>
+              </div>
+            </form>
+            <button 
+              onClick={() => setShowLoginForm(false)} 
+              style={styles.closeButton}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Signup Form Modal */}
+      {showSignupForm && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.authForm} className="auth-form">
+            <h3 style={styles.authTitle}>Create Account</h3>
+            <form onSubmit={handleSignup}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={signupData.username}
+                onChange={(e) => setSignupData({...signupData, username: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={signupData.email}
+                onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={signupData.password}
+                onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={signupData.confirmPassword}
+                onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              {authError && <p style={styles.errorText}>{authError}</p>}
+              <div style={styles.authFormButtons}>
+                <button type="submit" style={styles.btnPrimary}>Sign Up</button>
+                <button 
+                  type="button" 
+                  style={styles.btnSecondary}
+                  onClick={() => {
+                    setShowSignupForm(false);
+                    setShowLoginForm(true);
+                  }}
+                >
+                  Already have an account?
+                </button>
+              </div>
+            </form>
+            <button 
+              onClick={() => setShowSignupForm(false)} 
+              style={styles.closeButton}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content - No black card */}
       <main style={styles.heroMain}>
         <div style={styles.homeContent}>
           <div style={styles.titleContainer}>
@@ -114,26 +370,20 @@ function HeroBanner() {
 
           <div style={styles.homeButtons}>
             <button
-              style={styles.btnPrimary}
+              style={styles.btnPrimaryLarge}
               onClick={() => navigate("/portfolio")}
               className="pulse-btn"
             >
               Explore Now
-              <span style={styles.nestedButton} onClick={(e) => {
-                e.stopPropagation();
-                navigate('/explore');
-              }}>
-                View Gallery
-              </span>
             </button>
             <button
-              style={styles.btnSecondary}
+              style={styles.btnSecondaryLarge}
               onClick={() => navigate("/services")}
             >
               Our Services
             </button>
             <button
-              style={styles.btnTertiary}
+              style={styles.btnTertiaryLarge}
               onClick={() => navigate("/explore")}
             >
               Explore Wraps
@@ -205,6 +455,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "15px",
+    flex: 1,
   },
   logoImage: {
     width: "50px",
@@ -221,9 +472,18 @@ const styles = {
     color: "#fff",
     letterSpacing: "1px",
   },
-  heroButtons: {
+  heroNavButtons: {
     display: "flex",
     gap: "15px",
+    flex: 1,
+    justifyContent: "center",
+  },
+  heroAuthButtons: {
+    display: "flex",
+    gap: "15px",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "flex-end",
   },
   btnOutline: {
     padding: "10px 20px",
@@ -237,6 +497,32 @@ const styles = {
     fontSize: "14px",
     letterSpacing: "0.5px",
   },
+  btnPrimary: {
+    padding: "10px 20px",
+    borderRadius: "30px",
+    background: "linear-gradient(135deg, #007bff, #00d4ff)",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: "all 0.3s ease",
+    fontSize: "14px",
+    letterSpacing: "0.5px",
+    boxShadow: "0 4px 15px rgba(0, 123, 255, 0.3)",
+  },
+  btnAdmin: {
+    padding: "10px 20px",
+    borderRadius: "30px",
+    background: "linear-gradient(135deg, #ff0080, #ff8c00)",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: "all 0.3s ease",
+    fontSize: "14px",
+    letterSpacing: "0.5px",
+    boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
+  },
   heroMain: {
     flex: 1,
     display: "flex",
@@ -249,10 +535,6 @@ const styles = {
   homeContent: {
     maxWidth: "800px",
     padding: "40px",
-    background: "rgba(0, 0, 0, 0.5)",
-    backdropFilter: "blur(10px)",
-    borderRadius: "20px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
     animation: "fadeIn 1s ease-out, float 6s ease-in-out infinite",
   },
   badge: {
@@ -297,15 +579,15 @@ const styles = {
     marginRight: "auto",
     color: "rgba(255, 255, 255, 0.9)",
     animation: "fadeIn 1.5s ease-out",
+    textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
   },
   homeButtons: {
     display: "flex",
     gap: "20px",
     justifyContent: "center",
     flexWrap: "wrap",
-    position: "relative",
   },
-  btnPrimary: {
+  btnPrimaryLarge: {
     padding: "15px 40px",
     borderRadius: "30px",
     background: "linear-gradient(135deg, #007bff, #00d4ff)",
@@ -317,25 +599,8 @@ const styles = {
     fontSize: "16px",
     letterSpacing: "0.5px",
     boxShadow: "0 4px 15px rgba(0, 123, 255, 0.3)",
-    position: "relative",
-    overflow: "hidden",
   },
-  nestedButton: {
-    position: "absolute",
-    bottom: "-10px",
-    right: "10px",
-    background: "linear-gradient(135deg, #ff0080, #ff8c00)",
-    color: "white",
-    padding: "5px 10px",
-    borderRadius: "15px",
-    fontSize: "10px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transform: "translateY(100%)",
-    transition: "all 0.3s ease",
-    opacity: 0,
-  },
-  btnSecondary: {
+  btnSecondaryLarge: {
     padding: "15px 40px",
     borderRadius: "30px",
     background: "transparent",
@@ -347,7 +612,7 @@ const styles = {
     fontSize: "16px",
     letterSpacing: "0.5px",
   },
-  btnTertiary: {
+  btnTertiaryLarge: {
     padding: "15px 40px",
     borderRadius: "30px",
     background: "linear-gradient(135deg, #ff0080, #ff8c00)",
@@ -374,6 +639,71 @@ const styles = {
     zIndex: 100,
     animation: "bounce 2s infinite",
     transition: "all 0.3s ease",
+  },
+  // Auth form styles
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+    backdropFilter: "blur(5px)",
+  },
+  authForm: {
+    background: "rgba(26, 26, 26, 0.95)",
+    padding: "30px",
+    borderRadius: "15px",
+    width: "90%",
+    maxWidth: "400px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+    position: "relative",
+    animation: "fadeIn 0.3s ease-out",
+  },
+  authTitle: {
+    textAlign: "center",
+    marginBottom: "25px",
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#fff",
+  },
+  inputField: {
+    width: "100%",
+    padding: "12px 15px",
+    marginBottom: "15px",
+    borderRadius: "8px",
+    border: "1px solid rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    color: "#fff",
+    fontSize: "16px",
+    boxSizing: "border-box",
+  },
+  errorText: {
+    color: "#ff4757",
+    textAlign: "center",
+    marginBottom: "15px",
+    fontSize: "14px",
+  },
+  authFormButtons: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  closeButton: {
+    position: "absolute",
+    top: "10px",
+    right: "15px",
+    background: "none",
+    border: "none",
+    color: "#fff",
+    fontSize: "24px",
+    cursor: "pointer",
+    fontWeight: "bold",
   },
 };
 
@@ -470,6 +800,10 @@ const addGlobalStyles = () => {
     
     .pulse-btn:hover:before {
       transform: translateY(0);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
     }
   `;
   document.head.appendChild(style);

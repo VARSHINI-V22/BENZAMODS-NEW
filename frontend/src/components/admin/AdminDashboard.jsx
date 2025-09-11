@@ -10,13 +10,13 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Manage Products */}
-        <div className="bg-white shadow rounded p-4">
+        <div className="bg-black shadow rounded p-4">
           <h2 className="text-xl font-semibold mb-4">Manage Products</h2>
           <ProductsAdmin />
         </div>
 
         {/* Manage Services */}
-        <div className="bg-white shadow rounded p-4">
+        <div className="bg-black shadow rounded p-4">
           <h2 className="text-xl font-semibold mb-4">Manage Services</h2>
           <ServicesAdmin />
         </div>

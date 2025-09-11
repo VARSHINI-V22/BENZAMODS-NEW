@@ -1,4 +1,3 @@
-// src/components/AdminPanel.js
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -203,10 +202,12 @@ function AdminPanel() {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.heading}>Admin Panel</h1>
-      <button style={styles.logoutBtn} onClick={() => navigate("/")}>
-        ⬅ Back to Home
-      </button>
+      <div style={styles.header}>
+        <h1 style={styles.heading}>Admin Dashboard</h1>
+        <button style={styles.logoutBtn} onClick={() => navigate("/")}>
+          ⬅ Back to Home
+        </button>
+      </div>
 
       {/* Tabs */}
       <div style={styles.tabs}>
@@ -214,43 +215,43 @@ function AdminPanel() {
           style={activeTab === "dashboard" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("dashboard")}
         >
-          Dashboard
+          📊 Dashboard
         </button>
         <button
           style={activeTab === "products" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("products")}
         >
-          Products
+          🛍️ Products
         </button>
         <button
           style={activeTab === "services" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("services")}
         >
-          Services
+          🛠️ Services
         </button>
         <button
           style={activeTab === "users" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("users")}
         >
-          Users
+          👥 Users
         </button>
         <button
           style={activeTab === "orders" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("orders")}
         >
-          Orders
+          📦 Orders
         </button>
         <button
           style={activeTab === "messages" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("messages")}
         >
-          Messages
+          ✉️ Messages
         </button>
         <button
           style={activeTab === "reviews" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("reviews")}
         >
-          Reviews
+          ⭐ Reviews
         </button>
       </div>
 
@@ -272,8 +273,8 @@ function AdminPanel() {
           </Suspense>
         )}
         {activeTab === "users" && (
-          <div>
-            <h2>Users ({users.length})</h2>
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Users ({users.length})</h2>
             <input
               type="text"
               placeholder="Search Users..."
@@ -282,13 +283,13 @@ function AdminPanel() {
               style={styles.searchInput}
             />
             {filteredUsers.length === 0 ? (
-              <p>No users found</p>
+              <p style={styles.noDataText}>No users found</p>
             ) : (
               <div style={styles.grid}>
                 {filteredUsers.map((u, i) => (
                   <div key={i} style={styles.card}>
-                    <h4>{u.name}</h4>
-                    <p>{u.email}</p>
+                    <h4 style={styles.cardTitle}>{u.name}</h4>
+                    <p style={styles.cardText}>{u.email}</p>
                     <button
                       onClick={() => handleRemoveUser(i)}
                       style={styles.deleteBtn}
@@ -302,8 +303,8 @@ function AdminPanel() {
           </div>
         )}
         {activeTab === "orders" && (
-          <div>
-            <h2>Orders ({orders.length})</h2>
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Orders ({orders.length})</h2>
             <input
               type="text"
               placeholder="Search Orders..."
@@ -313,32 +314,32 @@ function AdminPanel() {
             />
             {filteredOrders.length === 0 ? (
               <div style={styles.emptyState}>
-                <h3>No orders found</h3>
-                <p>Orders placed on product or service pages will appear here.</p>
+                <h3 style={styles.emptyStateHeading}>No orders found</h3>
+                <p style={styles.emptyStateText}>Orders placed on product or service pages will appear here.</p>
               </div>
             ) : (
               <div style={styles.grid}>
                 {filteredOrders.map((o, i) => (
                   <div key={i} style={styles.card}>
-                    <h4>User: {o.buyerName} ({o.buyerEmail})</h4>
-                    <p>Product: {o.title}</p>
-                    <p>Price: ₹{o.price.toLocaleString()}</p>
-                    <p>Payment: {o.payment}</p>
-                    <p>Status: 
+                    <h4 style={styles.cardTitle}>User: {o.buyerName} ({o.buyerEmail})</h4>
+                    <p style={styles.cardText}>Product: {o.title}</p>
+                    <p style={styles.cardText}>Price: ₹{o.price.toLocaleString()}</p>
+                    <p style={styles.cardText}>Payment: {o.payment}</p>
+                    <p style={styles.cardText}>Status: 
                       <span style={{ 
-                        color: o.status === "Confirmed" ? "green" : 
-                              o.status === "Cancelled" ? "red" : "orange",
+                        color: o.status === "Confirmed" ? "#2ecc71" : 
+                              o.status === "Cancelled" ? "#e74c3c" : "#f39c12",
                         fontWeight: "bold",
                         marginLeft: "5px"
                       }}>
                         {o.status}
                       </span>
                     </p>
-                    <p>Date: {o.date}</p>
-                    <p>Address: {o.address}</p>
+                    <p style={styles.cardText}>Date: {o.date}</p>
+                    <p style={styles.cardText}>Address: {o.address}</p>
                     {o.image && (
                       <div>
-                        <p>Product Image:</p>
+                        <p style={styles.cardText}>Product Image:</p>
                         <img src={o.image} alt="Product" style={styles.imagePreview} />
                       </div>
                     )}
@@ -355,8 +356,8 @@ function AdminPanel() {
           </div>
         )}
         {activeTab === "messages" && (
-          <div>
-            <h2>Messages ({messages.length})</h2>
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Messages ({messages.length})</h2>
             <input
               type="text"
               placeholder="Search Messages..."
@@ -365,16 +366,16 @@ function AdminPanel() {
               style={styles.searchInput}
             />
             {filteredMessages.length === 0 ? (
-              <p>No messages found</p>
+              <p style={styles.noDataText}>No messages found</p>
             ) : (
               <div style={styles.grid}>
                 {filteredMessages.map((m, i) => (
                   <div key={i} style={styles.card}>
-                    <h4>{m.name}</h4>
-                    <p>Email: {m.email}</p>
-                    <p>Phone: {m.phone}</p>
-                    <p>Message: {m.message}</p>
-                    <p style={{ fontSize: "12px", color: "gray" }}>{m.timestamp}</p>
+                    <h4 style={styles.cardTitle}>{m.name}</h4>
+                    <p style={styles.cardText}>Email: {m.email}</p>
+                    <p style={styles.cardText}>Phone: {m.phone}</p>
+                    <p style={styles.cardText}>Message: {m.message}</p>
+                    <p style={styles.timestamp}>{m.timestamp}</p>
                     <button
                       onClick={() => handleRemoveMessage(i)}
                       style={styles.deleteBtn}
@@ -388,8 +389,8 @@ function AdminPanel() {
           </div>
         )}
         {activeTab === "reviews" && (
-          <div>
-            <h2>Client Reviews ({reviews.length})</h2>
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Client Reviews ({reviews.length})</h2>
             <input
               type="text"
               placeholder="Search Reviews..."
@@ -398,33 +399,33 @@ function AdminPanel() {
               style={styles.searchInput}
             />
             {filteredReviews.length === 0 ? (
-              <p>No reviews found</p>
+              <p style={styles.noDataText}>No reviews found</p>
             ) : (
               <div style={styles.grid}>
                 {filteredReviews.map((r, i) => (
                   <div key={i} style={styles.card}>
-                    <h4>{r.userName} ({r.userId})</h4>
-                    <p>Rating: {r.rating}/5</p>
-                    <p>Comment: {r.comment}</p>
-                    <p>Status: 
+                    <h4 style={styles.cardTitle}>{r.userName} ({r.userId})</h4>
+                    <p style={styles.cardText}>Rating: {r.rating}/5</p>
+                    <p style={styles.cardText}>Comment: {r.comment}</p>
+                    <p style={styles.cardText}>Status: 
                       <span style={{ 
-                        color: r.status === "approved" ? "green" : "orange",
+                        color: r.status === "approved" ? "#2ecc71" : "#f39c12",
                         fontWeight: "bold",
                         marginLeft: "5px"
                       }}>
                         {r.status}
                       </span>
                     </p>
-                    <p style={{ fontSize: "12px", color: "gray" }}>Date: {r.date}</p>
+                    <p style={styles.timestamp}>Date: {r.date}</p>
                     {r.beforeImage && (
                       <div>
-                        <p>Before Image:</p>
+                        <p style={styles.cardText}>Before Image:</p>
                         <img src={r.beforeImage} alt="Before" style={styles.imagePreview} />
                       </div>
                     )}
                     {r.afterImage && (
                       <div>
-                        <p>After Image:</p>
+                        <p style={styles.cardText}>After Image:</p>
                         <img src={r.afterImage} alt="After" style={styles.imagePreview} />
                       </div>
                     )}
@@ -456,119 +457,211 @@ function AdminPanel() {
 // ----------------- STYLES -----------------
 const styles = {
   container: {
-    maxWidth: "1200px",
-    margin: "0 auto",
+    minHeight: "100vh",
+    backgroundColor: "#0f0f1a",
+    color: "#e6e6ff",
+    fontFamily: "'Montserrat', sans-serif",
     padding: "20px",
-    fontFamily: "Poppins, sans-serif",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "30px",
+    flexWrap: "wrap",
+    gap: "15px",
   },
   heading: {
     fontSize: "32px",
-    textAlign: "center",
-    marginBottom: "20px",
-    fontWeight: "bold",
-    color: "#2c3e50",
+    fontWeight: "800",
+    color: "#7b68ee",
+    textShadow: "0 0 15px rgba(123, 104, 238, 0.5)",
+    letterSpacing: "1px",
+    margin: 0,
   },
   logoutBtn: {
-    background: "#34495e",
+    background: "linear-gradient(45deg, #7b68ee, #6a5acd)",
     color: "white",
     border: "none",
-    padding: "10px 15px",
-    borderRadius: "8px",
+    padding: "12px 20px",
+    borderRadius: "12px",
     cursor: "pointer",
-    marginBottom: "20px",
+    fontWeight: "600",
+    boxShadow: "0 4px 15px rgba(123, 104, 238, 0.3)",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   tabs: {
     display: "flex",
     gap: "10px",
     flexWrap: "wrap",
-    marginBottom: "20px",
+    marginBottom: "30px",
+    justifyContent: "center",
   },
   tab: {
-    padding: "10px 15px",
-    borderRadius: "8px",
-    border: "1px solid #34495e",
-    background: "#ecf0f1",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    border: "2px solid #2d2d4d",
+    background: "#1a1a2e",
+    color: "#e6e6ff",
     cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   activeTab: {
-    padding: "10px 15px",
-    borderRadius: "8px",
-    border: "1px solid #34495e",
-    background: "#34495e",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    border: "2px solid #7b68ee",
+    background: "linear-gradient(45deg, #7b68ee, #6a5acd)",
     color: "white",
     cursor: "pointer",
+    fontWeight: "600",
+    boxShadow: "0 4px 15px rgba(123, 104, 238, 0.3)",
+    fontFamily: "'Montserrat', sans-serif",
   },
   tabContent: {
     marginBottom: "40px",
   },
+  tabSection: {
+    backgroundColor: "#1a1a2e",
+    padding: "25px",
+    borderRadius: "20px",
+    border: "1px solid #2d2d4d",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+  },
+  sectionHeading: {
+    fontSize: "24px",
+    marginTop: 0,
+    marginBottom: "20px",
+    color: "#9370db",
+    fontWeight: "700",
+    borderBottom: "2px solid #9370db",
+    paddingBottom: "10px",
+  },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "15px",
-    marginTop: "15px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gap: "20px",
+    marginTop: "20px",
   },
   card: {
-    background: "white",
-    padding: "15px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    background: "#252547",
+    padding: "20px",
+    borderRadius: "15px",
+    boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
+    border: "1px solid #3d3d6b",
+    transition: "transform 0.3s ease",
+  },
+  cardTitle: {
+    fontSize: "18px",
+    marginTop: 0,
+    marginBottom: "10px",
+    color: "#9370db",
+    fontWeight: "600",
+  },
+  cardText: {
+    margin: "8px 0",
+    color: "#e6e6ff",
+    lineHeight: "1.5",
   },
   deleteBtn: {
     background: "#e74c3c",
     color: "white",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
+    padding: "8px 15px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   approveBtn: {
     background: "#2ecc71",
     color: "white",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
+    padding: "8px 15px",
+    borderRadius: "8px",
     cursor: "pointer",
-    marginRight: "5px",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   rejectBtn: {
     background: "#f39c12",
     color: "white",
     border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
+    padding: "8px 15px",
+    borderRadius: "8px",
     cursor: "pointer",
-    marginRight: "5px",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   searchInput: {
     width: "100%",
-    padding: "8px 12px",
-    borderRadius: "6px",
-    border: "1px solid #bdc3c7",
-    marginBottom: "10px",
+    padding: "12px 15px",
+    borderRadius: "10px",
+    border: "2px solid #2d2d4d",
+    backgroundColor: "#252547",
+    color: "#e6e6ff",
+    fontSize: "16px",
+    marginBottom: "15px",
+    fontFamily: "'Montserrat', sans-serif",
+    outline: "none",
+    transition: "border-color 0.3s ease",
   },
   imagePreview: {
     width: "100%",
-    maxHeight: "150px",
+    maxHeight: "200px",
     objectFit: "cover",
-    borderRadius: "5px",
-    marginTop: "5px",
+    borderRadius: "8px",
+    marginTop: "8px",
+    border: "2px solid #3d3d6b",
   },
   buttonGroup: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: "10px",
+    marginTop: "15px",
   },
   loading: {
     textAlign: 'center',
     padding: '40px',
     fontSize: '18px',
-    color: '#666'
+    color: '#a9a9cc'
   },
   emptyState: {
     textAlign: 'center',
     padding: '40px',
-    color: '#666'
+    color: '#a9a9cc'
+  },
+  emptyStateHeading: {
+    fontSize: '22px',
+    marginBottom: '10px',
+    color: '#9370db'
+  },
+  emptyStateText: {
+    fontSize: '16px',
+    lineHeight: '1.5'
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: '#a9a9cc',
+    fontSize: '18px',
+    padding: '30px'
+  },
+  timestamp: {
+    fontSize: "14px",
+    color: "#a9a9cc",
+    marginTop: "10px",
+    fontStyle: "italic",
   }
 };
+
+// Add this to your main HTML file or use a CSS-in-JS solution to import fonts
+const fontLink = document.createElement("link");
+fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
 
 export default AdminPanel;

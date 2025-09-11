@@ -8,12 +8,12 @@ const ContactAdmin = () => {
     message: "",
   });
 
-  // Save submitted messages in localStorage
   const [submittedMessages, setSubmittedMessages] = useState(
     () => JSON.parse(localStorage.getItem("submittedMessages")) || []
   );
 
-  // Persist messages
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+
   useEffect(() => {
     localStorage.setItem("submittedMessages", JSON.stringify(submittedMessages));
   }, [submittedMessages]);
@@ -27,6 +27,16 @@ const ContactAdmin = () => {
     setSubmittedMessages([newMessage, ...submittedMessages]);
     alert("Message submitted successfully!");
     setForm({ name: "", email: "", phone: "", message: "" });
+  };
+
+  const toggleAdminPanel = () => {
+    setShowAdminPanel(!showAdminPanel);
+  };
+
+  const clearAllMessages = () => {
+    if (window.confirm("Are you sure you want to clear all messages?")) {
+      setSubmittedMessages([]);
+    }
   };
 
   return (
@@ -73,73 +83,239 @@ const ContactAdmin = () => {
             required
           />
           <button type="submit" style={styles.submitButton}>
-            Send
+            Send Message
           </button>
         </form>
       </div>
+
+      {/* Admin Panel Toggle Button */}
+      <div style={styles.adminButtonContainer}>
+        <button onClick={toggleAdminPanel} style={styles.adminToggleButton}>
+          {showAdminPanel ? "Hide Admin Panel" : "Show Admin Panel"}
+        </button>
+      </div>
+
+      {/* Admin Panel */}
+      {showAdminPanel && (
+        <div style={styles.adminPanel}>
+          <div style={styles.adminHeader}>
+            <h2 style={styles.adminHeading}>Admin Panel - Messages</h2>
+            {submittedMessages.length > 0 && (
+              <button onClick={clearAllMessages} style={styles.clearButton}>
+                Clear All Messages
+              </button>
+            )}
+          </div>
+          
+          {submittedMessages.length === 0 ? (
+            <p style={styles.noMessages}>No messages yet.</p>
+          ) : (
+            <div style={styles.messagesList}>
+              {submittedMessages.map((msg, index) => (
+                <div key={index} style={styles.messageItem}>
+                  <div style={styles.messageHeader}>
+                    <span style={styles.senderName}>{msg.name}</span>
+                    <span style={styles.timestamp}>{msg.timestamp}</span>
+                  </div>
+                  <p style={styles.messageText}>{msg.message}</p>
+                  <div style={styles.contactInfo}>
+                    <span style={styles.contactItem}>{msg.email}</span>
+                    <span style={styles.contactItem}>{msg.phone}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 const styles = {
   container: {
-    maxWidth: "700px",
-    margin: "30px auto",
-    padding: "15px",
-    fontFamily: "'Poppins', sans-serif",
-    backgroundColor: "#f5f7fa",
+    maxWidth: "800px",
+    margin: "0 auto",
+    padding: "30px 20px",
+    fontFamily: "'Montserrat', sans-serif",
+    backgroundColor: "#0f0f1a",
+    minHeight: "100vh",
+    color: "#e6e6ff",
   },
   heading: {
     textAlign: "center",
-    fontSize: "32px",
-    marginBottom: "30px",
-    color: "#1e1e2f",
-    fontWeight: "700",
+    fontSize: "42px",
+    marginBottom: "40px",
+    color: "#7b68ee",
+    fontWeight: "800",
+    textShadow: "0 0 15px rgba(123, 104, 238, 0.5)",
+    letterSpacing: "1px",
   },
-
   card: {
-    backgroundColor: "#ffffff",
-    padding: "20px",
-    borderRadius: "15px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-    marginBottom: "30px",
+    backgroundColor: "#1a1a2e",
+    padding: "30px",
+    borderRadius: "20px",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+    marginBottom: "20px",
+    border: "1px solid #2d2d4d",
   },
   cardHeading: {
     textAlign: "center",
-    fontSize: "22px",
-    marginBottom: "20px",
-    color: "#ff6b81",
+    fontSize: "28px",
+    marginBottom: "25px",
+    color: "#9370db",
     fontWeight: "700",
-    borderBottom: "1px solid #ff6b81",
-    paddingBottom: "5px",
+    borderBottom: "2px solid #9370db",
+    paddingBottom: "10px",
+    letterSpacing: "0.5px",
   },
-
-  form: { display: "flex", flexDirection: "column", gap: "15px" },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
   input: {
-    padding: "10px",
-    fontSize: "14px",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
+    padding: "15px",
+    fontSize: "16px",
+    borderRadius: "12px",
+    border: "2px solid #2d2d4d",
     outline: "none",
+    backgroundColor: "#252547",
+    color: "#e6e6ff",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   textarea: {
-    padding: "10px",
-    fontSize: "14px",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
-    minHeight: "80px",
+    padding: "15px",
+    fontSize: "16px",
+    borderRadius: "12px",
+    border: "2px solid #2d2d4d",
+    minHeight: "120px",
     outline: "none",
+    backgroundColor: "#252547",
+    color: "#e6e6ff",
+    transition: "all 0.3s ease",
+    resize: "vertical",
+    fontFamily: "'Montserrat', sans-serif",
   },
   submitButton: {
-    padding: "12px",
-    fontSize: "14px",
-    borderRadius: "10px",
+    padding: "16px",
+    fontSize: "18px",
+    borderRadius: "12px",
     border: "none",
-    backgroundColor: "#ff6b81",
+    background: "linear-gradient(45deg, #7b68ee, #6a5acd)",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: "600",
+    letterSpacing: "0.5px",
+    textTransform: "uppercase",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 15px rgba(123, 104, 238, 0.3)",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  adminButtonContainer: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "20px",
+  },
+  adminToggleButton: {
+    padding: "12px 24px",
+    fontSize: "16px",
+    borderRadius: "8px",
+    border: "none",
+    background: "linear-gradient(45deg, #9370db, #7b68ee)",
+    color: "#fff",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+  },
+  adminPanel: {
+    backgroundColor: "#1a1a2e",
+    padding: "30px",
+    borderRadius: "20px",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+    border: "1px solid #2d2d4d",
+    marginTop: "20px",
+  },
+  adminHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+    gap: "10px",
+  },
+  adminHeading: {
+    fontSize: "24px",
+    color: "#9370db",
+    fontWeight: "700",
+    margin: 0,
+  },
+  clearButton: {
+    padding: "8px 16px",
+    fontSize: "14px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#ff4757",
     color: "#fff",
     cursor: "pointer",
     fontWeight: "600",
   },
+  noMessages: {
+    textAlign: "center",
+    color: "#a9a9cc",
+    fontSize: "16px",
+    padding: "20px",
+  },
+  messagesList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+    maxHeight: "400px",
+    overflowY: "auto",
+    padding: "10px",
+  },
+  messageItem: {
+    backgroundColor: "#252547",
+    padding: "20px",
+    borderRadius: "12px",
+    border: "1px solid #3d3d6b",
+  },
+  messageHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px",
+  },
+  senderName: {
+    fontWeight: "600",
+    color: "#9370db",
+    fontSize: "18px",
+  },
+  timestamp: {
+    color: "#a9a9cc",
+    fontSize: "14px",
+  },
+  messageText: {
+    margin: "10px 0",
+    lineHeight: "1.6",
+    color: "#e6e6ff",
+  },
+  contactInfo: {
+    display: "flex",
+    gap: "15px",
+    marginTop: "10px",
+  },
+  contactItem: {
+    color: "#a9a9cc",
+    fontSize: "14px",
+  },
 };
+
+// Add this to your main HTML file or use a CSS-in-JS solution to import fonts
+const fontLink = document.createElement("link");
+fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
 
 export default ContactAdmin;
