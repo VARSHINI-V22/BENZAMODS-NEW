@@ -374,7 +374,7 @@ function HeroBanner() {
               onClick={() => navigate("/portfolio")}
               className="pulse-btn"
             >
-              Explore Now
+              Portfolio
             </button>
             <button
               style={styles.btnSecondaryLarge}
@@ -386,7 +386,7 @@ function HeroBanner() {
               style={styles.btnTertiaryLarge}
               onClick={() => navigate("/explore")}
             >
-              Explore Wraps
+              Explore Now
             </button>
           </div>
         </div>
