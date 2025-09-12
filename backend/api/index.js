@@ -1,10 +1,12 @@
-// api/index.js
+// backend/api/index.js
 const serverless = require("serverless-http");
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("../config/db");
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 // Load environment variables
 dotenv.config();
@@ -16,17 +18,12 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Connect MongoDB (cached for serverless)
+// Connect MongoDB
 connectDB().catch((err) => console.error("MongoDB connection error:", err));
 
-// Swagger
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsDoc = require("swagger-jsdoc");
-
+// Swagger setup
 const isVercel = process.env.VERCEL === "1";
-const serverUrl = isVercel
-  ? `https://${process.env.VERCEL_URL}/api`
-  : "http://localhost:5000";
+const serverUrl = isVercel ? `https://${process.env.VERCEL_URL}/api` : "http://localhost:5000";
 
 const swaggerOptions = {
   definition: {
@@ -38,7 +35,7 @@ const swaggerOptions = {
     },
     servers: [{ url: serverUrl }],
   },
-  apis: ["../routes/*.js"], // Swagger comments inside route files
+  apis: [path.join(__dirname, "../routes/*.js")],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -65,10 +62,8 @@ app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-// Health route (optional for debugging)
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date() });
-});
+// Health check
+app.get("/api/health", (req, res) => res.json({ status: "ok", timestamp: new Date() }));
 
 // API routes
 app.use("/api/products", productRoutes);
@@ -83,7 +78,7 @@ app.use("/api/locations", locationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 
-// Contact form submission
+// Contact form
 app.post("/api/messages/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;

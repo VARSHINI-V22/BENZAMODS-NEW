@@ -1,36 +1,27 @@
 // config/db.js
 const mongoose = require("mongoose");
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+let isConnected;
 
 const connectDB = async () => {
-  if (cached.conn) {
-    // Use existing cached connection
-    return cached.conn;
+  if (isConnected) {
+    console.log("✅ Using cached MongoDB connection");
+    return Promise.resolve();
   }
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      // These are default in mongoose v6+, no need for useNewUrlParser/useUnifiedTopology
-    };
-
-    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
-      console.log("MongoDB Connected ✅");
-      return mongoose;
-    }).catch((err) => {
-      console.error("MongoDB connection failed ❌", err.message);
-      throw err;
+  try {
+    const db = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
-  }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+    isConnected = db.connections[0].readyState;
+    console.log("🚀 MongoDB connected");
+    return db;
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    throw err;
+  }
 };
 
 module.exports = connectDB;
-
