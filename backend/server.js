@@ -9,9 +9,11 @@ const jwt = require("jsonwebtoken");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 const nodemailer = require("nodemailer");
-const serverless = require("serverless-http"); // for Vercel
+const serverless = require("serverless-http"); // For Vercel serverless
 
+// Load environment variables
 dotenv.config();
+
 const app = express();
 
 // Middleware
@@ -19,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Connect MongoDB (cached for serverless)
+// Connect MongoDB (Atlas recommended for production)
 connectDB();
 
 // Detect if running on Vercel
@@ -67,7 +69,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Import routes
+// Import Routes
 const productRoutes = require("./routes/productRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -83,12 +85,12 @@ const portfolioRoutes = require("./routes/portfolioRoutes");
 // Models
 const UserContact = require("./models/UserContact");
 
-// Root route
+// Root Route
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-// API routes
+// API Routes
 app.use("/api/products", productRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -101,7 +103,7 @@ app.use("/api/locations", locationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 
-// Example: messages
+// Example: Contact form submission
 app.post("/api/messages/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -114,9 +116,7 @@ app.post("/api/messages/submit", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Local Development Only
---------------------------------*/
+// Local Development Only (do not run listen on Vercel)
 if (!isVercel) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
