@@ -4,12 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const connectDB = require("./config/db");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsDoc = require("swagger-jsdoc");
-const nodemailer = require("nodemailer");
-const serverless = require("serverless-http"); // For Vercel serverless
+const serverless = require("serverless-http");
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Connect MongoDB (Atlas recommended for production)
+// Connect MongoDB Atlas
 connectDB();
 
 // Detect if running on Vercel
@@ -31,6 +26,9 @@ const serverUrl = isVercel
   : "http://localhost:5000";
 
 // Swagger Setup
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
+
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -40,36 +38,14 @@ const swaggerOptions = {
       description: "API documentation for Benzamods backend",
     },
     servers: [{ url: serverUrl }],
-    components: {
-      schemas: {
-        Contact: {
-          type: "object",
-          required: ["name", "email", "phone", "subject", "message"],
-          properties: {
-            name: { type: "string" },
-            email: { type: "string", format: "email" },
-            phone: { type: "string" },
-            subject: { type: "string" },
-            message: { type: "string" },
-          },
-        },
-      },
-      securitySchemes: {
-        AdminAuth: {
-          type: "apiKey",
-          in: "header",
-          name: "x-admin-token",
-        },
-      },
-    },
   },
-  apis: ["./routes/*.js"],
+  apis: ["./routes/*.js"], // Swagger comments in route files
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Import Routes
+// Import routes
 const productRoutes = require("./routes/productRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -85,12 +61,12 @@ const portfolioRoutes = require("./routes/portfolioRoutes");
 // Models
 const UserContact = require("./models/UserContact");
 
-// Root Route
+// Root route
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-// API Routes
+// API routes
 app.use("/api/products", productRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -103,7 +79,7 @@ app.use("/api/locations", locationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 
-// Example: Contact form submission
+// Contact form
 app.post("/api/messages/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -116,7 +92,7 @@ app.post("/api/messages/submit", async (req, res) => {
   }
 });
 
-// Local Development Only (do not run listen on Vercel)
+// Local Development Only
 if (!isVercel) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
