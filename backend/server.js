@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -8,12 +9,9 @@ const jwt = require("jsonwebtoken");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 const nodemailer = require("nodemailer");
-const serverless = require("serverless-http"); // ✅ needed for Vercel
+const serverless = require("serverless-http"); // for Vercel
 
-// Load environment variables
 dotenv.config();
-
-// Initialize app
 const app = express();
 
 // Middleware
@@ -21,17 +19,16 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Connect MongoDB
+// Connect MongoDB (cached for serverless)
 connectDB();
 
-/* ------------------------------
-   Swagger Setup
---------------------------------*/
-const isVercel = process.env.VERCEL === "1"; // Vercel sets this automatically
+// Detect if running on Vercel
+const isVercel = process.env.VERCEL === "1";
 const serverUrl = isVercel
-  ? "https://" + (process.env.VERCEL_URL || "your-vercel-domain.vercel.app") + "/api"
+  ? `https://${process.env.VERCEL_URL}/api`
   : "http://localhost:5000";
 
+// Swagger Setup
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -70,9 +67,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-/* ------------------------------
-   Import Routes
---------------------------------*/
+// Import routes
 const productRoutes = require("./routes/productRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -87,19 +82,13 @@ const portfolioRoutes = require("./routes/portfolioRoutes");
 
 // Models
 const UserContact = require("./models/UserContact");
-const AdminUser = require("./models/AdminUser");
-const PortfolioProduct = require("./models/PortfolioProduct");
 
-/* ------------------------------
-   Root route
---------------------------------*/
+// Root route
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-/* ------------------------------
-   API routes
---------------------------------*/
+// API routes
 app.use("/api/products", productRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -112,9 +101,7 @@ app.use("/api/locations", locationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 
-/* ------------------------------
-   Example Route
---------------------------------*/
+// Example: messages
 app.post("/api/messages/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -122,12 +109,13 @@ app.post("/api/messages/submit", async (req, res) => {
     await contact.save();
     res.json({ message: "Message submitted successfully!" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 /* ------------------------------
-   Local Development vs Vercel
+   Local Development Only
 --------------------------------*/
 if (!isVercel) {
   const PORT = process.env.PORT || 5000;
