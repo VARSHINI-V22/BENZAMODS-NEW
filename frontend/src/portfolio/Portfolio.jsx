@@ -14,22 +14,38 @@ const PRODUCTS = [
 ];
 
 /* ---------------------- localStorage helpers ---------------------- */
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 const readLS = (key, fallback) => {
-  try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } 
-  catch { return fallback; }
+  if (!isBrowser) return fallback;
+  try { 
+    const val = localStorage.getItem(key); 
+    return val ? JSON.parse(val) : fallback; 
+  } 
+  catch { 
+    return fallback; 
+  }
 };
-const writeLS = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+const writeLS = (key, value) => {
+  if (!isBrowser) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error('Failed to write to localStorage', e);
+  }
+};
 
 /* ---------------------- main component ---------------------- */
 export default function PortfolioAllInOne() {
-  const [users, setUsers] = useState(() => readLS("users", []));
-  const [currentUser, setCurrentUser] = useState(() => readLS("currentUser", null));
-  const [cart, setCart] = useState(() => readLS("cart", []));
-  const [wishlist, setWishlist] = useState(() => readLS("wishlist", []));
-  const [orders, setOrders] = useState(() => readLS("orders", []));
-  const [reviews, setReviews] = useState(() => readLS("reviews", []));
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
@@ -41,7 +57,6 @@ export default function PortfolioAllInOne() {
   const [orderProduct, setOrderProduct] = useState(null);
   const [productModal, setProductModal] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
-
   const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
   const [orderForm, setOrderForm] = useState({ name: "", email: "", address: "", payment: "COD" });
@@ -54,13 +69,55 @@ export default function PortfolioAllInOne() {
     beforeImagePreview: "",
     afterImagePreview: ""
   });
-
-  useEffect(() => writeLS("users", users), [users]);
-  useEffect(() => writeLS("currentUser", currentUser), [currentUser]);
-  useEffect(() => writeLS("cart", cart), [cart]);
-  useEffect(() => writeLS("wishlist", wishlist), [wishlist]);
-  useEffect(() => writeLS("orders", orders), [orders]);
-  useEffect(() => writeLS("reviews", reviews), [reviews]);
+  
+  // Initialize state from localStorage only on the client side
+  useEffect(() => {
+    if (isBrowser) {
+      setUsers(readLS("users", []));
+      setCurrentUser(readLS("currentUser", null));
+      setCart(readLS("cart", []));
+      setWishlist(readLS("wishlist", []));
+      setOrders(readLS("orders", []));
+      setReviews(readLS("reviews", []));
+    }
+  }, []);
+  
+  // Update localStorage when state changes
+  useEffect(() => {
+    if (isBrowser && users.length > 0) {
+      writeLS("users", users);
+    }
+  }, [users]);
+  
+  useEffect(() => {
+    if (isBrowser && currentUser) {
+      writeLS("currentUser", currentUser);
+    }
+  }, [currentUser]);
+  
+  useEffect(() => {
+    if (isBrowser && cart.length > 0) {
+      writeLS("cart", cart);
+    }
+  }, [cart]);
+  
+  useEffect(() => {
+    if (isBrowser && wishlist.length > 0) {
+      writeLS("wishlist", wishlist);
+    }
+  }, [wishlist]);
+  
+  useEffect(() => {
+    if (isBrowser && orders.length > 0) {
+      writeLS("orders", orders);
+    }
+  }, [orders]);
+  
+  useEffect(() => {
+    if (isBrowser && reviews.length > 0) {
+      writeLS("reviews", reviews);
+    }
+  }, [reviews]);
 
   // Filter products based on search term
   const filteredProducts = PRODUCTS.filter(product => 
@@ -86,7 +143,8 @@ export default function PortfolioAllInOne() {
     if (!name || !email || !password) return alert("Fill all signup fields");
     if (users.find((u) => u.email === email)) return alert("User exists");
     const newUser = { name, email, password, role: "user" };
-    setUsers([...users, newUser]);
+    const newUsers = [...users, newUser];
+    setUsers(newUsers);
     setCurrentUser(newUser);
     setAuthForm({ name: "", email: "", password: "" });
     setShowSignupModal(false);
@@ -101,7 +159,13 @@ export default function PortfolioAllInOne() {
     setAuthForm({ name: "", email: "", password: "" });
   };
 
-  const logout = () => { setCurrentUser(null); alert("Logged out"); };
+  const logout = () => { 
+    setCurrentUser(null); 
+    if (isBrowser) {
+      localStorage.removeItem("currentUser");
+    }
+    alert("Logged out"); 
+  };
 
   /* ---------------------- reviews ---------------------- */
   const handleImageUpload = (e, type) => {
@@ -154,7 +218,8 @@ export default function PortfolioAllInOne() {
       status: "approved" // Auto-approve for client reviews
     };
     
-    setReviews([...reviews, newReview]);
+    const newReviews = [...reviews, newReview];
+    setReviews(newReviews);
     setReviewForm({ 
       productId: "", 
       rating: 5, 
@@ -170,23 +235,59 @@ export default function PortfolioAllInOne() {
 
   /* ---------------------- cart/wishlist/order ---------------------- */
   const requireAuthOrOpenLogin = () => {
-    if (!currentUser) { setAuthMode("login"); setShowLoginModal(true); return false; }
+    if (!currentUser) { 
+      setAuthMode("login"); 
+      setShowLoginModal(true); 
+      return false; 
+    }
     return true;
   };
 
   const addToCart = (product) => {
     if (!requireAuthOrOpenLogin()) return;
     if (cart.find(c => c.id === product.id)) return alert("Already in cart");
-    setCart([...cart, product]);
+    const newCart = [...cart, product];
+    setCart(newCart);
   };
-  const removeFromCart = (productId) => setConfirmDialog({ message: "Remove from cart?", onConfirm: () => { setCart(cart.filter(p => p.id !== productId)); setConfirmDialog(null); }});
-  const addToWishlist = (product) => { if (!requireAuthOrOpenLogin()) return; if (wishlist.find(w => w.id === product.id)) return alert("Already in wishlist"); setWishlist([...wishlist, product]); };
-  const removeFromWishlist = (productId) => setConfirmDialog({ message: "Remove from wishlist?", onConfirm: () => { setWishlist(wishlist.filter(p => p.id !== productId)); setConfirmDialog(null); }});
+
+  const removeFromCart = (productId) => {
+    setConfirmDialog({ 
+      message: "Remove from cart?", 
+      onConfirm: () => { 
+        const newCart = cart.filter(p => p.id !== productId);
+        setCart(newCart); 
+        setConfirmDialog(null); 
+      }
+    });
+  };
+
+  const addToWishlist = (product) => { 
+    if (!requireAuthOrOpenLogin()) return; 
+    if (wishlist.find(w => w.id === product.id)) return alert("Already in wishlist"); 
+    const newWishlist = [...wishlist, product];
+    setWishlist(newWishlist); 
+  };
+
+  const removeFromWishlist = (productId) => {
+    setConfirmDialog({ 
+      message: "Remove from wishlist?", 
+      onConfirm: () => { 
+        const newWishlist = wishlist.filter(p => p.id !== productId);
+        setWishlist(newWishlist); 
+        setConfirmDialog(null); 
+      }
+    });
+  };
 
   const openBuy = (product) => {
     if (!requireAuthOrOpenLogin()) return;
     setOrderProduct(product);
-    setOrderForm(prev => ({ ...prev, name: currentUser?.name || prev.name, email: currentUser?.email || prev.email, payment: "COD" }));
+    setOrderForm(prev => ({ 
+      ...prev, 
+      name: currentUser?.name || prev.name, 
+      email: currentUser?.email || prev.email, 
+      payment: "COD" 
+    }));
     setShowOrderModal(true);
   };
 
@@ -207,8 +308,10 @@ export default function PortfolioAllInOne() {
       image: orderProduct.beforeAfter?.[0] || "https://via.placeholder.com/220",
       status: "Confirmed"
     };
-    setOrders([...orders, newOrder]);
-    setCart(cart.filter(p => p.id !== orderProduct.id));
+    const newOrders = [...orders, newOrder];
+    setOrders(newOrders);
+    const newCart = cart.filter(p => p.id !== orderProduct.id);
+    setCart(newCart);
     setShowOrderModal(false);
     setOrderProduct(null);
     setOrderForm({ name: "", email: "", address: "", payment: "COD" });
@@ -219,9 +322,10 @@ export default function PortfolioAllInOne() {
     setConfirmDialog({ 
       message: "Cancel this order?", 
       onConfirm: () => { 
-        setOrders(orders.map(order => 
+        const updatedOrders = orders.map(order => 
           order.id === orderId ? {...order, status: "Cancelled"} : order
-        )); 
+        ); 
+        setOrders(updatedOrders); 
         setConfirmDialog(null); 
       }
     });
@@ -239,7 +343,7 @@ export default function PortfolioAllInOne() {
           h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
         `}
       </style>
-
+      
       {/* header */}
       <header className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -269,7 +373,6 @@ export default function PortfolioAllInOne() {
                 <button onClick={() => { setAuthMode("signup"); setShowSignupModal(true); }} className="px-3 py-1.5 bg-purple-600 rounded-lg hover:bg-purple-700 transition text-sm font-medium">Signup</button>
               </div>
             )}
-
             <>
               <button onClick={() => setShowWishlistModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
                 <Heart size={18} />
@@ -299,14 +402,12 @@ export default function PortfolioAllInOne() {
                 </>
               )}
             </>
-
             {!currentUser && (
               <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="bg-blue-600 px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-1">
                 <User size={16} />
                 <span>Login / Signup</span>
               </button>
             )}
-
             {currentUser && (
               <div className="flex items-center gap-2">
                 <div className="text-sm hidden md:block">Hi, <b>{currentUser.name}</b></div>
@@ -319,7 +420,7 @@ export default function PortfolioAllInOne() {
           </div>
         </div>
       </header>
-
+      
       <main className="max-w-7xl mx-auto p-4 flex-1 w-full">
         {/* Products grid */}
         <section className="mb-12">
@@ -369,7 +470,7 @@ export default function PortfolioAllInOne() {
           )}
         </section>
       </main>
-
+      
       {/* Footer Section */}
       <footer className="bg-gray-800 border-t border-gray-700 py-12 px-4 mt-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -386,19 +487,19 @@ export default function PortfolioAllInOne() {
               </a>
             </div>
           </div>
-
+          
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-4 text-white"></h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Services</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Gallery</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Pricing</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">FAQ</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Contact</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
             </ul>
           </div>
-
+          
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-4 text-white">Contact Us</h3>
@@ -432,7 +533,7 @@ export default function PortfolioAllInOne() {
           <p>© {new Date().getFullYear()} Benzamods. All rights reserved.</p>
         </div>
       </footer>
-
+      
       {/* Modals */}
       {productModal && <ProductModal product={productModal} onClose={() => setProductModal(null)} addToCart={addToCart} addToWishlist={addToWishlist} openBuy={openBuy} getSimilar={getSimilar} setProductModal={setProductModal} reviews={getProductReviews(productModal.id)} setShowAddReviewModal={setShowAddReviewModal} setReviewForm={setReviewForm} />}
       {showCartModal && <CartModal cart={cart} onClose={() => setShowCartModal(false)} removeFromCart={removeFromCart} openBuy={openBuy} />}
@@ -490,7 +591,7 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
           </div>
         </div>
       </div>
-
+      
       {/* Client Reviews Section */}
       <div className="mt-8">
         <h3 className="font-bold text-xl mb-4 text-white border-b border-gray-700 pb-2">Client Reviews</h3>
@@ -529,7 +630,7 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
           <p className="text-gray-500 text-center py-4 bg-gray-700 rounded-lg">No reviews yet. Be the first to review!</p>
         )}
       </div>
-
+      
       {getSimilar(product).length > 0 && (
         <div className="mt-8">
           <h3 className="font-bold mb-4 text-xl text-white border-b border-gray-700 pb-2">Similar Products</h3>

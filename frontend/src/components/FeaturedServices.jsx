@@ -2,19 +2,46 @@ import React, { useEffect, useState } from "react";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 
 const FeaturedServices = () => {
-  // States
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+  
+  // Utility function for safe localStorage access
+  const safeStorage = {
+    getItem: (key, fallback = null) => {
+      if (!isBrowser) return fallback;
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (error) {
+        console.error(`Error reading ${key} from localStorage:`, error);
+        return fallback;
+      }
+    },
+    setItem: (key, value) => {
+      if (!isBrowser) return false;
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (error) {
+        console.error(`Error saving ${key} to localStorage:`, error);
+        return false;
+      }
+    }
+  };
+  
+  // States - initialize with empty values
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
-  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart")) || []);
-  const [wishlist, setWishlist] = useState(() => JSON.parse(localStorage.getItem("wishlist")) || []);
-  const [orders, setOrders] = useState(() => JSON.parse(localStorage.getItem("orders")) || []);
-  const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem("currentUser")) || null);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
+  
   // Toggles
   const [showProducts, setShowProducts] = useState(false);
   const [showServices, setShowServices] = useState(false);
-
+  
   // Modals
   const [showAuth, setShowAuth] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -26,60 +53,68 @@ const FeaturedServices = () => {
   const [showCartModal, setShowCartModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
-
+  
   // Demo data
   const demoProducts = [
     { _id: "1", name: "Performance Exhaust System", price: 25000, image: "https://images.unsplash.com/photo-1563720223880-4d93eef1f1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "2", name: "Carbon Fiber Spoiler", price: 18000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "3", name: "Sport Suspension Kit", price: 35000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
   ];
-
+  
   const demoServices = [
     { _id: "s1", name: "Engine Tuning", price: 12000, image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "s2", name: "Body Wrap Installation", price: 25000, image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "s3", name: "Interior Customization", price: 40000, image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
   ];
-
-  // Utility function for safe localStorage access
-  const safeStorage = {
-    getItem: (key) => {
-      try {
-        return JSON.parse(localStorage.getItem(key));
-      } catch (error) {
-        console.error(`Error reading ${key} from localStorage:`, error);
-        return null;
-      }
-    },
-    setItem: (key, value) => {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-        return true;
-      } catch (error) {
-        console.error(`Error saving ${key} to localStorage:`, error);
-        return false;
-      }
+  
+  // Initialize state from localStorage only on the client side
+  useEffect(() => {
+    if (isBrowser) {
+      setCart(safeStorage.getItem("cart", []));
+      setWishlist(safeStorage.getItem("wishlist", []));
+      setOrders(safeStorage.getItem("orders", []));
+      setCurrentUser(safeStorage.getItem("currentUser", null));
     }
-  };
-
+  }, []);
+  
   // Fetch products & services (with fallback)
   useEffect(() => {
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
       .then((data) => setProducts(data.length ? data : demoProducts))
       .catch(() => setProducts(demoProducts));
-
+      
     fetch("http://localhost:5000/api/services")
       .then((res) => res.json())
       .then((data) => setServices(data.length ? data : demoServices))
       .catch(() => setServices(demoServices));
   }, []);
-
-  // Persist localStorage
-  useEffect(() => { safeStorage.setItem("cart", cart); }, [cart]);
-  useEffect(() => { safeStorage.setItem("wishlist", wishlist); }, [wishlist]);
-  useEffect(() => { safeStorage.setItem("orders", orders); }, [orders]);
-  useEffect(() => { safeStorage.setItem("currentUser", currentUser); }, [currentUser]);
-
+  
+  // Persist localStorage when state changes
+  useEffect(() => { 
+    if (cart.length > 0) {
+      safeStorage.setItem("cart", cart); 
+    }
+  }, [cart]);
+  
+  useEffect(() => { 
+    if (wishlist.length > 0) {
+      safeStorage.setItem("wishlist", wishlist); 
+    }
+  }, [wishlist]);
+  
+  useEffect(() => { 
+    if (orders.length > 0) {
+      safeStorage.setItem("orders", orders); 
+    }
+  }, [orders]);
+  
+  useEffect(() => { 
+    if (currentUser) {
+      safeStorage.setItem("currentUser", currentUser); 
+    }
+  }, [currentUser]);
+  
   // Filter products and services based on search query
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -88,24 +123,33 @@ const FeaturedServices = () => {
   const filteredServices = services.filter(service => 
     service.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   // Auth
   const handleAuthSubmit = (e) => {
     e.preventDefault();
     if (isLogin) {
       if (!authData.email || !authData.password) return alert("Enter details");
-      setCurrentUser({ name: authData.name || "User", email: authData.email });
+      const newUser = { name: authData.name || "User", email: authData.email };
+      setCurrentUser(newUser);
+      safeStorage.setItem("currentUser", newUser);
       setShowAuth(false);
     } else {
       if (!authData.name || !authData.email || !authData.password) return alert("Enter all fields");
-      setCurrentUser({ name: authData.name, email: authData.email });
+      const newUser = { name: authData.name, email: authData.email };
+      setCurrentUser(newUser);
+      safeStorage.setItem("currentUser", newUser);
       setShowAuth(false);
     }
     setAuthData({ name: "", email: "", password: "" });
   };
-
-  const handleLogout = () => setCurrentUser(null);
-
+  
+  const handleLogout = () => { 
+    setCurrentUser(null); 
+    if (isBrowser) {
+      localStorage.removeItem("currentUser");
+    }
+  };
+  
   const requireLogin = () => {
     if (!currentUser) {
       setShowAuth(true);
@@ -114,42 +158,63 @@ const FeaturedServices = () => {
     }
     return true;
   };
-
+  
   // Cart / Wishlist
   const handleAddCart = (item) => {
     if (!requireLogin()) return;
     setCart(prev => {
       const exists = prev.find(i => i._id === item._id);
-      return exists
+      const newCart = exists
         ? prev.map(i => i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i)
         : [...prev, { ...item, quantity: 1 }];
+      
+      safeStorage.setItem("cart", newCart);
+      return newCart;
     });
   };
-
+  
   const handleWishlist = (item) => {
     if (!requireLogin()) return;
     setWishlist(prev => {
       const exists = prev.find(i => i._id === item._id);
-      return exists ? prev.filter(i => i._id !== item._id) : [...prev, item];
+      const newWishlist = exists ? prev.filter(i => i._id !== item._id) : [...prev, item];
+      
+      safeStorage.setItem("wishlist", newWishlist);
+      return newWishlist;
     });
   };
-
+  
   const handleQuantityChange = (id, delta) => {
-    setCart(prev =>
-      prev.map(i => i._id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i)
-    );
+    setCart(prev => {
+      const newCart = prev.map(i => i._id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i);
+      safeStorage.setItem("cart", newCart);
+      return newCart;
+    });
   };
-
-  const handleRemoveCartItem = (id) => setCart(prev => prev.filter(i => i._id !== id));
-  const handleRemoveWishlistItem = (id) => setWishlist(prev => prev.filter(i => i._id !== id));
-
+  
+  const handleRemoveCartItem = (id) => {
+    setCart(prev => {
+      const newCart = prev.filter(i => i._id !== id);
+      safeStorage.setItem("cart", newCart);
+      return newCart;
+    });
+  };
+  
+  const handleRemoveWishlistItem = (id) => {
+    setWishlist(prev => {
+      const newWishlist = prev.filter(i => i._id !== id);
+      safeStorage.setItem("wishlist", newWishlist);
+      return newWishlist;
+    });
+  };
+  
   // Buy
   const handleBuyNow = (item) => {
     if (!requireLogin()) return;
     setBuyItem(item);
     setShowBuy(true);
   };
-
+  
   const confirmOrder = (e) => {
     e.preventDefault();
     
@@ -170,32 +235,29 @@ const FeaturedServices = () => {
     // Save to multiple keys for compatibility
     const updatedOrders = [...orders, newOrder];
     setOrders(updatedOrders);
-    
-    try {
-      safeStorage.setItem("orders", updatedOrders);
-      safeStorage.setItem("orderHistory", updatedOrders);
-    } catch (error) {
-      console.error("Error saving order:", error);
-      alert("Failed to save order. Check console for details.");
-    }
+    safeStorage.setItem("orders", updatedOrders);
+    safeStorage.setItem("orderHistory", updatedOrders);
     
     setShowBuy(false);
     setOrderData({ address: "", payment: "COD" });
     alert("Order placed successfully!");
   };
-
+  
   // Cancel order function
   const handleCancelOrder = (orderId) => {
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
+    setOrders(prevOrders => {
+      const updatedOrders = prevOrders.map(order => 
         order.id === orderId ? { ...order, status: "Cancelled" } : order
-      )
-    );
+      );
+      safeStorage.setItem("orders", updatedOrders);
+      safeStorage.setItem("orderHistory", updatedOrders);
+      return updatedOrders;
+    });
     alert("Order has been cancelled!");
   };
-
+  
   const totalAmount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 p-4 font-sans">
       {/* Custom font styles */}
@@ -210,7 +272,7 @@ const FeaturedServices = () => {
           }
         `}
       </style>
-
+      
       {/* Header */}
       <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 px-6 py-4 rounded-xl shadow-2xl mb-6 sticky top-2 z-10 border border-gray-700">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -312,7 +374,7 @@ const FeaturedServices = () => {
           </nav>
         </div>
       </header>
-
+      
       {/* Main Content */}
       <main className="max-w-7xl mx-auto">
         {/* Products Section */}
@@ -338,7 +400,7 @@ const FeaturedServices = () => {
               </div>
             </div>
           </div>
-
+          
           {showProducts && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {filteredProducts.map((p) => (
@@ -356,7 +418,7 @@ const FeaturedServices = () => {
                         </svg>
                       ) : (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4 4 0 00-6.364 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                       )}
                     </button>
@@ -390,7 +452,7 @@ const FeaturedServices = () => {
             </div>
           )}
         </section>
-
+        
         {/* Services Section */}
         <section className="mb-10">
           <div
@@ -414,7 +476,7 @@ const FeaturedServices = () => {
               </div>
             </div>
           </div>
-
+          
           {showServices && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {filteredServices.map((s) => (
@@ -432,7 +494,7 @@ const FeaturedServices = () => {
                         </svg>
                       ) : (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4 4 0 00-6.364 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                       )}
                     </button>
@@ -467,7 +529,7 @@ const FeaturedServices = () => {
           )}
         </section>
       </main>
-
+      
       {/* Footer Section */}
       <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 mt-12 border-t border-gray-800">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -493,7 +555,7 @@ const FeaturedServices = () => {
               </a>
             </div>
           </div>
-
+          
           {/* Quick Links */}
           <div>
             <h3 className="text-xl font-bold mb-4 text-white font-heading"></h3>
@@ -505,7 +567,7 @@ const FeaturedServices = () => {
               <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
             </ul>
           </div>
-
+          
           {/* Contact Info */}
           <div>
             <h3 className="text-xl font-bold mb-4 text-white font-heading">Contact Us</h3>
@@ -539,7 +601,7 @@ const FeaturedServices = () => {
           <p>© {new Date().getFullYear()} Benzamods. All rights reserved.</p>
         </div>
       </footer>
-
+      
       {/* --- Modals for Auth, Cart, Wishlist, Buy, Orders --- */}
       {showAuth && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -604,7 +666,7 @@ const FeaturedServices = () => {
           </form>
         </div>
       )}
-
+      
       {showBuy && buyItem && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <form onSubmit={confirmOrder} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700">
@@ -687,7 +749,7 @@ const FeaturedServices = () => {
           </form>
         </div>
       )}
-
+      
       {showCartModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
@@ -704,7 +766,7 @@ const FeaturedServices = () => {
                 >
                   Continue Shopping
                 </button>
-            </div>
+              </div>
             ) : (
               <>
                 {cart.map((c) => (
@@ -767,7 +829,7 @@ const FeaturedServices = () => {
           </div>
         </div>
       )}
-
+      
       {showWishlistModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
@@ -775,7 +837,7 @@ const FeaturedServices = () => {
             {wishlist.length === 0 ? (
               <div className="text-center py-10">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4 4 0 00-6.364 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 <p className="text-gray-400 text-lg">Your wishlist is empty</p>
                 <button 
@@ -829,7 +891,7 @@ const FeaturedServices = () => {
           </div>
         </div>
       )}
-
+      
       {showOrdersModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
@@ -895,7 +957,7 @@ const FeaturedServices = () => {
           </div>
         </div>
       )}
-
+      
       {showProfile && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700">
