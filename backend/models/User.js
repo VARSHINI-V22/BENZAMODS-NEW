@@ -1,58 +1,38 @@
-// backend/models/User.js
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+// models/User.js
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-// User Schema
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: [true, "Email is required"],
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: 6,
-    },
-    role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
-    },
-    cart: [{
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "PortfolioProduct",
-        required: true
-      },
-      quantity: {
-        type: Number,
-        default: 1,
-        min: 1
-      }
-    }],
-    wishlist: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "PortfolioProduct"
-    }]
+const UserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+    trim: true
   },
-  {
-    timestamps: true, // auto adds createdAt & updatedAt
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: 6
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
-);
+}, {
+  timestamps: true
+});
 
-// Encrypt password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
+// Hash password before saving
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -62,11 +42,11 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Match entered password with hashed password in DB
-userSchema.methods.matchPassword = async function (enteredPassword) {
+// Match password method
+UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Export model
-const User = mongoose.model("User", userSchema);
-module.exports = User;
+const User = mongoose.model('User', UserSchema);
+
+export default User;
