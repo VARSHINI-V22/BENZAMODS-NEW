@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'PortfolioProduct', required: true },
@@ -12,4 +12,6 @@ const reviewSchema = new mongoose.Schema({
   status: { type: String, default: "pending" } // pending, approved, rejected
 });
 
-module.exports = mongoose.model("Review", reviewSchema);
+const Review = mongoose.model("Review", reviewSchema);
+
+export default Review;

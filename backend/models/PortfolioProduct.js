@@ -1,14 +1,44 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
-const portfolioProductSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  type: { type: String, required: true }, // car or bike
-  brand: { type: String, required: true },
-  price: { type: Number, required: true },
-  beforeAfter: [String], // array of image URLs
-  description: String,
-  review: String, // sample review
-  clientReview: String // sample client review
+const PortfolioProductSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'Title is required'],
+    trim: true
+  },
+  type: {
+    type: String,
+    required: [true, 'Type is required'],
+    enum: ['car', 'bike']
+  },
+  brand: {
+    type: String,
+    required: [true, 'Brand is required']
+  },
+  price: {
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0, 'Price must be a positive number']
+  },
+  beforeAfter: [{
+    type: String
+  }],
+  description: {
+    type: String,
+    required: [true, 'Description is required']
+  },
+  review: {
+    type: String,
+    default: ''
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("PortfolioProduct", portfolioProductSchema);
+const PortfolioProduct = mongoose.model('PortfolioProduct', PortfolioProductSchema);
+
+export default PortfolioProduct;
