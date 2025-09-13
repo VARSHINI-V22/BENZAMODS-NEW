@@ -1,13 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const path = require("path");
-const connectDB = require("./config/db");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsDoc = require("swagger-jsdoc");
-const nodemailer = require("nodemailer");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import connectDB from "./config/db.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsDoc from "swagger-jsdoc";
+import nodemailer from "nodemailer";
 
 // Load environment variables
 dotenv.config();
@@ -18,7 +18,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Connect MongoDB
 connectDB();
@@ -36,7 +36,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:5000", // change if hosted
+        url: process.env.VERCEL_URL || "http://localhost:5000", // Use environment variable
       },
     ],
     components: {
@@ -112,25 +112,25 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 /* ------------------------------
    Import existing routes
 --------------------------------*/
-const productRoutes = require("./routes/productRoutes");
-const serviceRoutes = require("./routes/serviceRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const modificationRoutes = require("./routes/modificationRoutes");
-const detailRoutes = require("./routes/detailRoutes");
-const enquiryRoutes = require("./routes/enquiryRoutes");
-const authRoutes = require("./routes/authRoutes");
-const vehicleRoutes = require("./routes/vehicleRoutes");
-const locationRoutes = require("./routes/location");
-const orderRoutes = require("./routes/orderRoutes");
-const portfolioRoutes = require("./routes/portfolioRoutes");
+import productRoutes from "./routes/productRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import modificationRoutes from "./routes/modificationRoutes.js";
+import detailRoutes from "./routes/detailRoutes.js";
+import enquiryRoutes from "./routes/enquiryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import vehicleRoutes from "./routes/vehicleRoutes.js";
+import locationRoutes from "./routes/location.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import portfolioRoutes from "./routes/portfolioRoutes.js";
 
 // -----------------
 // Models
 // -----------------
-const UserContact = require("./models/UserContact");
-const AdminUser = require("./models/AdminUser");
-const PortfolioProduct = require("./models/PortfolioProduct");
-const ContactMessage = require("./models/ContactMessage");
+import UserContact from "./models/UserContact.js";
+import AdminUser from "./models/AdminUser.js";
+import PortfolioProduct from "./models/PortfolioProduct.js";
+import ContactMessage from "./models/ContactMessage.js";
 
 /* ------------------------------
    Root route
@@ -182,10 +182,8 @@ app.post("/api/admin-panel/signin", async (req, res) => {
     const { username, password } = req.body;
     const admin = await AdminUser.findOne({ username });
     if (!admin) return res.status(400).json({ message: "Invalid username" });
-
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-
     const token = jwt.sign(
       { id: admin._id },
       process.env.JWT_SECRET || "secretkey",
@@ -204,7 +202,6 @@ app.post("/api/admin-panel/signin", async (req, res) => {
 app.get("/api/admin-panel/messages", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
-
   const token = authHeader.split(" ")[1];
   try {
     jwt.verify(token, process.env.JWT_SECRET || "secretkey");
@@ -218,7 +215,6 @@ app.get("/api/admin-panel/messages", async (req, res) => {
 app.delete("/api/admin-panel/messages/:id", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
-
   const token = authHeader.split(" ")[1];
   try {
     jwt.verify(token, process.env.JWT_SECRET || "secretkey");
@@ -274,10 +270,8 @@ app.post("/api/init-portfolio-products", async (req, res) => {
         review: "The bike looks stunning! Perfect work.",
       },
     ];
-
     await PortfolioProduct.deleteMany({});
     await PortfolioProduct.insertMany(sampleProducts);
-
     res.json({ message: "Sample portfolio products initialized" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -285,10 +279,6 @@ app.post("/api/init-portfolio-products", async (req, res) => {
 });
 
 /* ------------------------------
-   Start Server
+   Export for Vercel
 --------------------------------*/
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
-  console.log(` Swagger docs available at http://localhost:${PORT}/api-docs`);
-});
+export default app;
