@@ -12,11 +12,11 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:5000", 
+        url: "http://localhost:5000", // your backend URL
       },
     ],
   },
-  apis: ["./routes/*.js"], 
+  apis: ["./routes/*.js"], // Path to API route files with Swagger comments
 };
 
 const swaggerSpec = swaggerJsDoc(options);
