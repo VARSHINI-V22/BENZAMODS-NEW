@@ -1,5 +1,6 @@
 // config/db.js
 import mongoose from "mongoose";
+import { pathToFileURL } from "url"; // Add this import
 
 // Cache the connection to reuse across serverless function invocations
 let cachedConnection = null;
@@ -10,7 +11,7 @@ const connectDB = async () => {
     console.log('Using cached MongoDB connection');
     return cachedConnection;
   }
-
+  
   try {
     console.log('Attempting to connect to MongoDB...');
     console.log('MONGO_URI:', process.env.MONGO_URI ? '***' : 'MISSING');

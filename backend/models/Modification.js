@@ -1,9 +1,30 @@
-const mongoose = require("mongoose");
+// models/Modification.js
+import mongoose from "mongoose";
 
 const modificationSchema = new mongoose.Schema({
-  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-  name: String,
-  image: String,
+  name: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true,
+    enum: ['car', 'bike']
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  image: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Modification", modificationSchema);
+export default mongoose.model('Modification', modificationSchema);

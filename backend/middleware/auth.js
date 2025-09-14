@@ -1,24 +1,15 @@
 // middleware/auth.js
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
 
-const auth = async (req, res, next) => {
-  // Get token from header
-  const authHeader = req.header('Authorization');
+const auth = (req, res, next) => {
+  const token = req.header('x-auth-token');
   
-  // Check if not token
-  if (!authHeader) {
+  if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
-  // Extract token from "Bearer <token>"
-  const token = authHeader.replace('Bearer ', '');
-
   try {
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Add user from payload (assuming the token contains user ID)
     req.user = decoded;
     next();
   } catch (err) {
@@ -26,4 +17,4 @@ const auth = async (req, res, next) => {
   }
 };
 
-export default auth; // Use default export for consistency
+export default auth;

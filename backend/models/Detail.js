@@ -1,10 +1,21 @@
-const mongoose = require("mongoose");
+// models/Detail.js
+import mongoose from "mongoose";
 
 const detailSchema = new mongoose.Schema({
-  modificationId: { type: mongoose.Schema.Types.ObjectId, ref: "Modification" },
-  title: String,
-  image: String,
-  description: String,
+  title: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Detail", detailSchema);
+export default mongoose.model('Detail', detailSchema);

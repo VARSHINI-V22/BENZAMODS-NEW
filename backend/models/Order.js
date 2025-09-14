@@ -1,49 +1,45 @@
-import mongoose from 'mongoose';
+// models/Order.js
+import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  customerName: {
-    type: String,
-    required: true
-  },
-  customerEmail: {
-    type: String,
-    required: true
-  },
-  products: [{
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
+  customer: {
+    name: {
+      type: String,
       required: true
     },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1
+    email: {
+      type: String,
+      required: true
     },
-    price: {
-      type: Number,
+    phone: {
+      type: String,
       required: true
     }
-  }],
-  totalAmount: {
-    type: Number,
+  },
+  service: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service',
+    required: true
+  },
+  vehicle: {
+    type: String,
     required: true
   },
   status: {
     type: String,
-    enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
-    default: "pending"
+    enum: ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled'],
+    default: 'pending'
   },
-  shippingAddress: {
-    street: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    country: String
+  appointmentDate: {
+    type: Date,
+    required: true
+  },
+  totalPrice: {
+    type: Number,
+    required: true
   }
 }, {
   timestamps: true
 });
 
-const Order = mongoose.model('Order', orderSchema);
-export default Order;
+export default mongoose.model('Order', orderSchema);
