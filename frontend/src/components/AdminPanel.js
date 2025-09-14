@@ -1,11 +1,9 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-
 // Admin components - lazy loaded
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
 const ProductsAdmin = lazy(() => import("./admin/ProductsAdmin"));
 const ServicesAdmin = lazy(() => import("./admin/ServicesAdmin"));
-
 // Utility function for safe localStorage access
 const safeStorage = {
   getItem: (key) => {
@@ -26,7 +24,6 @@ const safeStorage = {
     }
   }
 };
-
 function AdminPanel() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -38,7 +35,6 @@ function AdminPanel() {
   const [orderSearch, setOrderSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [reviewSearch, setReviewSearch] = useState("");
-
   useEffect(() => {
     // Load all data from localStorage
     const loadData = () => {
@@ -57,7 +53,6 @@ function AdminPanel() {
         console.error("Error loading data from localStorage:", error);
       }
     };
-
     // Data migration for existing orders
     const migrateOrders = () => {
       try {
@@ -104,7 +99,6 @@ function AdminPanel() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
-
   // Remove handlers
   const handleRemoveUser = (index) => {
     if (window.confirm("Remove this user?")) {
@@ -113,7 +107,6 @@ function AdminPanel() {
       safeStorage.setItem("users", updated);
     }
   };
-
   const handleRemoveOrder = (index) => {
     if (window.confirm("Remove this order?")) {
       try {
@@ -131,7 +124,6 @@ function AdminPanel() {
       }
     }
   };
-
   const handleRemoveMessage = (index) => {
     if (window.confirm("Delete this message?")) {
       const updated = messages.filter((_, i) => i !== index);
@@ -139,7 +131,6 @@ function AdminPanel() {
       safeStorage.setItem("submittedMessages", updated);
     }
   };
-
   const handleRemoveReview = (index) => {
     if (window.confirm("Delete this review?")) {
       const updated = reviews.filter((_, i) => i !== index);
@@ -147,14 +138,12 @@ function AdminPanel() {
       safeStorage.setItem("reviews", updated);
     }
   };
-
   const handleToggleReviewStatus = (index) => {
     const updated = [...reviews];
     updated[index].status = updated[index].status === "approved" ? "pending" : "approved";
     setReviews(updated);
     safeStorage.setItem("reviews", updated);
   };
-
   // Normalize order data for consistent display
   const normalizeOrder = (order) => {
     return {
@@ -170,14 +159,12 @@ function AdminPanel() {
       image: order.image || null
     };
   };
-
   // Filtered data
   const filteredUsers = users.filter(
     (u) =>
       u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
       u.email?.toLowerCase().includes(userSearch.toLowerCase())
   );
-
   const filteredOrders = orders
     .map(normalizeOrder)
     .filter((o) =>
@@ -185,21 +172,18 @@ function AdminPanel() {
       o.buyerEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
       o.title.toLowerCase().includes(orderSearch.toLowerCase())
     );
-
   const filteredMessages = messages.filter(
     (m) =>
       m.name?.toLowerCase().includes(messageSearch.toLowerCase()) ||
       m.email?.toLowerCase().includes(messageSearch.toLowerCase()) ||
       m.message?.toLowerCase().includes(messageSearch.toLowerCase())
   );
-
   const filteredReviews = reviews.filter(
     (r) =>
       r.userName?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
       r.comment?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
       r.status?.toLowerCase().includes(reviewSearch.toLowerCase())
   );
-
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -208,7 +192,6 @@ function AdminPanel() {
           ⬅ Back to Home
         </button>
       </div>
-
       {/* Tabs */}
       <div style={styles.tabs}>
         <button
@@ -254,7 +237,6 @@ function AdminPanel() {
           ⭐ Reviews
         </button>
       </div>
-
       {/* ----------------- TAB CONTENT ----------------- */}
       <div style={styles.tabContent}>
         {activeTab === "dashboard" && (
@@ -453,7 +435,6 @@ function AdminPanel() {
     </div>
   );
 }
-
 // ----------------- STYLES -----------------
 const styles = {
   container: {
@@ -657,11 +638,9 @@ const styles = {
     fontStyle: "italic",
   }
 };
-
 // Add this to your main HTML file or use a CSS-in-JS solution to import fonts
 const fontLink = document.createElement("link");
 fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap";
 fontLink.rel = "stylesheet";
 document.head.appendChild(fontLink);
-
 export default AdminPanel;

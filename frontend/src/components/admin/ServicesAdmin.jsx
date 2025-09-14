@@ -1,9 +1,28 @@
 import React, { useEffect, useState } from "react";
+import { API_BASE_URL } from '../../config';
+// Add a fallback value in case config is undefined
+const API_URL = API_BASE_URL || 'http://localhost:5000';
+// Debug logging
+console.log('API_BASE_URL from config:', API_BASE_URL);
+console.log('API_URL with fallback:', API_URL);
 
-// Configure API URL based on environment
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000' 
-  : process.env.REACT_APP_API_URL || 'https://your-backend-api.vercel.app';
+// Add this function to handle image sources
+const getImageSource = (image) => {
+  if (!image) return null;
+  
+  // If it's already a complete data URL, use it as is
+  if (image.startsWith('data:')) {
+    return image;
+  }
+  
+  // If it's just the base64 part without the prefix
+  if (image.match(/^[A-Za-z0-9+/]+={0,2}$/)) {
+    return `data:image/jpeg;base64,${image}`;
+  }
+  
+  // Otherwise, treat it as a regular URL
+  return image;
+};
 
 export default function ServicesAdmin() {
   const [services, setServices] = useState([]);
@@ -16,48 +35,93 @@ export default function ServicesAdmin() {
   });
   const [editingId, setEditingId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [error, setError] = useState(null);
+  
   useEffect(() => {
     fetchServices();
   }, []);
-
+  
   const fetchServices = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/services`);
-      if (!res.ok) throw new Error('Network response was not ok');
+      const url = `${API_URL}/api/services`;
+      console.log('Fetching services from:', url);
+      const res = await fetch(url);
+      console.log('Response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
+      console.log('Services data:', data);
       setServices(data);
     } catch (err) {
       console.error('Error fetching services:', err);
-      alert('Failed to fetch services. Please check your connection.');
+      setError(err.message);
+      alert(`Failed to fetch services. Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
     try {
       const url = editingId 
-        ? `${API_BASE_URL}/api/services/${editingId}`
-        : `${API_BASE_URL}/api/services`;
+        ? `${API_URL}/api/services/${editingId}`
+        : `${API_URL}/api/services`;
         
       const method = editingId ? 'PUT' : 'POST';
       
+      console.log('Submitting to:', url);
+      console.log('Method:', method);
+      console.log('Form data:', form);
+      
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(form)
       });
       
-      if (!res.ok) throw new Error('Network response was not ok');
+      console.log('Response status:', res.status);
+      console.log('Response headers:', res.headers);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response text:', errorText);
+        
+        // Try to parse error response as JSON
+        let errorMessage = `HTTP error! status: ${res.status}`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.message) {
+            errorMessage = errorJson.message;
+          }
+          if (errorJson.errors) {
+            errorMessage = errorJson.errors.map(e => e.msg).join(', ');
+          }
+        } catch (e) {
+          // If parsing fails, use the raw error text
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
       
       const data = await res.json();
+      console.log('Response data:', data);
       
       if (editingId) {
         setServices(services.map(s => (s._id === editingId ? data : s)));
@@ -67,34 +131,55 @@ export default function ServicesAdmin() {
       }
       
       setForm({ name: "", category: "car", price: "", description: "", image: "" });
+      
+      // Show success message
+      alert(editingId ? "Service updated successfully!" : "Service added successfully!");
     } catch (err) {
       console.error('Error saving service:', err);
-      alert('Failed to save service. Please try again.');
+      setError(err.message);
+      alert(`Failed to save service. Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this service?")) return;
     
     setIsLoading(true);
+    setError(null);
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/api/services/${id}`, { 
-        method: "DELETE" 
+      const url = `${API_URL}/api/services/${id}`;
+      console.log('Deleting service at:', url);
+      
+      const res = await fetch(url, { 
+        method: "DELETE",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
       });
       
-      if (!res.ok) throw new Error('Network response was not ok');
+      console.log('Response status:', res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
       
       setServices(services.filter(s => s._id !== id));
+      alert("Service deleted successfully!");
     } catch (err) {
       console.error('Error deleting service:', err);
-      alert('Failed to delete service. Please try again.');
+      setError(err.message);
+      alert(`Failed to delete service. Error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const handleEdit = (service) => {
     setForm({
       name: service.name,
@@ -105,10 +190,9 @@ export default function ServicesAdmin() {
     });
     setEditingId(service._id);
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 font-sans">
-      {/* HEADER */}
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
           Services Admin Dashboard
@@ -124,8 +208,33 @@ export default function ServicesAdmin() {
           Refresh
         </button>
       </header>
-
-      {/* FORM */}
+      
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-900 text-white p-4 rounded-lg mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-lg font-bold mb-2">Error</h3>
+              <p className="whitespace-pre-wrap">{error}</p>
+            </div>
+            <button 
+              onClick={() => setError(null)}
+              className="text-white hover:text-gray-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <button 
+            onClick={fetchServices}
+            className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      
       <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700">
         <h3 className="text-xl font-semibold mb-4 text-white">
           {editingId ? "Edit Service" : "Add New Service"}
@@ -206,8 +315,7 @@ export default function ServicesAdmin() {
           </div>
         </form>
       </div>
-
-      {/* SERVICES GRID */}
+      
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -217,13 +325,15 @@ export default function ServicesAdmin() {
           {services.map(s => (
             <div key={s._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
               <div className="relative">
+                {/* Updated image tag with the new function and error handling */}
                 <img 
-                  src={s.image} 
+                  src={getImageSource(s.image)} 
                   alt={s.name} 
                   className="h-48 w-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null; 
-                    e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
+                    // Use a local SVG instead of external URL
+                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
                   }}
                 />
                 <span className="absolute top-3 right-3 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
@@ -264,7 +374,7 @@ export default function ServicesAdmin() {
         </div>
       )}
       
-      {services.length === 0 && !isLoading && (
+      {services.length === 0 && !isLoading && !error && (
         <div className="text-center py-12 text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />

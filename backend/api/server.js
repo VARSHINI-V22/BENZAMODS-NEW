@@ -1,4 +1,3 @@
-// api/server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -44,15 +43,25 @@ process.on('unhandledRejection', (err) => {
 const app = express();
 
 // Define allowed origins from environment variables or use defaults
+// Updated to include http://localhost:3001 for frontend development
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:3000', 'http://localhost:5000'];
+  : [
+      'http://localhost:3000', 
+      'http://localhost:3001', // Added this line
+      'http://localhost:5000',
+      'https://frontend-8lo68iomb-varshini-vs-projects.vercel.app'
+    ];
 
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    
+    // Debug log to see which origins are being checked
+    console.log('CORS check for origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
     
     // Check if the origin is in the allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -66,6 +75,23 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Additional CORS headers for production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    
+    next();
+  });
+}
 
 app.use(express.json());
 app.use(compression());
@@ -171,6 +197,7 @@ const swaggerOptions = {
   },
   apis: ["../routes/*.js"], // Updated path
 };
+
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -414,11 +441,13 @@ if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+    console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
   }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
       app.listen(PORT + 1, () => {
         console.log(`Server is running on port ${PORT + 1} in ${process.env.NODE_ENV} mode`);
+        console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
       });
     } else {
       console.error(err);
@@ -427,4 +456,3 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export default app;
-// Start server only in development
