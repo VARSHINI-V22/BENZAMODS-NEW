@@ -1,5 +1,6 @@
 // api/index.js
-const server = require('./server');
+import serverless from 'serverless-http';
+import app from './server.js';
 
-// Export the Express app as a serverless function
-module.exports = server;
+// Wrap the Express app with serverless-http for Vercel
+export const handler = serverless(app);

@@ -1,10 +1,10 @@
-// Import required modules
+// api/server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import fs from "fs"; // Added for file system operations
+import fs from "fs";
 import helmet from "helmet";
 import morgan from "morgan";
 import compression from "compression";
@@ -21,7 +21,6 @@ const __dirname = path.dirname(__filename);
 // Load environment variables from parent directory
 const envPath = path.join(__dirname, '..', '.env');
 console.log('Loading .env from:', envPath);
-
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
   console.log('.env file loaded successfully');
@@ -172,7 +171,6 @@ const swaggerOptions = {
   },
   apis: ["../routes/*.js"], // Updated path
 };
-
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -270,6 +268,7 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
+
   // Admin Login
   app.post("/api/admin-panel/signin", async (req, res) => {
     try {
@@ -293,6 +292,7 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
+
   // Admin Protected Routes
   app.get("/api/admin-panel/messages", async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -310,6 +310,7 @@ function setupDBDependentRoutes() {
       res.status(401).json({ message: "Invalid token" });
     }
   });
+
   app.delete("/api/admin-panel/messages/:id", async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
@@ -326,6 +327,7 @@ function setupDBDependentRoutes() {
       res.status(401).json({ message: "Invalid token" });
     }
   });
+
   // Seed Admin (Run once)
   app.get("/api/admin-panel/seed", async (req, res) => {
     try {
@@ -341,6 +343,7 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
+
   // Initialize Portfolio Products
   app.post("/api/init-portfolio-products", async (req, res) => {
     try {
@@ -381,6 +384,7 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: error.message });
     }
   });
+
   // Update health check with DB status
   app.get("/health", async (req, res) => {
     try {
@@ -405,20 +409,22 @@ function setupDBDependentRoutes() {
 // Initialize the server
 initializeServer();
 
-// Export for Vercel
-export default async function handler(req, res) {
-  // Ensure initialization is complete
-  if (!isInitialized) {
-    await initializeServer();
-  }
-  
-  return app(req, res);
-}
-
 // Start server only in development
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
+      app.listen(PORT + 1, () => {
+        console.log(`Server is running on port ${PORT + 1} in ${process.env.NODE_ENV} mode`);
+      });
+    } else {
+      console.error(err);
+    }
   });
 }
+
+export default app;
+// Start server only in development
