@@ -12,14 +12,11 @@ import jwt from "jsonwebtoken";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import nodemailer from "nodemailer";
-
 // Load environment variables
 dotenv.config();
-
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // Global error handlers
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
@@ -27,15 +24,12 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err);
 });
-
 // Initialize app
 const app = express();
-
 // Define allowed origins from environment variables or use defaults
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
   : ['http://localhost:3000', 'http://localhost:5000'];
-
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
@@ -54,32 +48,60 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-
 app.use(express.json());
 app.use(compression());
 app.use(helmet());
-
 // Environment-specific middleware
 if (process.env.NODE_ENV === 'production') {
   app.disable('x-powered-by');
 } else {
   app.use(morgan('dev'));
 }
-
 // Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 // Basic routes that don't require DB
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
-
 app.get("/health", (req, res) => {
   res.json({ 
     status: "OK", 
     database: "not_connected",
     environment: process.env.NODE_ENV,
     timestamp: new Date().toISOString() 
+  });
+});
+
+// NEW: API information route
+app.get("/api", (req, res) => {
+  res.json({
+    message: "Welcome to Benzamods API",
+    version: "1.0.0",
+    status: "running",
+    environment: process.env.NODE_ENV || "development",
+    endpoints: {
+      products: "/api/products",
+      services: "/api/services",
+      categories: "/api/categories",
+      modifications: "/api/modifications",
+      details: "/api/details",
+      enquiries: "/api/enquiries",
+      auth: "/api/auth",
+      vehicleServices: "/api/vehicle-services",
+      locations: "/api/locations",
+      orders: "/api/orders",
+      portfolio: "/api/portfolio",
+      messages: {
+        submit: "/api/messages/submit",
+        admin: "/api/admin-panel/messages"
+      },
+      admin: {
+        signin: "/api/admin-panel/signin",
+        seed: "/api/admin-panel/seed"
+      }
+    },
+    documentation: "/api-docs",
+    health: "/health"
   });
 });
 
@@ -128,7 +150,6 @@ const swaggerOptions = {
 };
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -143,13 +164,11 @@ app.use((err, req, res, next) => {
     });
   }
 });
-
 // Variable to store initialized state
 let isInitialized = false;
 let dbConnection = null;
 let models = {};
 let routes = {};
-
 // Async initialization function
 async function initializeServer() {
   if (isInitialized) return;
@@ -204,7 +223,6 @@ async function initializeServer() {
     // Don't exit - allow basic routes to work
   }
 }
-
 // Setup routes that require DB
 function setupDBDependentRoutes() {
   // User Message Submission
@@ -223,7 +241,6 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
-
   // Admin Login
   app.post("/api/admin-panel/signin", async (req, res) => {
     try {
@@ -247,7 +264,6 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
-
   // Admin Protected Routes
   app.get("/api/admin-panel/messages", async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -265,7 +281,6 @@ function setupDBDependentRoutes() {
       res.status(401).json({ message: "Invalid token" });
     }
   });
-
   app.delete("/api/admin-panel/messages/:id", async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
@@ -282,7 +297,6 @@ function setupDBDependentRoutes() {
       res.status(401).json({ message: "Invalid token" });
     }
   });
-
   // Seed Admin (Run once)
   app.get("/api/admin-panel/seed", async (req, res) => {
     try {
@@ -298,7 +312,6 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: "Server error" });
     }
   });
-
   // Initialize Portfolio Products
   app.post("/api/init-portfolio-products", async (req, res) => {
     try {
@@ -339,7 +352,6 @@ function setupDBDependentRoutes() {
       res.status(500).json({ message: error.message });
     }
   });
-
   // Update health check with DB status
   app.get("/health", async (req, res) => {
     try {
@@ -360,10 +372,8 @@ function setupDBDependentRoutes() {
     }
   });
 }
-
 // Initialize the server
 initializeServer();
-
 // Export for Vercel
 export default async function handler(req, res) {
   // Ensure initialization is complete
@@ -373,7 +383,6 @@ export default async function handler(req, res) {
   
   return app(req, res);
 }
-
 // Start server only in development
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;

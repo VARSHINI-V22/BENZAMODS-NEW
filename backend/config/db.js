@@ -1,6 +1,5 @@
-// config/db.js
 import mongoose from "mongoose";
-import { pathToFileURL } from "url"; // Add this import
+import { pathToFileURL } from "url";
 
 // Cache the connection to reuse across serverless function invocations
 let cachedConnection = null;
@@ -15,6 +14,10 @@ const connectDB = async () => {
   try {
     console.log('Attempting to connect to MongoDB...');
     console.log('MONGO_URI:', process.env.MONGO_URI ? '***' : 'MISSING');
+    
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI environment variable is not defined');
+    }
     
     const options = {
       useNewUrlParser: true,
