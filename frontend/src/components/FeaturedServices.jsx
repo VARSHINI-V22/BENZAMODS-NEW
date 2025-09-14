@@ -56,7 +56,7 @@ const FeaturedServices = () => {
   
   // Demo data
   const demoProducts = [
-    { _id: "1", name: "Performance Exhaust System", price: 25000, image: "https://bykology.com/wp-content/uploads/2024/08/6.jpg" },
+     { _id: "1", name: "Performance Exhaust System", price: 25000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "2", name: "Carbon Fiber Spoiler", price: 18000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "3", name: "Sport Suspension Kit", price: 35000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
   ];
