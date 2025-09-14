@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 import helmet from "helmet";
 import morgan from "morgan";
 import compression from "compression";
-import { connectDB } from "./config/db.js"; // FIXED: Named import
+import { connectDB } from "../config/db.js"; // FIXED: Named import
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import swaggerUi from "swagger-ui-express";
