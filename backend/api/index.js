@@ -1,6 +1,5 @@
 // api/index.js
-import server from '../server.js';
+const server = require('./server');
 
-export default async function handler(req, res) {
-  return server(req, res);
-}
+// Export the Express app as a serverless function
+module.exports = server;
