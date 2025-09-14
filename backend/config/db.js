@@ -1,5 +1,5 @@
 // config/db.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
@@ -12,14 +12,16 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       maxPoolSize: 10,
-      bufferMaxEntries: 0,
+      // Remove this line: bufferMaxEntries: 0,
       connectTimeoutMS: 10000,
       retryWrites: true,
     };
+    
     if (process.env.NODE_ENV === 'production') {
       options.ssl = true;
       options.sslValidate = true;
     }
+    
     await mongoose.connect(process.env.MONGO_URI, options);
     
     console.log("MongoDB Connected ✅");
@@ -32,6 +34,7 @@ const connectDB = async () => {
     mongoose.connection.on('disconnected', () => {
       console.warn('MongoDB Disconnected ⚠️');
     });
+    
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
       console.log('MongoDB Connection Closed');
@@ -44,4 +47,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB; // CommonJS export
+export default connectDB;

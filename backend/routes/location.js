@@ -1,17 +1,32 @@
-
-// backend/routes/locations.js
-const express = require("express");
+import express from "express";
+import Location from "../models/Location.js";
 const router = express.Router();
-const Location = require("../models/Location");
 
-// GET all locations
+/**
+ * @swagger
+ * /api/locations:
+ *   get:
+ *     summary: Get all locations
+ *     tags: [Locations]
+ *     responses:
+ *       200:
+ *         description: List of all locations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Location'
+ *       500:
+ *         description: Server error
+ */
 router.get("/", async (req, res) => {
   try {
     const locations = await Location.find();
     res.json(locations);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message }); // Changed 'error' to 'message'
   }
 });
 
-module.exports = router;
+export default router;

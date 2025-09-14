@@ -1,24 +1,13 @@
-// models/Order.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const OrderSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
   customerName: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   customerEmail: {
     type: String,
-    required: true,
-    trim: true,
-    lowercase: true
-  },
-  customerAddress: {
-    street: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    country: String
+    required: true
   },
   products: [{
     productId: {
@@ -26,50 +15,35 @@ const OrderSchema = new mongoose.Schema({
       ref: 'Product',
       required: true
     },
-    itemName: {
-      type: String,
-      required: true
-    },
-    itemPrice: {
-      type: Number,
-      required: true
-    },
-    itemType: {
-      type: String,
-      required: true
-    },
     quantity: {
       type: Number,
       required: true,
       min: 1
+    },
+    price: {
+      type: Number,
+      required: true
     }
   }],
   totalAmount: {
     type: Number,
-    required: true,
-    min: 0
+    required: true
   },
   status: {
     type: String,
     enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
     default: "pending"
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  shippingAddress: {
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String
   }
+}, {
+  timestamps: true
 });
 
-// Update the updatedAt field before saving
-OrderSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-const Order = mongoose.model("Order", OrderSchema);
-
+const Order = mongoose.model('Order', orderSchema);
 export default Order;
