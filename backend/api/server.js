@@ -1,32 +1,13 @@
+// api/server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
-import fs from "fs";
-import helmet from "helmet";
-import morgan from "morgan";
-import compression from "compression";
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import swaggerUi from "swagger-ui-express";
-import swaggerJsDoc from "swagger-jsdoc";
-import nodemailer from "nodemailer";
 
-// Set up __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables from parent directory
-const envPath = path.join(__dirname, '..', '.env');
-console.log('Loading .env from:', envPath);
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-  console.log('.env file loaded successfully');
-} else {
-  console.error('.env file not found at:', envPath);
-  dotenv.config(); // Fallback to current directory
-}
+// Load environment variables
+dotenv.config();
 
 // Debug: Check if environment variables are loaded
 console.log('MONGO_URI:', process.env.MONGO_URI ? '***SET***' : 'NOT SET');
@@ -35,6 +16,7 @@ console.log('MONGO_URI:', process.env.MONGO_URI ? '***SET***' : 'NOT SET');
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
+
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err);
 });
@@ -42,28 +24,21 @@ process.on('unhandledRejection', (err) => {
 // Initialize app
 const app = express();
 
-// Define allowed origins from environment variables or use defaults
-// Updated to include http://localhost:3001 for frontend development
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
-  : [
-      'http://localhost:3000', 
-      'http://localhost:3001', // Added this line
-      'http://localhost:5000',
-      'https://frontend-8lo68iomb-varshini-vs-projects.vercel.app'
-    ];
+// Define allowed origins
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'http://localhost:3001', 
+  'http://localhost:5000',
+  'https://frontend-8lo68iomb-varshini-vs-projects.vercel.app'
+];
+
+// Define PORT constant
+const PORT = process.env.PORT || 5001; // Changed from 5000 to 5001
 
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
-    // Debug log to see which origins are being checked
-    console.log('CORS check for origin:', origin);
-    console.log('Allowed origins:', allowedOrigins);
-    
-    // Check if the origin is in the allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     } else {
@@ -76,52 +51,116 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Additional CORS headers for production
-if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
-    next();
-  });
+app.use(express.json());
+
+// Try to load optional middleware
+try {
+  const helmet = require('helmet');
+  app.use(helmet());
+} catch (err) {
+  console.warn("Helmet not available, skipping security headers");
 }
 
-app.use(express.json());
-app.use(compression());
-app.use(helmet());
+try {
+  const morgan = require('morgan');
+  if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('dev'));
+  }
+} catch (err) {
+  console.warn("Morgan not available, skipping request logging");
+}
 
-// Environment-specific middleware
+try {
+  const compression = require('compression');
+  app.use(compression());
+} catch (err) {
+  console.warn("Compression not available, skipping compression");
+}
+
 if (process.env.NODE_ENV === 'production') {
   app.disable('x-powered-by');
-} else {
-  app.use(morgan('dev'));
 }
 
-// Static files (uploads folder in parent directory)
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+// Database connection
+let dbConnection = null;
+const connectDB = async () => {
+  if (dbConnection && mongoose.connection.readyState === 1) {
+    return dbConnection;
+  }
+  
+  try {
+    dbConnection = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 10,
+    });
+    console.log("MongoDB connected");
+    return dbConnection;
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    throw error;
+  }
+};
 
-// Basic routes that don't require DB
+// Define schemas
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: { type: String, required: true, enum: ['car', 'bike'] },
+  price: { type: Number, required: true },
+  description: { type: String, required: true },
+  image: { type: String, required: true }
+}, { timestamps: true });
+
+const serviceSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: { type: String, required: true, enum: ['car', 'bike'] },
+  price: { type: Number, required: true },
+  description: { type: String, required: true },
+  image: { type: String, required: true }
+}, { timestamps: true });
+
+const userContactSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  message: { type: String, required: true }
+}, { timestamps: true });
+
+const adminUserSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+}, { timestamps: true });
+
+// Create models
+const Product = mongoose.model('Product', productSchema);
+const Service = mongoose.model('Service', serviceSchema);
+const UserContact = mongoose.model('UserContact', userContactSchema);
+const AdminUser = mongoose.model('AdminUser', adminUserSchema);
+
+// Basic routes
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-app.get("/health", (req, res) => {
-  res.json({ 
-    status: "OK", 
-    database: "not_connected",
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString() 
-  });
+app.get("/health", async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    res.status(dbStatus === "connected" ? 200 : 503).json({ 
+      status: dbStatus === "connected" ? "OK" : "Service Unavailable",
+      database: dbStatus,
+      environment: process.env.NODE_ENV,
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: "ERROR", 
+      database: "disconnected",
+      timestamp: new Date().toISOString() 
+    });
+  }
 });
 
-// API information route
 app.get("/api", (req, res) => {
   res.json({
     message: "Welcome to Benzamods API",
@@ -131,15 +170,6 @@ app.get("/api", (req, res) => {
     endpoints: {
       products: "/api/products",
       services: "/api/services",
-      categories: "/api/categories",
-      modifications: "/api/modifications",
-      details: "/api/details",
-      enquiries: "/api/enquiries",
-      auth: "/api/auth",
-      vehicleServices: "/api/vehicle-services",
-      locations: "/api/locations",
-      orders: "/api/orders",
-      portfolio: "/api/portfolio",
       messages: {
         submit: "/api/messages/submit",
         admin: "/api/admin-panel/messages"
@@ -149,310 +179,198 @@ app.get("/api", (req, res) => {
         seed: "/api/admin-panel/seed"
       }
     },
-    documentation: "/api-docs",
     health: "/health"
   });
 });
 
-// Swagger setup (without DB dependency)
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Benzamods API",
-      version: "1.0.0",
-      description: "API documentation for Benzamods backend",
-    },
-    servers: [
-      {
-        url: process.env.VERCEL_URL || "http://localhost:5000",
-      },
-    ],
-    components: {
-      schemas: {
-        Contact: {
-          type: "object",
-          required: ["name", "email", "phone", "subject", "message"],
-          properties: {
-            _id: { type: "string", description: "Auto-generated ID" },
-            name: { type: "string", description: "Name of the contact" },
-            email: { type: "string", format: "email", description: "Email address" },
-            phone: { type: "string", description: "Phone number" },
-            subject: { type: "string", description: "Subject" },
-            message: { type: "string", description: "Message" },
-            createdAt: { type: "string", format: "date-time", description: "Creation date" },
-            status: { type: "string", enum: ["new", "read", "archived"], description: "Status" }
-          }
-        }
-      },
-      securitySchemes: {
-        AdminAuth: {
-          type: "apiKey",
-          in: "header",
-          name: "x-admin-token",
-          description: "Admin authentication token"
-        }
-      }
-    }
-  },
-  apis: ["../routes/*.js"], // Updated path
-};
+// Product routes
+app.get("/api/products", async (req, res) => {
+  try {
+    await connectDB();
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.post("/api/products", async (req, res) => {
+  try {
+    await connectDB();
+    const product = new Product(req.body);
+    await product.save();
+    res.status(201).json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/api/products/:id", async (req, res) => {
+  try {
+    await connectDB();
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    await connectDB();
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Service routes
+app.get("/api/services", async (req, res) => {
+  try {
+    await connectDB();
+    const services = await Service.find();
+    res.json(services);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post("/api/services", async (req, res) => {
+  try {
+    await connectDB();
+    const service = new Service(req.body);
+    await service.save();
+    res.status(201).json(service);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.put("/api/services/:id", async (req, res) => {
+  try {
+    await connectDB();
+    const service = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+    res.json(service);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/api/services/:id", async (req, res) => {
+  try {
+    await connectDB();
+    const service = await Service.findByIdAndDelete(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+    res.json({ message: "Service deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// User Message Submission
+app.post("/api/messages/submit", async (req, res) => {
+  try {
+    await connectDB();
+    const { name, email, phone, message } = req.body;
+    const contact = new UserContact({ name, email, phone, message });
+    await contact.save();
+    res.json({ message: "Message submitted successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Admin Login
+app.post("/api/admin-panel/signin", async (req, res) => {
+  try {
+    await connectDB();
+    const { username, password } = req.body;
+    const admin = await AdminUser.findOne({ username });
+    if (!admin) return res.status(400).json({ message: "Invalid username" });
+    
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+    
+    const token = jwt.sign(
+      { id: admin._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Admin Protected Routes
+app.get("/api/admin-panel/messages", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
+  const token = authHeader.split(" ")[1];
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    const contacts = await UserContact.find().sort({ createdAt: -1 });
+    res.json(contacts);
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
+
+app.delete("/api/admin-panel/messages/:id", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
+  const token = authHeader.split(" ")[1];
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    await UserContact.findByIdAndDelete(req.params.id);
+    res.json({ message: "Message deleted successfully" });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+});
+
+// Seed Admin (Run once)
+app.get("/api/admin-panel/seed", async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+    await AdminUser.create({ username: "admin", password: hashedPassword });
+    res.send("Admin created. Username: admin, Password: admin123");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
-  if (process.env.NODE_ENV === 'production') {
-    res.status(500).json({ message: "Something went wrong!" });
-  } else {
-    res.status(500).json({ 
-      message: "Something went wrong!",
-      error: err.message,
-      stack: err.stack
-    });
-  }
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
-// Variable to store initialized state
-let isInitialized = false;
-let dbConnection = null;
-let models = {};
-let routes = {};
-
-// Async initialization function
-async function initializeServer() {
-  if (isInitialized) return;
-  
-  try {
-    // Import database connection
-    const { default: connectDB } = await import(pathToFileURL(path.join(__dirname, '..', 'config', 'db.js')));
-    dbConnection = await connectDB();
-    console.log("Database connection established successfully");
-    
-    // Import models
-    const modelsPath = path.join(__dirname, '..', 'models');
-    models.UserContact = (await import(pathToFileURL(path.join(modelsPath, 'UserContact.js')))).default;
-    models.AdminUser = (await import(pathToFileURL(path.join(modelsPath, 'AdminUser.js')))).default;
-    models.PortfolioProduct = (await import(pathToFileURL(path.join(modelsPath, 'PortfolioProduct.js')))).default;
-    models.ContactMessage = (await import(pathToFileURL(path.join(modelsPath, 'ContactMessage.js')))).default;
-    
-    // Import routes
-    const routesPath = path.join(__dirname, '..', 'routes');
-    routes.productRoutes = (await import(pathToFileURL(path.join(routesPath, 'productRoutes.js')))).default;
-    routes.serviceRoutes = (await import(pathToFileURL(path.join(routesPath, 'serviceRoutes.js')))).default;
-    routes.categoryRoutes = (await import(pathToFileURL(path.join(routesPath, 'categoryRoutes.js')))).default;
-    routes.modificationRoutes = (await import(pathToFileURL(path.join(routesPath, 'modificationRoutes.js')))).default;
-    routes.detailRoutes = (await import(pathToFileURL(path.join(routesPath, 'detailRoutes.js')))).default;
-    routes.enquiryRoutes = (await import(pathToFileURL(path.join(routesPath, 'enquiryRoutes.js')))).default;
-    routes.authRoutes = (await import(pathToFileURL(path.join(routesPath, 'authRoutes.js')))).default;
-    routes.vehicleRoutes = (await import(pathToFileURL(path.join(routesPath, 'vehicleRoutes.js')))).default;
-    routes.locationRoutes = (await import(pathToFileURL(path.join(routesPath, 'location.js')))).default;
-    routes.orderRoutes = (await import(pathToFileURL(path.join(routesPath, 'orderRoutes.js')))).default;
-    routes.portfolioRoutes = (await import(pathToFileURL(path.join(routesPath, 'portfolioRoutes.js')))).default;
-    
-    // Setup API routes
-    if (routes.productRoutes) app.use("/api/products", routes.productRoutes);
-    if (routes.serviceRoutes) app.use("/api/services", routes.serviceRoutes);
-    if (routes.categoryRoutes) app.use("/api/categories", routes.categoryRoutes);
-    if (routes.modificationRoutes) app.use("/api/modifications", routes.modificationRoutes);
-    if (routes.detailRoutes) app.use("/api/details", routes.detailRoutes);
-    if (routes.enquiryRoutes) app.use("/api/enquiries", routes.enquiryRoutes);
-    if (routes.authRoutes) app.use("/api/auth", routes.authRoutes);
-    if (routes.vehicleRoutes) app.use("/api/vehicle-services", routes.vehicleRoutes);
-    if (routes.locationRoutes) app.use("/api/locations", routes.locationRoutes);
-    if (routes.orderRoutes) app.use("/api/orders", routes.orderRoutes);
-    if (routes.portfolioRoutes) app.use("/api/portfolio", routes.portfolioRoutes);
-    
-    // Setup DB-dependent routes
-    setupDBDependentRoutes();
-    
-    isInitialized = true;
-    console.log("Server initialization completed");
-  } catch (error) {
-    console.error("Initialization failed:", error);
-    // Don't exit - allow basic routes to work
-  }
-}
-
-// Setup routes that require DB
-function setupDBDependentRoutes() {
-  // User Message Submission
-  app.post("/api/messages/submit", async (req, res) => {
-    try {
-      if (!models.UserContact) {
-        return res.status(500).json({ message: "UserContact model not available" });
-      }
-      
-      const { name, email, phone, message } = req.body;
-      const contact = new models.UserContact({ name, email, phone, message });
-      await contact.save();
-      res.json({ message: "Message submitted successfully!" });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Admin Login
-  app.post("/api/admin-panel/signin", async (req, res) => {
-    try {
-      if (!models.AdminUser) {
-        return res.status(500).json({ message: "AdminUser model not available" });
-      }
-      
-      const { username, password } = req.body;
-      const admin = await models.AdminUser.findOne({ username });
-      if (!admin) return res.status(400).json({ message: "Invalid username" });
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-      const token = jwt.sign(
-        { id: admin._id },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      res.json({ token });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Admin Protected Routes
-  app.get("/api/admin-panel/messages", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
-    const token = authHeader.split(" ")[1];
-    try {
-      if (!models.UserContact) {
-        return res.status(500).json({ message: "UserContact model not available" });
-      }
-      
-      jwt.verify(token, process.env.JWT_SECRET);
-      const contacts = await models.UserContact.find().sort({ createdAt: -1 });
-      res.json(contacts);
-    } catch (err) {
-      res.status(401).json({ message: "Invalid token" });
-    }
-  });
-
-  app.delete("/api/admin-panel/messages/:id", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
-    const token = authHeader.split(" ")[1];
-    try {
-      if (!models.UserContact) {
-        return res.status(500).json({ message: "UserContact model not available" });
-      }
-      
-      jwt.verify(token, process.env.JWT_SECRET);
-      await models.UserContact.findByIdAndDelete(req.params.id);
-      res.json({ message: "Message deleted successfully" });
-    } catch (err) {
-      res.status(401).json({ message: "Invalid token" });
-    }
-  });
-
-  // Seed Admin (Run once)
-  app.get("/api/admin-panel/seed", async (req, res) => {
-    try {
-      if (!models.AdminUser) {
-        return res.status(500).json({ message: "AdminUser model not available" });
-      }
-      
-      const hashedPassword = await bcrypt.hash("admin123", 10);
-      await models.AdminUser.create({ username: "admin", password: hashedPassword });
-      res.send("Admin created. Username: admin, Password: admin123");
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Initialize Portfolio Products
-  app.post("/api/init-portfolio-products", async (req, res) => {
-    try {
-      if (!models.PortfolioProduct) {
-        return res.status(500).json({ message: "PortfolioProduct model not available" });
-      }
-      
-      const sampleProducts = [
-        {
-          title: "Luxury Car Wrap",
-          type: "car",
-          brand: "BMW",
-          price: 5000,
-          beforeAfter: [
-            "https://tse1.mm.bing.net/th/id/OIP.eAqRXrk3Mn1I7HqPg6CYxgHaE8?pid=Api&P=0&h=220",
-            "https://tse2.mm.bing.net/th/id/OIP.K0-sXQF2pGiUkdi8iTFzyAHaEK?pid=Api&P=0&h=220",
-          ],
-          description: "Full body wrap for a BMW X5, matte black finish.",
-          review: "Amazing transformation! Highly recommended.",
-        },
-        {
-          title: "Custom Bike Paint",
-          type: "bike",
-          brand: "Yamaha",
-          price: 2000,
-          beforeAfter: [
-            "https://tse3.mm.bing.net/th/id/OIP.dE0QEYQwjfOWtRw6VKMpFgHaHa?pid=Api&P=0&h=220",
-            "https://blog.gaadikey.com/wp-content/uploads/2015/04/Yamaha-Saluto-Image-2-1024x767.jpg",
-          ],
-          description: "Custom flame paint job for Yamaha R15.",
-          review: "The bike looks stunning! Perfect work.",
-        },
-      ];
-      await models.PortfolioProduct.deleteMany({});
-      await models.PortfolioProduct.insertMany(sampleProducts);
-      res.json({ message: "Sample portfolio products initialized" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  });
-
-  // Update health check with DB status
-  app.get("/health", async (req, res) => {
-    try {
-      const mongoose = await import("mongoose");
-      const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
-      res.status(dbStatus === "connected" ? 200 : 503).json({ 
-        status: dbStatus === "connected" ? "OK" : "Service Unavailable",
-        database: dbStatus,
-        environment: process.env.NODE_ENV,
-        timestamp: new Date().toISOString() 
-      });
-    } catch (error) {
-      res.status(503).json({ 
-        status: "ERROR", 
-        database: "disconnected",
-        timestamp: new Date().toISOString() 
-      });
-    }
-  });
-}
-
-// Initialize the server
-initializeServer();
-
-// Start server only in development
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-    console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
-  }).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
-      app.listen(PORT + 1, () => {
-        console.log(`Server is running on port ${PORT + 1} in ${process.env.NODE_ENV} mode`);
-        console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
-      });
-    } else {
-      console.error(err);
-    }
-  });
-}
-
-export default app;
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
+});
