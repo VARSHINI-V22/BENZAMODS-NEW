@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
+// src/components/admin/ServicesAdmin.jsx
+import React, { useEffect, useState, useCallback } from "react";
 import { API_BASE_URL } from '../../config';
+
 // Add a fallback value in case config is undefined
 const API_URL = API_BASE_URL || 'http://localhost:5000';
-// Debug logging
+
+// Debug logging - remove this in production
 console.log('API_BASE_URL from config:', API_BASE_URL);
 console.log('API_URL with fallback:', API_URL);
 
@@ -37,11 +40,8 @@ export default function ServicesAdmin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  useEffect(() => {
-    fetchServices();
-  }, []);
-  
-  const fetchServices = async () => {
+  // Use useCallback to prevent recreation of the function on every render
+  const fetchServices = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -66,7 +66,12 @@ export default function ServicesAdmin() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_URL]); // Only recreate if API_URL changes
+  
+  // Only run once on component mount
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
   
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   
@@ -190,6 +195,12 @@ export default function ServicesAdmin() {
     });
     setEditingId(service._id);
   };
+
+  // Reset form when canceling edit
+  const handleCancelEdit = () => {
+    setForm({ name: "", category: "car", price: "", description: "", image: "" });
+    setEditingId(null);
+  };
   
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 font-sans">
@@ -305,13 +316,26 @@ export default function ServicesAdmin() {
               />
             </div>
             
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1 mt-6 disabled:opacity-50"
-            >
-              {isLoading ? 'Processing...' : (editingId ? "Update Service" : "Add Service")}
-            </button>
+            <div className="flex gap-2">
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50"
+              >
+                {isLoading ? 'Processing...' : (editingId ? "Update Service" : "Add Service")}
+              </button>
+              
+              {editingId && (
+                <button 
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isLoading}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>

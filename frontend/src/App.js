@@ -1,11 +1,10 @@
+// App.js
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 
-
 // Check if user is logged in
 const isAuthenticated = () => !!localStorage.getItem("token");
-
 // Lazy load components
 const Signup = lazy(() => import("./components/pages/Signup"));
 const Login = lazy(() => import("./components/pages/Login"));
@@ -43,11 +42,9 @@ const HomePage = () => (
       description="Expert car and bike wrapping, vinyl graphics, and complete vehicle modification services."
       keywords="car wrap services, bike modification, vehicle graphics, automotive customization"
     />
-
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
       {/* Hero Banner */}
       <HeroBanner />
-
       {/* Client Reviews / Carousel */}
       <section className="py-12 px-6 md:px-12 bg-gray-50">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
@@ -55,7 +52,6 @@ const HomePage = () => (
         </h2>
         <ClientCarousel />
       </section>
-
       {/* Location / Map */}
       <section className="py-12 px-6 md:px-12 bg-white">
         <h2 className="text-2xl font-bold text-center mb-6">Our Location</h2>
@@ -63,7 +59,6 @@ const HomePage = () => (
           <MyMap />
         </div>
       </section>
-
       {/* WhatsApp Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <WhatsAppButton
@@ -71,7 +66,6 @@ const HomePage = () => (
           message="Hi Benzamods, I'd like to inquire about vehicle mods."
         />
       </div>
-
       {/* Footer & Access */}
       <Footer />
       <Access />
@@ -84,18 +78,15 @@ function App() {
     <HelmetProvider>
       <Router>
         <Suspense fallback={<LoadingSpinner />}>
-
           {/* Global SEO */}
           <SEO 
             title="Benzamods - Premium Car & Bike Customization"
             description="Transform your vehicle with premium car & bike wrapping, customization, and modification services."
             keywords="car wrapping, bike customization, vehicle modification, vinyl wrap"
           />
-
           <Routes>
             {/* Default route → Hero Banner first */}
             <Route path="/" element={<Navigate to="/home" />} />
-
             {/* Auth routes */}
             <Route
               path="/login"
@@ -105,10 +96,8 @@ function App() {
               path="/signup"
               element={isAuthenticated() ? <Navigate to="/home" /> : <Signup />}
             />
-
             {/* Public Home with HeroBanner */}
             <Route path="/home" element={<HomePage />} />
-
             {/* Services Page */}
             <Route 
               path="/services" 
@@ -123,7 +112,6 @@ function App() {
                 </>
               } 
             />
-
             {/* Portfolio Page */}
             <Route 
               path="/portfolio" 
@@ -138,7 +126,6 @@ function App() {
                 </>
               } 
             />
-
             {/* Explore Page - Now as a separate page */}
             <Route 
               path="/explore" 
@@ -159,10 +146,8 @@ function App() {
                 </>
               } 
             />
-
             {/* Admin Panel */}
             <Route path="/admin" element={<AdminPanel />} />
-
             {/* Product Gallery */}
             <Route 
               path="/product/:id" 
@@ -177,7 +162,6 @@ function App() {
                 </>
               } 
             />
-
             {/* Contact Page */}
             <Route 
               path="/contact" 
@@ -192,7 +176,6 @@ function App() {
                 </>
               } 
             />
-
             {/* Dashboard (Protected) */}
             <Route
               path="/dashboard"
@@ -202,11 +185,9 @@ function App() {
                 </PrivateRoute>
               }
             />
-
             {/* Explore sub-routes */}
             <Route path="/explore/:type/:catId" element={<CategoryDetail />} />
             <Route path="/explore/:type" element={<SubCategory />} />
-
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/home" />} />
           </Routes>

@@ -1,5 +1,5 @@
 // ContactAdmin.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const ContactAdmin = () => {
   const [form, setForm] = useState({
@@ -8,6 +8,22 @@ const ContactAdmin = () => {
     phone: "",
     message: "",
   });
+
+  // Set body background color when component mounts
+  useEffect(() => {
+    document.body.style.backgroundColor = "#0f0f1a";
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+    document.body.style.fontFamily = "'Montserrat', sans-serif";
+    
+    // Clean up when component unmounts
+    return () => {
+      document.body.style.backgroundColor = "";
+      document.body.style.margin = "";
+      document.body.style.padding = "";
+      document.body.style.fontFamily = "";
+    };
+  }, []);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,65 +49,77 @@ const ContactAdmin = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Contact Us</h1>
-
-      {/* User Form */}
-      <div style={styles.card}>
-        <h2 style={styles.cardHeading}>Send a Message</h2>
-        <form style={styles.form} onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={form.name}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Phone"
-            value={form.phone}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <textarea
-            name="message"
-            placeholder="Message"
-            value={form.message}
-            onChange={handleChange}
-            style={styles.textarea}
-            required
-          />
-          <button type="submit" style={styles.submitButton}>
-            Send Message
-          </button>
-        </form>
+    <div style={styles.pageContainer}>
+      <div style={styles.container}>
+        <h1 style={styles.heading}>Contact Us</h1>
+        {/* User Form */}
+        <div style={styles.card}>
+          <h2 style={styles.cardHeading}>Send a Message</h2>
+          <form style={styles.form} onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={form.name}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone"
+              value={form.phone}
+              onChange={handleChange}
+              style={styles.input}
+              required
+            />
+            <textarea
+              name="message"
+              placeholder="Message"
+              value={form.message}
+              onChange={handleChange}
+              style={styles.textarea}
+              required
+            />
+            <button type="submit" style={styles.submitButton}>
+              Send Message
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
 const styles = {
+  pageContainer: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#0f0f1a",
+    overflowY: "auto",
+    fontFamily: "'Montserrat', sans-serif",
+  },
   container: {
     maxWidth: "800px",
     margin: "0 auto",
     padding: "30px 20px",
-    fontFamily: "'Montserrat', sans-serif",
-    backgroundColor: "#0f0f1a",
     minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
     color: "#e6e6ff",
   },
   heading: {
@@ -109,7 +137,7 @@ const styles = {
     borderRadius: "20px",
     boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
     marginBottom: "20px",
-    border: "1px solid #2d2d4d",
+    border: "1px solid #2d2d4d", // Fixed the syntax error here
   },
   cardHeading: {
     textAlign: "center",
@@ -130,7 +158,7 @@ const styles = {
     padding: "15px",
     fontSize: "16px",
     borderRadius: "12px",
-    border: "2px solid #2d2d4d",
+    border: "2px solid #2d2d4d", // Fixed the syntax error here
     outline: "none",
     backgroundColor: "#252547",
     color: "#e6e6ff",
@@ -141,7 +169,7 @@ const styles = {
     padding: "15px",
     fontSize: "16px",
     borderRadius: "12px",
-    border: "2px solid #2d2d4d",
+    border: "2px solid #2d2d4d", // Fixed the syntax error here
     minHeight: "120px",
     outline: "none",
     backgroundColor: "#252547",

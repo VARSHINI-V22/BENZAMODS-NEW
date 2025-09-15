@@ -1,4 +1,4 @@
-// src/components/HeroBanner.js
+// HeroBanner.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,14 +18,14 @@ function HeroBanner() {
     email: "" 
   });
   const [authError, setAuthError] = useState("");
-
+  
   // Background images
   const backgroundMedia = [
     { type: "image", src: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" },
     { type: "image", src: "https://images.unsplash.com/photo-1542362567-b07e54358753?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" },
     { type: "image", src: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1725&q=80" },
   ];
-
+  
   // Check if user is already logged in (from localStorage)
   useEffect(() => {
     const userData = localStorage.getItem('userData');
@@ -35,7 +35,7 @@ function HeroBanner() {
       setIsAdmin(parsedData.isAdmin || false);
     }
   }, []);
-
+  
   // Background media rotation effect
   useEffect(() => {
     const bgInterval = setInterval(() => {
@@ -43,7 +43,7 @@ function HeroBanner() {
     }, 6000);
     return () => clearInterval(bgInterval);
   }, [backgroundMedia.length]);
-
+  
   // Handle video load
   useEffect(() => {
     if (videoRef.current && backgroundMedia[currentBgIndex].type === "video") {
@@ -53,7 +53,7 @@ function HeroBanner() {
       });
     }
   }, [currentBgIndex, backgroundMedia]);
-
+  
   // Handle login
   const handleLogin = (e) => {
     e.preventDefault();
@@ -87,7 +87,7 @@ function HeroBanner() {
       setAuthError("Invalid username or password");
     }
   };
-
+  
   // Handle signup
   const handleSignup = (e) => {
     e.preventDefault();
@@ -126,14 +126,14 @@ function HeroBanner() {
     }));
     setShowSignupForm(false);
   };
-
+  
   // Handle logout
   const handleLogout = () => {
     setIsLoggedIn(false);
     setIsAdmin(false);
     localStorage.removeItem('userData');
   };
-
+  
   // Close auth forms when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -144,13 +144,12 @@ function HeroBanner() {
         setShowSignupForm(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showLoginForm, showSignupForm]);
-
+  
   return (
     <div style={styles.heroContainer}>
       {/* Background with dynamic media */}
@@ -190,9 +189,8 @@ function HeroBanner() {
           }
         })}
       </div>
-
       <div style={styles.backgroundOverlay}></div>
-
+      
       {/* Header */}
       <header style={styles.heroHeader}>
         <div style={styles.heroLogo}>
@@ -203,7 +201,6 @@ function HeroBanner() {
           />
           <h2 style={styles.logoText}>Benzamods</h2>
         </div>
-
         <div style={styles.heroNavButtons}>
           <button onClick={() => navigate('/portfolio')} style={styles.btnOutline}>
             Portfolio
@@ -211,11 +208,8 @@ function HeroBanner() {
           <button onClick={() => navigate('/services')} style={styles.btnOutline}>
             Services
           </button>
-          <button onClick={() => navigate('/contact')} style={styles.btnOutline}>
-            Contact
-          </button>
+          {/* Removed Contact button from header */}
         </div>
-
         <div style={styles.heroAuthButtons}>
           {/* Admin button - always visible but only functional for admins */}
           <button 
@@ -243,7 +237,7 @@ function HeroBanner() {
           )}
         </div>
       </header>
-
+      
       {/* Login Form Modal */}
       {showLoginForm && (
         <div style={styles.modalOverlay}>
@@ -290,7 +284,7 @@ function HeroBanner() {
           </div>
         </div>
       )}
-
+      
       {/* Signup Form Modal */}
       {showSignupForm && (
         <div style={styles.modalOverlay}>
@@ -353,7 +347,7 @@ function HeroBanner() {
           </div>
         </div>
       )}
-
+      
       {/* Main Content - No black card */}
       <main style={styles.heroMain}>
         <div style={styles.homeContent}>
@@ -367,7 +361,6 @@ function HeroBanner() {
             styling, and high-performance upgrades. Where passion meets
             perfection.
           </p>
-
           <div style={styles.homeButtons}>
             <button
               style={styles.btnPrimaryLarge}
@@ -391,11 +384,6 @@ function HeroBanner() {
           </div>
         </div>
       </main>
-
-      {/* Floating inquiry form button */}
-      {/* <div style={styles.inquiryButton} onClick={() => navigate('/contact')}> */}
-        {/* <span>Inquiry Form</span> */}
-      {/* </div> */}
     </div>
   );
 }
@@ -625,21 +613,6 @@ const styles = {
     letterSpacing: "0.5px",
     boxShadow: "0 4px 15px rgba(255, 0, 128, 0.3)",
   },
-  inquiryButton: {
-    position: "fixed",
-    bottom: "30px",
-    right: "30px",
-    background: "linear-gradient(135deg, #00d4ff, #007bff)",
-    color: "white",
-    padding: "15px 25px",
-    borderRadius: "50px",
-    cursor: "pointer",
-    fontWeight: 600,
-    boxShadow: "0 5px 15px rgba(0, 123, 255, 0.4)",
-    zIndex: 100,
-    animation: "bounce 2s infinite",
-    transition: "all 0.3s ease",
-  },
   // Auth form styles
   modalOverlay: {
     position: "fixed",
@@ -801,7 +774,6 @@ const addGlobalStyles = () => {
     .pulse-btn:hover:before {
       transform: translateY(0);
     }
-
     input::placeholder {
       color: rgba(255, 255, 255, 0.6);
     }

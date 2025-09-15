@@ -1,6 +1,14 @@
+// Footer.js
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Footer() {
+  const navigate = useNavigate();
+
+  const handleGetInTouchClick = () => {
+    navigate("/contact");
+  };
+
   return (
     <div style={footerContainer}>
       {/* Footer Info Section */}
@@ -22,15 +30,11 @@ export default function Footer() {
           <div style={styles.dot}></div>
           <div style={styles.dot}></div>
         </div>
-
         {/* Social icons */}
         <div style={styles.socialContainer}>
-          <div style={styles.socialIcon}>📱</div>
-          <div style={styles.socialIcon}>💬</div>
-          <div style={styles.socialIcon}>📸</div>
+         
         </div>
       </div>
-
       {/* Footer Contact Section */}
       <div style={contactContainer}>
         <h3 style={contactHeading}>
@@ -67,11 +71,13 @@ export default function Footer() {
         </ul>
         
         {/* Call to Action Button */}
-        <button style={ctaButton}>
+        <button 
+          style={ctaButton} 
+          onClick={handleGetInTouchClick}
+        >
           Get In Touch
         </button>
       </div>
-
       {/* Font import script */}
       <script dangerouslySetInnerHTML={{ __html: `
         const fontLink = document.createElement("link");
@@ -106,10 +112,11 @@ const styles = {
     border: "1px solid #2d2d4d",
     textAlign: "center",
     flex: 1,
-    minWidth: '300px'
+    minWidth: '300px',
+    overflow: 'hidden' // Prevents content from overflowing
   },
   mainHeading: {
-    fontSize: "2.8rem",
+    fontSize: "2.5rem", // Reduced from 2.8rem
     fontWeight: "800",
     marginBottom: "15px",
     background: "linear-gradient(45deg, #9f7aea, #6b8cfe, #9f7aea)",
@@ -117,15 +124,25 @@ const styles = {
     WebkitTextFillColor: "transparent",
     textShadow: "0 0 15px rgba(159, 122, 234, 0.5)",
     letterSpacing: "1px",
+    wordBreak: 'break-word', // Allows breaking of long words
+    overflow: 'hidden', // Prevents overflow
+    textOverflow: 'ellipsis', // Shows ellipsis if text overflows
+    whiteSpace: 'nowrap', // Prevents wrapping
+    maxWidth: '100%' // Ensures it doesn't exceed container
   },
   tagline: {
-    fontSize: "1.6rem",
+    fontSize: "1.4rem", // Reduced from 1.6rem
     fontWeight: "700",
     marginBottom: "20px",
-    background: "linear-gradient(45deg, #a78bfa, #7c9cff, #a78bfa)",
+    background: "linear-gradient(45deg, #9f7aea, #7c9cff, #9f7aea)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     textShadow: "0 0 10px rgba(167, 139, 250, 0.4)",
+    wordBreak: 'break-word',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: '100%'
   },
   description: {
     color: "#e2e8f0",
