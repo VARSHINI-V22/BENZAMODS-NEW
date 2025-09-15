@@ -13,10 +13,61 @@ const PRODUCTS = [
   { id: 8, title: "Porsche 911 Full Wrap", type: "car", brand: "Porsche", price: 12000, beforeAfter: ["https://kistudios.com/wp-content/uploads/2023/05/MASQUERADE-Porsche-992-GT3-Cup-racing-livery-wrap-kit-Main.jpg","https://tse3.mm.bing.net/th/id/OIP.kPuwMstoZNDvtd1yzPm3jQHaEo?pid=Api&P=0&h=220"], description: "Full satin white wrap for Porsche 911.", clientReview: "Amazing work, looks brand new!" }
 ];
 
+/* ---------------------- static reviews ---------------------- */
+const STATIC_REVIEWS = [
+  { 
+    id: 101, 
+    productId: 1, 
+    userId: "varshini22@gmail.com", 
+    userName: "varshini", 
+    rating: 5, 
+    comment: "The BMW wrap exceeded my expectations! The matte black finish looks absolutely stunning and the attention to detail is impressive. Highly recommend Benzamods!", 
+    beforeImage: "https://1stimpressions.com/images/beforeandafter/lg/bmw-after-front-lg.jpg", 
+    afterImage: "https://cdn.bmwblog.com/wp-content/uploads/2023/06/BMW-M3-Touring-by-Manhart-2.jpg",
+    date: "2023-05-15 10:30:00",
+    status: "approved" 
+  },
+  { 
+    id: 102, 
+    productId: 2, 
+    userId: "ashwini11@gmail.com", 
+    userName: "ashwini" ,
+    rating: 4, 
+    comment: "My Yamaha R15 looks completely transformed with the custom flame paint job. The team was professional and delivered on time. Very satisfied with the result!", 
+    beforeImage: "https://tse4.mm.bing.net/th/id/OIP.KGOktW949F0opXRkS-KVmQHaEK?pid=Api&P=0&h=220", 
+    afterImage: "https://static1.topspeedimages.com/wordpress/wp-content/uploads/2023/02/a117.jpeg",
+    date: "2023-06-20 14:45:00",
+    status: "approved" 
+  },
+  { 
+    id: 103, 
+    productId: 3, 
+    userId: "varshini22@gmail.com", 
+    userName: "varshini", 
+    rating: 5, 
+    comment: "The matte silver wrap on my Audi S7 is flawless. The quality of material used is top-notch and the installation was perfect. Worth every penny!", 
+    beforeImage: "https://hips.hearstapps.com/hmg-prod/images/2020-audi-s7-sportback-prestige-158-hdr-1586778460.jpg?crop=0.622xw:0.466xh;0.322xw,0.524xh&resize=1200:*", 
+    afterImage: "https://bringatrailer.com/wp-content/uploads/2023/11/2018_audi_s7_2018_audi_s7_7726b815-35da-4530-bef7-7089c0b24f77-ZxssRy-79166-79169-scaled.jpg",
+    date: "2023-07-10 09:15:00",
+    status: "approved" 
+  },
+  { 
+    id: 104, 
+    productId: 6, 
+    userId: "ashwini11@gmail.com", 
+    userName: "ashwini", 
+    rating: 5, 
+    comment: "My Lamborghini Aventador in matte orange turns heads everywhere I go! The team at Benzamods are true artists. Exceptional service and quality!", 
+    beforeImage: "https://cdni.autocarindia.com/ExtraImages/20221110112028_lambo.jpg", 
+    afterImage: "https://cdn.hiconsumption.com/wp-content/uploads/2021/09/Sian.jpg",
+    date: "2023-08-05 16:20:00",
+    status: "approved" 
+  }
+];
+
 /* ---------------------- localStorage helpers ---------------------- */
 // Check if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
-
 const readLS = (key, fallback) => {
   if (!isBrowser) return fallback;
   try { 
@@ -27,7 +78,6 @@ const readLS = (key, fallback) => {
     return fallback; 
   }
 };
-
 const writeLS = (key, value) => {
   if (!isBrowser) return;
   try {
@@ -44,7 +94,7 @@ export default function PortfolioAllInOne() {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(STATIC_REVIEWS); // Initialize with static reviews
   const [searchTerm, setSearchTerm] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -78,7 +128,16 @@ export default function PortfolioAllInOne() {
       setCart(readLS("cart", []));
       setWishlist(readLS("wishlist", []));
       setOrders(readLS("orders", []));
-      setReviews(readLS("reviews", []));
+      
+      // Initialize reviews with static reviews if none exist in localStorage
+      const storedReviews = readLS("reviews", []);
+      if (storedReviews.length > 0) {
+        setReviews(storedReviews);
+      } else {
+        // Save static reviews to localStorage if none exist
+        setReviews(STATIC_REVIEWS);
+        writeLS("reviews", STATIC_REVIEWS);
+      }
     }
   }, []);
   
@@ -118,7 +177,7 @@ export default function PortfolioAllInOne() {
       writeLS("reviews", reviews);
     }
   }, [reviews]);
-
+  
   // Filter products based on search term
   const filteredProducts = PRODUCTS.filter(product => 
     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,17 +185,17 @@ export default function PortfolioAllInOne() {
     product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  
   // Get user orders
   const userOrders = currentUser 
     ? orders.filter(order => order.buyerEmail === currentUser.email) 
     : [];
-
+    
   // Get reviews for a specific product
   const getProductReviews = (productId) => {
     return reviews.filter(review => review.productId === productId);
   };
-
+  
   /* ---------------------- auth ---------------------- */
   const signup = () => {
     const { name, email, password } = authForm;
@@ -149,7 +208,7 @@ export default function PortfolioAllInOne() {
     setAuthForm({ name: "", email: "", password: "" });
     setShowSignupModal(false);
   };
-
+  
   const login = () => {
     const { email, password } = authForm;
     const found = users.find(u => u.email === email && u.password === password);
@@ -158,7 +217,7 @@ export default function PortfolioAllInOne() {
     setShowLoginModal(false);
     setAuthForm({ name: "", email: "", password: "" });
   };
-
+  
   const logout = () => { 
     setCurrentUser(null); 
     if (isBrowser) {
@@ -166,7 +225,7 @@ export default function PortfolioAllInOne() {
     }
     alert("Logged out"); 
   };
-
+  
   /* ---------------------- reviews ---------------------- */
   const handleImageUpload = (e, type) => {
     const file = e.target.files[0];
@@ -190,7 +249,7 @@ export default function PortfolioAllInOne() {
     };
     reader.readAsDataURL(file);
   };
-
+  
   const submitReview = () => {
     if (!reviewForm.productId || !reviewForm.comment) {
       return alert("Please select a product and write a review");
@@ -232,7 +291,7 @@ export default function PortfolioAllInOne() {
     setShowAddReviewModal(false);
     alert("Review submitted successfully!");
   };
-
+  
   /* ---------------------- cart/wishlist/order ---------------------- */
   const requireAuthOrOpenLogin = () => {
     if (!currentUser) { 
@@ -242,14 +301,14 @@ export default function PortfolioAllInOne() {
     }
     return true;
   };
-
+  
   const addToCart = (product) => {
     if (!requireAuthOrOpenLogin()) return;
     if (cart.find(c => c.id === product.id)) return alert("Already in cart");
     const newCart = [...cart, product];
     setCart(newCart);
   };
-
+  
   const removeFromCart = (productId) => {
     setConfirmDialog({ 
       message: "Remove from cart?", 
@@ -260,14 +319,14 @@ export default function PortfolioAllInOne() {
       }
     });
   };
-
+  
   const addToWishlist = (product) => { 
     if (!requireAuthOrOpenLogin()) return; 
     if (wishlist.find(w => w.id === product.id)) return alert("Already in wishlist"); 
     const newWishlist = [...wishlist, product];
     setWishlist(newWishlist); 
   };
-
+  
   const removeFromWishlist = (productId) => {
     setConfirmDialog({ 
       message: "Remove from wishlist?", 
@@ -278,7 +337,7 @@ export default function PortfolioAllInOne() {
       }
     });
   };
-
+  
   const openBuy = (product) => {
     if (!requireAuthOrOpenLogin()) return;
     setOrderProduct(product);
@@ -290,7 +349,7 @@ export default function PortfolioAllInOne() {
     }));
     setShowOrderModal(true);
   };
-
+  
   const placeOrder = () => {
     if (!orderProduct) return;
     const { name, email, address, payment } = orderForm;
@@ -317,7 +376,7 @@ export default function PortfolioAllInOne() {
     setOrderForm({ name: "", email: "", address: "", payment: "COD" });
     alert("Order placed successfully");
   };
-
+  
   const cancelOrder = (orderId) => {
     setConfirmDialog({ 
       message: "Cancel this order?", 
@@ -330,9 +389,9 @@ export default function PortfolioAllInOne() {
       }
     });
   };
-
+  
   const getSimilar = (prod) => PRODUCTS.filter(p => p.id !== prod.id && (p.type === prod.type || p.brand === prod.brand));
-
+  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col font-sans">
       {/* Google Fonts import */}
@@ -490,13 +549,13 @@ export default function PortfolioAllInOne() {
           
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white"></h3>
+            <h3 className="text-xl font-bold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Home</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Services</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Portfolio</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Reviews</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition">Contact Us</a></li>
             </ul>
           </div>
           
