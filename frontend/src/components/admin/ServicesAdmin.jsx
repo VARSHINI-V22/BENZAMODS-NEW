@@ -1,15 +1,6 @@
-// src/components/admin/ServicesAdmin.jsx
-import React, { useEffect, useState, useCallback } from "react";
-import { API_BASE_URL } from '../../config';
+import React, { useState, useEffect } from "react";
 
-// Add a fallback value in case config is undefined
-const API_URL = API_BASE_URL || 'http://localhost:5000';
-
-// Debug logging - remove this in production
-console.log('API_BASE_URL from config:', API_BASE_URL);
-console.log('API_URL with fallback:', API_URL);
-
-// Add this function to handle image sources
+// Helper function to handle image sources
 const getImageSource = (image) => {
   if (!image) return null;
   
@@ -27,6 +18,44 @@ const getImageSource = (image) => {
   return image;
 };
 
+// Helper functions for localStorage operations
+const getStoredServices = () => {
+  const stored = localStorage.getItem('services');
+  return stored ? JSON.parse(stored) : null;
+};
+
+const saveServices = (services) => {
+  localStorage.setItem('services', JSON.stringify(services));
+};
+
+// Demo services data
+const demoServices = [
+  { 
+    _id: "s1", 
+    name: "Engine Tuning", 
+    category: "car",
+    description: "Professional engine tuning for optimal performance.",
+    price: 12000, 
+    image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+  },
+  { 
+    _id: "s2", 
+    name: "Body Wrap Installation", 
+    category: "car",
+    description: "Custom body wrap installation for a unique look.",
+    price: 25000, 
+    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+  },
+  { 
+    _id: "s3", 
+    name: "Interior Customization", 
+    category: "car",
+    description: "Premium interior customization services.",
+    price: 40000, 
+    image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+  }
+];
+
 export default function ServicesAdmin() {
   const [services, setServices] = useState([]);
   const [form, setForm] = useState({
@@ -37,152 +66,59 @@ export default function ServicesAdmin() {
     image: ""
   });
   const [editingId, setEditingId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   
-  // Use useCallback to prevent recreation of the function on every render
-  const fetchServices = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const url = `${API_URL}/api/services`;
-      console.log('Fetching services from:', url);
-      const res = await fetch(url);
-      console.log('Response status:', res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Error response:', errorText);
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      console.log('Services data:', data);
-      setServices(data);
-    } catch (err) {
-      console.error('Error fetching services:', err);
-      setError(err.message);
-      alert(`Failed to fetch services. Error: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [API_URL]); // Only recreate if API_URL changes
-  
-  // Only run once on component mount
+  // Load services from localStorage on component mount, or use demo data if empty
   useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    const storedServices = getStoredServices();
+    if (storedServices && storedServices.length > 0) {
+      setServices(storedServices);
+    } else {
+      setServices(demoServices);
+      saveServices(demoServices);
+    }
+  }, []);
+  
+  // Show notification and auto-hide after 3 seconds
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
+  };
   
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
     
-    try {
-      const url = editingId 
-        ? `${API_URL}/api/services/${editingId}`
-        : `${API_URL}/api/services`;
-        
-      const method = editingId ? 'PUT' : 'POST';
-      
-      console.log('Submitting to:', url);
-      console.log('Method:', method);
-      console.log('Form data:', form);
-      
-      const res = await fetch(url, {
-        method,
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(form)
-      });
-      
-      console.log('Response status:', res.status);
-      console.log('Response headers:', res.headers);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Error response text:', errorText);
-        
-        // Try to parse error response as JSON
-        let errorMessage = `HTTP error! status: ${res.status}`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.message) {
-            errorMessage = errorJson.message;
-          }
-          if (errorJson.errors) {
-            errorMessage = errorJson.errors.map(e => e.msg).join(', ');
-          }
-        } catch (e) {
-          // If parsing fails, use the raw error text
-          errorMessage = errorText || errorMessage;
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      const data = await res.json();
-      console.log('Response data:', data);
-      
-      if (editingId) {
-        setServices(services.map(s => (s._id === editingId ? data : s)));
-        setEditingId(null);
-      } else {
-        setServices([...services, data]);
-      }
-      
-      setForm({ name: "", category: "car", price: "", description: "", image: "" });
-      
-      // Show success message
-      alert(editingId ? "Service updated successfully!" : "Service added successfully!");
-    } catch (err) {
-      console.error('Error saving service:', err);
-      setError(err.message);
-      alert(`Failed to save service. Error: ${err.message}`);
-    } finally {
-      setIsLoading(false);
+    if (editingId) {
+      // Update existing service
+      const updatedServices = services.map(s => 
+        s._id === editingId ? { ...form, _id: editingId } : s
+      );
+      setServices(updatedServices);
+      saveServices(updatedServices);
+      setEditingId(null);
+      showNotification("Service updated successfully!");
+    } else {
+      // Add new service
+      const newService = { ...form, _id: Date.now().toString() };
+      const newServices = [...services, newService];
+      setServices(newServices);
+      saveServices(newServices);
+      showNotification("Service added successfully!");
     }
+    
+    // Reset form
+    setForm({ name: "", category: "car", price: "", description: "", image: "" });
   };
   
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this service?")) return;
     
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const url = `${API_URL}/api/services/${id}`;
-      console.log('Deleting service at:', url);
-      
-      const res = await fetch(url, { 
-        method: "DELETE",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        }
-      });
-      
-      console.log('Response status:', res.status);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Error response:', errorText);
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      setServices(services.filter(s => s._id !== id));
-      alert("Service deleted successfully!");
-    } catch (err) {
-      console.error('Error deleting service:', err);
-      setError(err.message);
-      alert(`Failed to delete service. Error: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+    const newServices = services.filter(s => s._id !== id);
+    setServices(newServices);
+    saveServices(newServices);
+    showNotification("Service deleted successfully!");
   };
   
   const handleEdit = (service) => {
@@ -195,11 +131,22 @@ export default function ServicesAdmin() {
     });
     setEditingId(service._id);
   };
-
-  // Reset form when canceling edit
+  
   const handleCancelEdit = () => {
     setForm({ name: "", category: "car", price: "", description: "", image: "" });
     setEditingId(null);
+  };
+  
+  const refreshServices = () => {
+    const storedServices = getStoredServices();
+    if (storedServices && storedServices.length > 0) {
+      setServices(storedServices);
+      showNotification("Services refreshed from local storage!");
+    } else {
+      setServices(demoServices);
+      saveServices(demoServices);
+      showNotification("Demo services loaded!");
+    }
   };
   
   return (
@@ -209,9 +156,8 @@ export default function ServicesAdmin() {
           Services Admin Dashboard
         </h1>
         <button 
-          onClick={fetchServices}
-          disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors disabled:opacity-50"
+          onClick={refreshServices}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -220,29 +166,17 @@ export default function ServicesAdmin() {
         </button>
       </header>
       
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-900 text-white p-4 rounded-lg mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-bold mb-2">Error</h3>
-              <p className="whitespace-pre-wrap">{error}</p>
-            </div>
-            <button 
-              onClick={() => setError(null)}
-              className="text-white hover:text-gray-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      {/* Notification */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${
+          notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        } text-white`}>
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            {notification.message}
           </div>
-          <button 
-            onClick={fetchServices}
-            className="mt-3 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded"
-          >
-            Retry
-          </button>
         </div>
       )}
       
@@ -319,18 +253,16 @@ export default function ServicesAdmin() {
             <div className="flex gap-2">
               <button 
                 type="submit" 
-                disabled={isLoading}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1"
               >
-                {isLoading ? 'Processing...' : (editingId ? "Update Service" : "Add Service")}
+                {editingId ? "Update Service" : "Add Service"}
               </button>
               
               {editingId && (
                 <button 
                   type="button"
                   onClick={handleCancelEdit}
-                  disabled={isLoading}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"
                 >
                   Cancel
                 </button>
@@ -340,65 +272,55 @@ export default function ServicesAdmin() {
         </form>
       </div>
       
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map(s => (
-            <div key={s._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
-              <div className="relative">
-                {/* Updated image tag with the new function and error handling */}
-                <img 
-                  src={getImageSource(s.image)} 
-                  alt={s.name} 
-                  className="h-48 w-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null; 
-                    // Use a local SVG instead of external URL
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                  }}
-                />
-                <span className="absolute top-3 right-3 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                  {s.category}
-                </span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {services.map(s => (
+          <div key={s._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
+            <div className="relative">
+              <img 
+                src={getImageSource(s.image)} 
+                alt={s.name} 
+                className="h-48 w-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                }}
+              />
+              <span className="absolute top-3 right-3 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                {s.category}
+              </span>
+            </div>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-white mb-2">{s.name}</h3>
+              <p className="text-gray-400 mb-3 text-sm">{s.description}</p>
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-xl font-bold text-indigo-400">₹{s.price}</p>
               </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">{s.name}</h3>
-                <p className="text-gray-400 mb-3 text-sm">{s.description}</p>
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-xl font-bold text-indigo-400">₹{s.price}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => handleEdit(s)} 
-                    disabled={isLoading}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(s._id)} 
-                    disabled={isLoading}
-                    className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete
-                  </button>
-                </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleEdit(s)} 
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(s._id)} 
+                  className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
       
-      {services.length === 0 && !isLoading && !error && (
+      {services.length === 0 && (
         <div className="text-center py-12 text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />

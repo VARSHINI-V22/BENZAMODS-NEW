@@ -390,3 +390,12 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
   });
 }
+// Export for Vercel
+export default async function handler(req, res) {
+  // Ensure initialization is complete
+  if (!isInitialized) {
+    await initializeServer();
+  }
+  
+  return app(req, res);
+}

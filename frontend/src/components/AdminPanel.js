@@ -39,16 +39,68 @@ function AdminPanel() {
     // Load all data from localStorage
     const loadData = () => {
       try {
-        setUsers(safeStorage.getItem("users") || []);
-        
-        // Try multiple possible keys for orders
+        // Load existing data or initialize with empty arrays
+        const existingUsers = safeStorage.getItem("users") || [];
+        const existingMessages = safeStorage.getItem("submittedMessages") || [];
         const ordersData = safeStorage.getItem("orders") || 
                           safeStorage.getItem("orderHistory") || 
                           [];
-        setOrders(ordersData);
+        const existingReviews = safeStorage.getItem("reviews") || [];
         
-        setMessages(safeStorage.getItem("submittedMessages") || []);
-        setReviews(safeStorage.getItem("reviews") || []);
+        // Add static users if they don't exist
+        const staticUsers = [
+          { name: "varshini", email: "varshini22@gmail.com" },
+          { name: "ashwini", email: "ashwini11@gmail.com" }
+        ];
+        
+        // Add static messages if they don't exist
+        const staticMessages = [
+          { 
+            name: "varshini", 
+            email: "varshini22@gmail.com", 
+            phone: "1234567890", 
+            message: "Wow, amazing work!", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "ashwini", 
+            email: "ashwini11@gmail.com", 
+            phone: "0987654321", 
+            message: "Hi, I love your designs!", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "varshini", 
+            email: "varshini22@gmail.com", 
+            phone: "1234567890", 
+            message: "When will you be available for a consultation?", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "ashwini", 
+            email: "ashwini11@gmail.com", 
+            phone: "0987654321", 
+            message: "Can you send me a quote for bike wrapping?", 
+            timestamp: new Date().toLocaleString() 
+          }
+        ];
+        
+        // Merge existing data with static data
+        const allUsers = existingUsers.length > 0 ? existingUsers : staticUsers;
+        const allMessages = existingMessages.length > 0 ? existingMessages : staticMessages;
+        
+        setUsers(allUsers);
+        setOrders(ordersData);
+        setMessages(allMessages);
+        setReviews(existingReviews);
+        
+        // Save to localStorage if we're using static data
+        if (existingUsers.length === 0) {
+          safeStorage.setItem("users", staticUsers);
+        }
+        if (existingMessages.length === 0) {
+          safeStorage.setItem("submittedMessages", staticMessages);
+        }
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
       }
