@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -7,7 +8,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
-const nodemailer = require("nodemailer");
 
 // Load environment variables
 dotenv.config();
@@ -15,17 +15,33 @@ dotenv.config();
 // Initialize app
 const app = express();
 
+// -----------------
 // Middleware
-app.use(cors());
+// -----------------
 app.use(express.json());
+
+// CORS Setup
+// Allow requests from your frontend URL (Vercel) or all origins during development
+const frontendURL = process.env.CORS_ORIGIN || "*"; // Example: "https://your-frontend.vercel.app"
+app.use(cors({
+  origin: frontendURL,
+  credentials: true,
+}));
+
+// Static uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// -----------------
 // Connect MongoDB
+// -----------------
 connectDB();
 
-/* ------------------------------
-   Swagger Setup
---------------------------------*/
+// -----------------
+// Swagger Setup
+// -----------------
+const PORT = process.env.PORT || 5000;
+const BASE_URL = process.env.BASE_URL || `https://your-backend-render-url.onrender.com`; // Make sure to use https
+
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -35,9 +51,7 @@ const swaggerOptions = {
       description: "API documentation for Benzamods backend",
     },
     servers: [
-      {
-        url: "http://localhost:5000", // change if hosted
-      },
+      { url: BASE_URL },
     ],
     components: {
       schemas: {
@@ -45,41 +59,14 @@ const swaggerOptions = {
           type: "object",
           required: ["name", "email", "phone", "subject", "message"],
           properties: {
-            _id: {
-              type: "string",
-              description: "Auto-generated ID of the contact"
-            },
-            name: {
-              type: "string",
-              description: "Name of the contact"
-            },
-            email: {
-              type: "string",
-              format: "email",
-              description: "Email address of the contact"
-            },
-            phone: {
-              type: "string",
-              description: "Phone number of the contact"
-            },
-            subject: {
-              type: "string",
-              description: "Subject of the message"
-            },
-            message: {
-              type: "string",
-              description: "Message from the contact"
-            },
-            createdAt: {
-              type: "string",
-              format: "date-time",
-              description: "Date when the contact was created"
-            },
-            status: {
-              type: "string",
-              enum: ["new", "read", "archived"],
-              description: "Status of the contact message"
-            }
+            _id: { type: "string", description: "Auto-generated ID" },
+            name: { type: "string" },
+            email: { type: "string", format: "email" },
+            phone: { type: "string" },
+            subject: { type: "string" },
+            message: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            status: { type: "string", enum: ["new", "read", "archived"] }
           },
           example: {
             _id: "60d5f4a9e6b8a425f4c7f9a1",
@@ -103,26 +90,26 @@ const swaggerOptions = {
       }
     }
   },
-  apis: ["./routes/*.js"], // your route files should include Swagger comments
+  apis: ["./routes/*.js"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-/* ------------------------------
-   Import existing routes
---------------------------------*/
-const productRoutes = require("./routes/productRoutes");
-const serviceRoutes = require("./routes/serviceRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const modificationRoutes = require("./routes/modificationRoutes");
-const detailRoutes = require("./routes/detailRoutes");
-const enquiryRoutes = require("./routes/enquiryRoutes");
-const authRoutes = require("./routes/authRoutes");
-const vehicleRoutes = require("./routes/vehicleRoutes");
-const locationRoutes = require("./routes/location");
-const orderRoutes = require("./routes/orderRoutes");
-const portfolioRoutes = require("./routes/portfolioRoutes");
+// -----------------
+// Import Routes
+// -----------------
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/services", require("./routes/serviceRoutes"));
+app.use("/api/categories", require("./routes/categoryRoutes"));
+app.use("/api/modifications", require("./routes/modificationRoutes"));
+app.use("/api/details", require("./routes/detailRoutes"));
+app.use("/api/enquiries", require("./routes/enquiryRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/vehicle-services", require("./routes/vehicleRoutes"));
+app.use("/api/locations", require("./routes/location"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/portfolio", require("./routes/portfolioRoutes"));
 
 // -----------------
 // Models
@@ -130,38 +117,17 @@ const portfolioRoutes = require("./routes/portfolioRoutes");
 const UserContact = require("./models/UserContact");
 const AdminUser = require("./models/AdminUser");
 const PortfolioProduct = require("./models/PortfolioProduct");
-const ContactMessage = require("./models/ContactMessage");
 
-/* ------------------------------
-   Root route
---------------------------------*/
+// -----------------
+// Root Route
+// -----------------
 app.get("/", (req, res) => {
   res.send("✅ Benzamods Backend Server is Running...");
 });
 
-/* ------------------------------
-   API routes
---------------------------------*/
-app.use("/api/products", productRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/modifications", modificationRoutes);
-app.use("/api/details", detailRoutes);
-app.use("/api/enquiries", enquiryRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/vehicle-services", vehicleRoutes);
-app.use("/api/locations", locationRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/portfolio", portfolioRoutes);
-
-/* ------------------------------
-   Contact Form Routes (New)
---------------------------------*/
-// ... (keep your existing contact routes as they are)
-
-/* ------------------------------
-   User Message Submission (Keep for backward compatibility)
---------------------------------*/
+// -----------------
+// User Message Submission
+// -----------------
 app.post("/api/messages/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -174,9 +140,9 @@ app.post("/api/messages/submit", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Admin Login
---------------------------------*/
+// -----------------
+// Admin Login
+// -----------------
 app.post("/api/admin-panel/signin", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -198,9 +164,9 @@ app.post("/api/admin-panel/signin", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Admin Protected Routes
---------------------------------*/
+// -----------------
+// Admin Protected Routes
+// -----------------
 app.get("/api/admin-panel/messages", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
@@ -229,9 +195,9 @@ app.delete("/api/admin-panel/messages/:id", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Seed Admin (Run once)
---------------------------------*/
+// -----------------
+// Seed Admin (Run once)
+// -----------------
 app.get("/api/admin-panel/seed", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash("admin123", 10);
@@ -243,9 +209,9 @@ app.get("/api/admin-panel/seed", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Initialize Portfolio Products (Run once)
---------------------------------*/
+// -----------------
+// Initialize Portfolio Products (Run once)
+// -----------------
 app.post("/api/init-portfolio-products", async (req, res) => {
   try {
     const sampleProducts = [
@@ -255,11 +221,11 @@ app.post("/api/init-portfolio-products", async (req, res) => {
         brand: "BMW",
         price: 5000,
         beforeAfter: [
-          "https://tse1.mm.bing.net/th/id/OIP.eAqRXrk3Mn1I7HqPg6CYxgHaE8?pid=Api&P=0&h=220",
-          "https://tse2.mm.bing.net/th/id/OIP.K0-sXQF2pGiUkdi8iTFzyAHaEK?pid=Api&P=0&h=220",
+          "https://tse1.mm.bing.net/th/id/OIP.eAqRXrk3Mn1I7HqPg6CYxgHaE8",
+          "https://tse2.mm.bing.net/th/id/OIP.K0-sXQF2pGiUkdi8iTFzyAHaEK"
         ],
         description: "Full body wrap for a BMW X5, matte black finish.",
-        review: "Amazing transformation! Highly recommended.",
+        review: "Amazing transformation! Highly recommended."
       },
       {
         title: "Custom Bike Paint",
@@ -267,12 +233,12 @@ app.post("/api/init-portfolio-products", async (req, res) => {
         brand: "Yamaha",
         price: 2000,
         beforeAfter: [
-          "https://tse3.mm.bing.net/th/id/OIP.dE0QEYQwjfOWtRw6VKMpFgHaHa?pid=Api&P=0&h=220",
-          "https://blog.gaadikey.com/wp-content/uploads/2015/04/Yamaha-Saluto-Image-2-1024x767.jpg",
+          "https://tse3.mm.bing.net/th/id/OIP.dE0QEYQwjfOWtRw6VKMpFgHaHa",
+          "https://blog.gaadikey.com/wp-content/uploads/2015/04/Yamaha-Saluto-Image-2.jpg"
         ],
         description: "Custom flame paint job for Yamaha R15.",
-        review: "The bike looks stunning! Perfect work.",
-      },
+        review: "The bike looks stunning! Perfect work."
+      }
     ];
 
     await PortfolioProduct.deleteMany({});
@@ -284,11 +250,10 @@ app.post("/api/init-portfolio-products", async (req, res) => {
   }
 });
 
-/* ------------------------------
-   Start Server
---------------------------------*/
-const PORT = process.env.PORT || 5000;
+// -----------------
+// Start Server
+// -----------------
 app.listen(PORT, () => {
-  console.log(` Server running on http://localhost:${PORT}`);
-  console.log(` Swagger docs available at http://localhost:${PORT}/api-docs`);
+  console.log(`🚀 Server running on ${BASE_URL}`);
+  console.log(`📘 Swagger docs available at ${BASE_URL}/api-docs`);
 });
