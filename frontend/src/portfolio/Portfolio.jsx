@@ -549,13 +549,13 @@ export default function PortfolioAllInOne() {
           
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-4 text-white"></h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Services</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Portfolio</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Reviews</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition">Contact Us</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
             </ul>
           </div>
           
