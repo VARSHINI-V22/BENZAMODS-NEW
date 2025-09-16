@@ -1,6 +1,6 @@
-import express from "express";
-import Product from "../models/Product.js";
+const express = require("express");
 const router = express.Router();
+const Product = require("../models/Product");
 
 /**
  * @swagger
@@ -91,12 +91,14 @@ const router = express.Router();
  *       bearerFormat: JWT
  *       description: JWT token for authentication
  */
+
 /**
  * @swagger
  * tags:
  *   - name: Products
  *     description: Product management API
  */
+
 /**
  * @swagger
  * /api/products:
@@ -289,4 +291,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

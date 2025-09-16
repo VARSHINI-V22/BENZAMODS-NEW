@@ -1,30 +1,12 @@
-// models/Enquiry.js
-import mongoose from "mongoose";
+// backend/models/Enquiry.js
+const mongoose = require("mongoose");
 
 const enquirySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  phone: {
-    type: String,
-    required: true
-  },
-  message: {
-    type: String,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'contacted', 'closed'],
-    default: 'pending'
-  }
-}, {
-  timestamps: true
+  name: String,
+  email: String,
+  message: String,
+  serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model('Enquiry', enquirySchema);
+module.exports = mongoose.model("Enquiry", enquirySchema);

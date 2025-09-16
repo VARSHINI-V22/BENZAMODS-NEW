@@ -1,7 +1,8 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import User from '../models/User.js';
+
 const router = express.Router();
 
 // Register
@@ -21,7 +22,7 @@ router.post('/register', async (req, res) => {
     
     // Create token
     const payload = { id: user.id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallbackSecret', {
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
     
@@ -59,7 +60,7 @@ router.post('/login', async (req, res) => {
     
     // Create token
     const payload = { id: user.id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallbackSecret', {
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '7d'
     });
     
@@ -78,4 +79,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

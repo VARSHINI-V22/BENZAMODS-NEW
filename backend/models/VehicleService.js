@@ -1,26 +1,11 @@
-// models/Vehicle.js
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const vehicleSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  type: {
-    type: String,
-    required: true,
-    enum: ['car', 'bike']
-  },
-  services: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Service'
-  }],
-  price: {
-    type: Number,
-    required: true
-  }
-}, {
-  timestamps: true
+const vehicleServiceSchema = new mongoose.Schema({
+  type: { type: String, enum: ["car", "bike"], required: true },
+  name: { type: String, required: true },        // wrap, lights, suspension, ppf
+  title: { type: String, required: true },       // heading/title
+  description: { type: String, required: true }, // paragraph text
+  images: [String],                              // array of image URLs
 });
 
-export default mongoose.model('Vehicle', vehicleSchema);
+module.exports = mongoose.model("VehicleService", vehicleServiceSchema);

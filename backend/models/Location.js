@@ -1,32 +1,10 @@
-// models/Location.js
-import mongoose from "mongoose";
+// backend/models/Location.js
+const mongoose = require("mongoose");
 
 const locationSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  address: {
-    type: String,
-    required: true
-  },
-  phone: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String
-  },
-  coordinates: {
-    latitude: {
-      type: Number
-    },
-    longitude: {
-      type: Number
-    }
-  }
-}, {
-  timestamps: true
+  name: String,
+  lat: Number,
+  lng: Number,
 });
 
-export default mongoose.model('Location', locationSchema);
+module.exports = mongoose.model("Location", locationSchema);

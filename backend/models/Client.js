@@ -1,6 +1,6 @@
 // backend/models/Client.js
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 // Client Schema (instead of User)
 const clientSchema = new mongoose.Schema(
@@ -50,6 +50,7 @@ const clientSchema = new mongoose.Schema(
 // Encrypt password before saving
 clientSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -66,4 +67,4 @@ clientSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Export model
 const Client = mongoose.model("Client", clientSchema);
-export default Client;
+module.exports = Client;

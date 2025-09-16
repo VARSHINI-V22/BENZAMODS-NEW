@@ -1,29 +1,15 @@
-// models/Review.js
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'PortfolioProduct',
-    required: true
-  },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5
-  },
-  comment: {
-    type: String,
-    required: true
-  }
-}, {
-  timestamps: true
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'PortfolioProduct', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userName: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  comment: { type: String, required: true },
+  beforeImage: String,
+  afterImage: String,
+  date: { type: Date, default: Date.now },
+  status: { type: String, default: "pending" } // pending, approved, rejected
 });
 
-export default mongoose.model('Review', reviewSchema);
+module.exports = mongoose.model("Review", reviewSchema);
