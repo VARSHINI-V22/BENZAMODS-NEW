@@ -1,9 +1,11 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+
 // Admin components - lazy loaded
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
 const ProductsAdmin = lazy(() => import("./admin/ProductsAdmin"));
 const ServicesAdmin = lazy(() => import("./admin/ServicesAdmin"));
+
 // Utility function for safe localStorage access
 const safeStorage = {
   getItem: (key) => {
@@ -24,6 +26,7 @@ const safeStorage = {
     }
   }
 };
+
 function AdminPanel() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -35,6 +38,7 @@ function AdminPanel() {
   const [orderSearch, setOrderSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [reviewSearch, setReviewSearch] = useState("");
+
   useEffect(() => {
     // Load all data from localStorage
     const loadData = () => {
@@ -47,13 +51,13 @@ function AdminPanel() {
                           [];
         const existingReviews = safeStorage.getItem("reviews") || [];
         
-        // Add static users if they don't exist
+        // Define static users that must always be present
         const staticUsers = [
           { name: "varshini", email: "varshini22@gmail.com" },
           { name: "ashwini", email: "ashwini11@gmail.com" }
         ];
         
-        // Add static messages if they don't exist
+        // Define static messages that must always be present
         const staticMessages = [
           { 
             name: "varshini", 
@@ -85,9 +89,11 @@ function AdminPanel() {
           }
         ];
         
-        // Merge existing data with static data
-        const allUsers = existingUsers.length > 0 ? existingUsers : staticUsers;
-        const allMessages = existingMessages.length > 0 ? existingMessages : staticMessages;
+        // Merge static users with existing users (ensure static users are always present)
+        const allUsers = [...staticUsers, ...existingUsers];
+        
+        // Merge static messages with existing messages (ensure static messages are always present)
+        const allMessages = [...staticMessages, ...existingMessages];
         
         setUsers(allUsers);
         setOrders(ordersData);
@@ -96,15 +102,16 @@ function AdminPanel() {
         
         // Save to localStorage if we're using static data
         if (existingUsers.length === 0) {
-          safeStorage.setItem("users", staticUsers);
+          safeStorage.setItem("users", allUsers);
         }
         if (existingMessages.length === 0) {
-          safeStorage.setItem("submittedMessages", staticMessages);
+          safeStorage.setItem("submittedMessages", allMessages);
         }
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
       }
     };
+    
     // Data migration for existing orders
     const migrateOrders = () => {
       try {
@@ -151,14 +158,28 @@ function AdminPanel() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
   // Remove handlers
   const handleRemoveUser = (index) => {
+    const user = users[index];
+    
+    // Prevent removal of static users
+    const isStaticUser = 
+      (user.name === "varshini" && user.email === "varshini22@gmail.com") ||
+      (user.name === "ashwini" && user.email === "ashwini11@gmail.com");
+    
+    if (isStaticUser) {
+      alert("Cannot remove static users (varshini and ashwini)");
+      return;
+    }
+    
     if (window.confirm("Remove this user?")) {
       const updated = users.filter((_, i) => i !== index);
       setUsers(updated);
       safeStorage.setItem("users", updated);
     }
   };
+
   const handleRemoveOrder = (index) => {
     if (window.confirm("Remove this order?")) {
       try {
@@ -176,6 +197,7 @@ function AdminPanel() {
       }
     }
   };
+
   const handleRemoveMessage = (index) => {
     if (window.confirm("Delete this message?")) {
       const updated = messages.filter((_, i) => i !== index);
@@ -183,6 +205,7 @@ function AdminPanel() {
       safeStorage.setItem("submittedMessages", updated);
     }
   };
+
   const handleRemoveReview = (index) => {
     if (window.confirm("Delete this review?")) {
       const updated = reviews.filter((_, i) => i !== index);
@@ -190,12 +213,14 @@ function AdminPanel() {
       safeStorage.setItem("reviews", updated);
     }
   };
+
   const handleToggleReviewStatus = (index) => {
     const updated = [...reviews];
     updated[index].status = updated[index].status === "approved" ? "pending" : "approved";
     setReviews(updated);
     safeStorage.setItem("reviews", updated);
   };
+
   // Normalize order data for consistent display
   const normalizeOrder = (order) => {
     return {
@@ -211,12 +236,14 @@ function AdminPanel() {
       image: order.image || null
     };
   };
+
   // Filtered data
   const filteredUsers = users.filter(
     (u) =>
       u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
       u.email?.toLowerCase().includes(userSearch.toLowerCase())
   );
+
   const filteredOrders = orders
     .map(normalizeOrder)
     .filter((o) =>
@@ -224,18 +251,21 @@ function AdminPanel() {
       o.buyerEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
       o.title.toLowerCase().includes(orderSearch.toLowerCase())
     );
+
   const filteredMessages = messages.filter(
     (m) =>
       m.name?.toLowerCase().includes(messageSearch.toLowerCase()) ||
       m.email?.toLowerCase().includes(messageSearch.toLowerCase()) ||
       m.message?.toLowerCase().includes(messageSearch.toLowerCase())
   );
+
   const filteredReviews = reviews.filter(
     (r) =>
       r.userName?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
       r.comment?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
       r.status?.toLowerCase().includes(reviewSearch.toLowerCase())
   );
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -244,6 +274,7 @@ function AdminPanel() {
           ⬅ Back to Home
         </button>
       </div>
+
       {/* Tabs */}
       <div style={styles.tabs}>
         <button
@@ -289,6 +320,7 @@ function AdminPanel() {
           ⭐ Reviews
         </button>
       </div>
+
       {/* ----------------- TAB CONTENT ----------------- */}
       <div style={styles.tabContent}>
         {activeTab === "dashboard" && (
@@ -408,7 +440,7 @@ function AdminPanel() {
                     <h4 style={styles.cardTitle}>{m.name}</h4>
                     <p style={styles.cardText}>Email: {m.email}</p>
                     <p style={styles.cardText}>Phone: {m.phone}</p>
-                    <p style={styles.cardText}>Message: {m.message}</p>
+<p style={styles.cardText}>Message: {m.message}</p>
                     <p style={styles.timestamp}>{m.timestamp}</p>
                     <button
                       onClick={() => handleRemoveMessage(i)}
@@ -487,6 +519,7 @@ function AdminPanel() {
     </div>
   );
 }
+
 // ----------------- STYLES -----------------
 const styles = {
   container: {
@@ -690,9 +723,11 @@ const styles = {
     fontStyle: "italic",
   }
 };
+
 // Add this to your main HTML file or use a CSS-in-JS solution to import fonts
 const fontLink = document.createElement("link");
 fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap";
 fontLink.rel = "stylesheet";
 document.head.appendChild(fontLink);
+
 export default AdminPanel;

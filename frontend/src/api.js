@@ -1,12 +1,37 @@
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+// Dynamically choose API URL
+const BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-// Example: Locations API
-export const getLocations = () => axios.get(`${BASE_URL}/api/locations`);
+// Create an axios instance for reusability
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-// Example: Products API
-export const getProducts = () => axios.get(`${BASE_URL}/api/products`);
+// -----------------------------
+// API ENDPOINT FUNCTIONS
+// -----------------------------
 
-// Example: Services API
-export const getServices = () => axios.get(`${BASE_URL}/api/services`);
+// Locations
+export const getLocations = () => api.get("/api/locations");
+
+// Products
+export const getProducts = () => api.get("/api/products");
+
+// Services
+export const getServices = () => api.get("/api/services");
+
+// Orders (example: POST request)
+export const createOrder = (orderData) => api.post("/api/orders", orderData);
+
+// Contact form (example: POST request)
+export const submitContactForm = (formData) =>
+  api.post("/api/contact", formData);
+
+// Auth (example: login)
+export const loginUser = (credentials) =>
+  api.post("/api/auth/login", credentials);
