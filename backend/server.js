@@ -20,13 +20,29 @@ const app = express();
 // -----------------
 app.use(express.json());
 
-// CORS Setup
-// Allow requests from your frontend URL (Vercel) or all origins during development
-const frontendURL = process.env.CORS_ORIGIN || "*"; // Example: "https://your-frontend.vercel.app"
-app.use(cors({
-  origin: frontendURL,
-  credentials: true,
-}));
+// -----------------
+// CORS Setup (✅ Multiple origins fix)
+// -----------------
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",")
+  : [
+      "http://localhost:3000",
+      "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app",
+    ];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow curl/Postman/mobile apps
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Static uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -40,7 +56,8 @@ connectDB();
 // Swagger Setup
 // -----------------
 const PORT = process.env.PORT || 5000;
-const BASE_URL = process.env.BASE_URL || `https://your-backend-render-url.onrender.com`; // Make sure to use https
+const BASE_URL =
+  process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const swaggerOptions = {
   definition: {
@@ -50,9 +67,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "API documentation for Benzamods backend",
     },
-    servers: [
-      { url: BASE_URL },
-    ],
+    servers: [{ url: BASE_URL }],
     components: {
       schemas: {
         Contact: {
@@ -66,7 +81,7 @@ const swaggerOptions = {
             subject: { type: "string" },
             message: { type: "string" },
             createdAt: { type: "string", format: "date-time" },
-            status: { type: "string", enum: ["new", "read", "archived"] }
+            status: { type: "string", enum: ["new", "read", "archived"] },
           },
           example: {
             _id: "60d5f4a9e6b8a425f4c7f9a1",
@@ -76,19 +91,19 @@ const swaggerOptions = {
             subject: "Product Inquiry",
             message: "Hello, I'm interested in your products",
             createdAt: "2023-06-28T10:00:00.000Z",
-            status: "new"
-          }
-        }
+            status: "new",
+          },
+        },
       },
       securitySchemes: {
         AdminAuth: {
           type: "apiKey",
           in: "header",
           name: "x-admin-token",
-          description: "Admin authentication token"
-        }
-      }
-    }
+          description: "Admin authentication token",
+        },
+      },
+    },
   },
   apis: ["./routes/*.js"],
 };
@@ -222,10 +237,10 @@ app.post("/api/init-portfolio-products", async (req, res) => {
         price: 5000,
         beforeAfter: [
           "https://tse1.mm.bing.net/th/id/OIP.eAqRXrk3Mn1I7HqPg6CYxgHaE8",
-          "https://tse2.mm.bing.net/th/id/OIP.K0-sXQF2pGiUkdi8iTFzyAHaEK"
+          "https://tse2.mm.bing.net/th/id/OIP.K0-sXQF2pGiUkdi8iTFzyAHaEK",
         ],
         description: "Full body wrap for a BMW X5, matte black finish.",
-        review: "Amazing transformation! Highly recommended."
+        review: "Amazing transformation! Highly recommended.",
       },
       {
         title: "Custom Bike Paint",
@@ -234,11 +249,11 @@ app.post("/api/init-portfolio-products", async (req, res) => {
         price: 2000,
         beforeAfter: [
           "https://tse3.mm.bing.net/th/id/OIP.dE0QEYQwjfOWtRw6VKMpFgHaHa",
-          "https://blog.gaadikey.com/wp-content/uploads/2015/04/Yamaha-Saluto-Image-2.jpg"
+          "https://blog.gaadikey.com/wp-content/uploads/2015/04/Yamaha-Saluto-Image-2.jpg",
         ],
         description: "Custom flame paint job for Yamaha R15.",
-        review: "The bike looks stunning! Perfect work."
-      }
+        review: "The bike looks stunning! Perfect work.",
+      },
     ];
 
     await PortfolioProduct.deleteMany({});
