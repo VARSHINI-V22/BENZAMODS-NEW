@@ -21,20 +21,18 @@ const app = express();
 app.use(express.json());
 
 // -----------------
-// ✅ CORS Setup (Multi-Origin)
+// ✅ CORS Setup (Allow Swagger + Frontend + Localhost)
 // -----------------
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",")
-  : [
-      "http://localhost:3000",
-      "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app",
-      "https://benzamods-backend-gxe7.onrender.com",
-    ];
+const allowedOrigins = [
+  "http://localhost:3000", // React dev
+  "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app", // Vercel frontend
+  "https://benzamods-backend-gxe7.onrender.com", // Swagger docs & backend
+];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow curl/Postman/mobile apps
+      if (!origin) return callback(null, true); // allow curl/Postman/Swagger internal
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
