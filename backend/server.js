@@ -21,13 +21,14 @@ const app = express();
 app.use(express.json());
 
 // -----------------
-// CORS Setup (✅ Multiple origins fix)
+// ✅ CORS Setup (Multi-Origin)
 // -----------------
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",")
   : [
       "http://localhost:3000",
       "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app",
+      "https://benzamods-backend-gxe7.onrender.com",
     ];
 
 app.use(
@@ -37,6 +38,7 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
+        console.warn(`❌ Blocked by CORS: ${origin}`);
         return callback(new Error("Not allowed by CORS"));
       }
     },
@@ -56,8 +58,7 @@ connectDB();
 // Swagger Setup
 // -----------------
 const PORT = process.env.PORT || 5000;
-const BASE_URL =
-  process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const swaggerOptions = {
   definition: {
@@ -150,7 +151,7 @@ app.post("/api/messages/submit", async (req, res) => {
     await contact.save();
     res.json({ message: "Message submitted successfully!" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Message Submit Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -174,7 +175,7 @@ app.post("/api/admin-panel/signin", async (req, res) => {
     );
     res.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Admin Login Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -219,7 +220,7 @@ app.get("/api/admin-panel/seed", async (req, res) => {
     await AdminUser.create({ username: "admin", password: hashedPassword });
     res.send("Admin created. Username: admin, Password: admin123");
   } catch (err) {
-    console.error(err);
+    console.error("❌ Seed Admin Error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -261,6 +262,7 @@ app.post("/api/init-portfolio-products", async (req, res) => {
 
     res.json({ message: "Sample portfolio products initialized" });
   } catch (error) {
+    console.error("❌ Init Portfolio Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
