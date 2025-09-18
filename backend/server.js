@@ -21,13 +21,14 @@ const app = express();
 app.use(express.json());
 
 // -----------------
-// CORS Setup (✅ Multiple origins fix)
+// ✅ CORS Setup (Swagger + Frontend + Localhost)
 // -----------------
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",")
   : [
       "http://localhost:3000",
-      "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app",
+      "https://benzamods-new-6xft-git-main-varshini-vs-projects.vercel.app", // frontend (Vercel)
+      "https://benzamods-backend-gxe7.onrender.com", // backend (Swagger UI)
     ];
 
 app.use(
@@ -37,6 +38,7 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
+        console.log("❌ Blocked by CORS:", origin);
         return callback(new Error("Not allowed by CORS"));
       }
     },
@@ -56,8 +58,7 @@ connectDB();
 // Swagger Setup
 // -----------------
 const PORT = process.env.PORT || 5000;
-const BASE_URL =
-  process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const swaggerOptions = {
   definition: {
