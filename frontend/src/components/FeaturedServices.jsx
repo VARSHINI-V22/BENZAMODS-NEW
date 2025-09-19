@@ -75,17 +75,31 @@ const CombinedApp = () => {
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   
-  // Demo data
+  // Demo data - Expanded to 10 products and 10 services
   const demoProducts = [
     { _id: "1", name: "Performance Exhaust System", category: "car", description: "High-performance exhaust system for improved engine efficiency and sound.", price: 25000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "2", name: "Carbon Fiber Spoiler", category: "car", description: "Lightweight carbon fiber spoiler for enhanced aerodynamics.", price: 18000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
+    { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "4", name: "LED Headlight Kit", category: "car", description: "Ultra-bright LED headlights with improved visibility and modern look.", price: 12000, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "5", name: "Alloy Wheels", category: "car", description: "Premium alloy wheels to enhance your vehicle's appearance and performance.", price: 45000, image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "6", name: "Performance Brakes", category: "car", description: "High-performance brake system for improved stopping power and safety.", price: 28000, image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "7", name: "Car Cover", category: "car", description: "Dust and water-resistant car cover for all-weather protection.", price: 3500, image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "8", name: "Seat Covers", category: "car", description: "Premium leather seat covers for comfort and style.", price: 8500, image: "https://images.unsplash.com/photo-1552831916-5a8698319e98?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "9", name: "Floor Mats", category: "car", description: "Heavy-duty rubber floor mats for all-weather protection.", price: 2500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "10", name: "High-Flow Air Filter", category: "car", description: "Performance air filter for improved engine airflow and efficiency.", price: 4500, image: "https://images.unsplash.com/photo-1548943487-a2e4a5402c6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
   ];
   
   const demoServices = [
     { _id: "s1", name: "Engine Tuning", description: "Professional engine tuning for optimal performance.", price: 12000, image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
     { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
+    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://images.unsplash.com/photo-1552831916-5a8698319e98?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+    { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://images.unsplash.com/photo-1548943487-a2e4a5402c6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
   ];
   
   // Helper function to handle image sources

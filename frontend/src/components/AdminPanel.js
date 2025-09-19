@@ -29,12 +29,14 @@ const safeStorage = {
 
 function AdminPanel() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("chart");
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
   const [userSearch, setUserSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
@@ -74,6 +76,8 @@ function AdminPanel() {
                           [];
         const existingReviews = safeStorage.getItem("reviews") || [];
         const existingEnquiries = safeStorage.getItem("enquiries") || [];
+        const existingProducts = safeStorage.getItem("products") || [];
+        const existingServices = safeStorage.getItem("services") || [];
         
         // Load admin data
         const existingAdmins = safeStorage.getItem("admins") || [{ username: "admin", password: "1234" }];
@@ -162,6 +166,8 @@ function AdminPanel() {
         setMessages(allMessages);
         setReviews(existingReviews);
         setEnquiries(allEnquiries);
+        setProducts(existingProducts);
+        setServices(existingServices);
         setAdmins(existingAdmins);
         
         // Save to localStorage if needed
@@ -224,6 +230,18 @@ function AdminPanel() {
           setAdmins(JSON.parse(e.newValue) || []);
         } catch (error) {
           console.error("Error parsing admins data:", error);
+        }
+      } else if (e.key === "products") {
+        try {
+          setProducts(JSON.parse(e.newValue) || []);
+        } catch (error) {
+          console.error("Error parsing products data:", error);
+        }
+      } else if (e.key === "services") {
+        try {
+          setServices(JSON.parse(e.newValue) || []);
+        } catch (error) {
+          console.error("Error parsing services data:", error);
         }
       }
     };
@@ -475,6 +493,20 @@ function AdminPanel() {
       e.message?.toLowerCase().includes(enquirySearch.toLowerCase())
   );
 
+  // Prepare data for charts
+  const chartData = [
+    { title: "Users", value: users.length, icon: "👥", color: "#3498db" },
+    { title: "Products", value: products.length, icon: "🛍️", color: "#2ecc71" },
+    { title: "Services", value: services.length, icon: "🛠️", color: "#e74c3c" },
+    { title: "Orders", value: orders.length, icon: "📦", color: "#f39c12" },
+    { title: "Messages", value: messages.length, icon: "✉️", color: "#9b59b6" },
+    { title: "Enquiries", value: enquiries.length, icon: "📝", color: "#1abc9c" },
+    { title: "Reviews", value: reviews.length, icon: "⭐", color: "#d35400" }
+  ];
+
+  // Find max value for chart scaling
+  const maxValue = Math.max(...chartData.map(item => item.value), 1);
+
   // Admin Login Form
   if (showLogin) {
     return (
@@ -517,7 +549,7 @@ function AdminPanel() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.heading}>Admin Dashboard</h1>
+        <h1 style={styles.heading}>Admin Chart</h1>
         <div style={styles.headerActions}>
           <span style={styles.adminInfo}>Logged in as: <strong>{currentAdmin}</strong></span>
           <button 
@@ -535,10 +567,10 @@ function AdminPanel() {
       {/* Tabs */}
       <div style={styles.tabs}>
         <button
-          style={activeTab === "dashboard" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("dashboard")}
+          style={activeTab === "chart" ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab("chart")}
         >
-          📊 Dashboard
+          📊 Chart
         </button>
         <button
           style={activeTab === "products" ? styles.activeTab : styles.tab}
@@ -592,10 +624,63 @@ function AdminPanel() {
 
       {/* TAB CONTENT */}
       <div style={styles.tabContent}>
-        {activeTab === "dashboard" && (
-          <Suspense fallback={<div style={styles.loading}>Loading Dashboard...</div>}>
-            <AdminDashboard />
-          </Suspense>
+        {activeTab === "chart" && (
+          <div style={styles.chartContainer}>
+            <h2 style={styles.sectionHeading}>System Overview</h2>
+            
+            {/* Stats Cards Grid */}
+            <div style={styles.statsGrid}>
+              {chartData.map((item, index) => (
+                <div 
+                  key={index} 
+                  style={{
+                    ...styles.statCard,
+                    borderLeft: `4px solid ${item.color}`,
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div style={styles.statIcon}>{item.icon}</div>
+                  <h3 style={styles.statTitle}>{item.title}</h3>
+                  <p style={styles.statNumber}>{item.value}</p>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '4px',
+                    background: `linear-gradient(90deg, ${item.color}, transparent)`,
+                    opacity: 0.7
+                  }}></div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Bar Chart Section */}
+            <div style={styles.barChartSection}>
+              <h3 style={styles.barChartTitle}>Statistics Visualization</h3>
+              <div style={styles.barChartContainer}>
+                {chartData.map((item, index) => (
+                  <div key={index} style={styles.barChartItem}>
+                    <div style={styles.barChartLabel}>
+                      <span style={{ marginRight: '8px' }}>{item.icon}</span>
+                      {item.title}
+                    </div>
+                    <div style={styles.barChartBarContainer}>
+                      <div 
+                        style={{
+                          ...styles.barChartBar,
+                          height: `${(item.value / maxValue) * 100}%`,
+                          background: `linear-gradient(180deg, ${item.color}, ${item.color}dd)`
+                        }}
+                      />
+                    </div>
+                    <div style={styles.barChartValue}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
         {activeTab === "products" && (
           <Suspense fallback={<div style={styles.loading}>Loading Products...</div>}>
@@ -988,6 +1073,7 @@ const styles = {
     color: "#e6e6ff",
     fontFamily: "'Montserrat', sans-serif",
     padding: "20px",
+    backgroundImage: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)",
   },
   header: {
     display: "flex",
@@ -1221,6 +1307,113 @@ const styles = {
     marginTop: "10px",
     fontStyle: "italic",
   },
+  // Chart styles
+  chartContainer: {
+    backgroundColor: "#1a1a2e",
+    padding: "25px",
+    borderRadius: "20px",
+    border: "1px solid #2d2d4d",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+    backgroundImage: "linear-gradient(135deg, #1a1a2e 0%, #252547 100%)",
+  },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: "20px",
+    marginTop: "20px",
+    marginBottom: "40px",
+  },
+  statCard: {
+    background: "linear-gradient(135deg, #252547 0%, #2d2d5a 100%)",
+    padding: "25px 20px",
+    borderRadius: "15px",
+    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+    border: "1px solid #3d3d6b",
+    textAlign: "center",
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    position: "relative",
+    overflow: "hidden",
+  },
+  statCard: {
+    ":hover": {
+      transform: "translateY(-5px)",
+      boxShadow: "0 12px 25px rgba(0, 0, 0, 0.4)",
+    }
+  },
+  statIcon: {
+    fontSize: "32px",
+    marginBottom: "15px",
+    filter: "drop-shadow(0 0 8px rgba(123, 104, 238, 0.5))",
+  },
+  statTitle: {
+    fontSize: "18px",
+    marginTop: 0,
+    marginBottom: "10px",
+    color: "#e6e6ff",
+    fontWeight: "600",
+  },
+  statNumber: {
+    fontSize: "36px",
+    fontWeight: "700",
+    color: "#fff",
+    margin: 0,
+    textShadow: "0 0 10px rgba(123, 104, 238, 0.5)",
+  },
+  // Bar Chart styles
+  barChartSection: {
+    marginTop: "40px",
+    marginBottom: "40px",
+  },
+  barChartTitle: {
+    fontSize: "20px",
+    color: "#e6e6ff",
+    marginBottom: "20px",
+    fontWeight: "600",
+  },
+  barChartContainer: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "space-around",
+    height: "250px",
+    backgroundColor: "rgba(45, 45, 77, 0.5)",
+    borderRadius: "15px",
+    padding: "20px",
+    border: "1px solid #3d3d6b",
+  },
+  barChartItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "12%",
+    height: "100%",
+  },
+  barChartLabel: {
+    color: "#e6e6ff",
+    fontSize: "14px",
+    fontWeight: "600",
+    marginBottom: "10px",
+    textAlign: "center",
+  },
+  barChartBarContainer: {
+    flex: 1,
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  barChartBar: {
+    width: "70%",
+    borderRadius: "8px 8px 0 0",
+    transition: "height 1s ease-in-out",
+    position: "relative",
+  },
+  barChartValue: {
+    color: "#fff",
+    fontSize: "16px",
+    fontWeight: "700",
+    marginTop: "10px",
+  },
   // Modal styles
   modalOverlay: {
     position: 'fixed',
@@ -1319,6 +1512,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     padding: "20px",
+    backgroundImage: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)",
   },
   loginForm: {
     background: "#1a1a2e",
