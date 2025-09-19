@@ -1,4 +1,3 @@
-// HeroBanner.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +12,7 @@ function HeroBanner() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showAboutUs, setShowAboutUs] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [signupData, setSignupData] = useState({ 
     username: "", 
@@ -32,6 +32,16 @@ function HeroBanner() {
   const [authError, setAuthError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
   const [resetToken, setResetToken] = useState("");
+  
+  // User profile data
+  const [userProfile, setUserProfile] = useState({
+    username: "",
+    email: "",
+    orders: [],
+    reviews: [],
+    enquiries: []
+  });
+  const [activeProfileTab, setActiveProfileTab] = useState("info");
   
   // Initialize admin password if not exists
   useEffect(() => {
@@ -57,6 +67,13 @@ function HeroBanner() {
     }
   }, []);
   
+  // Load user profile data when profile is opened
+  useEffect(() => {
+    if (showProfile && isLoggedIn && !isAdmin) {
+      loadUserProfile();
+    }
+  }, [showProfile, isLoggedIn, isAdmin]);
+  
   // Background media rotation effect
   useEffect(() => {
     const bgInterval = setInterval(() => {
@@ -74,6 +91,41 @@ function HeroBanner() {
       });
     }
   }, [currentBgIndex, backgroundMedia]);
+  
+  // Load user profile data
+  const loadUserProfile = () => {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const currentUser = users.find(u => u.username === userData.username);
+    
+    if (currentUser) {
+      // Load orders
+      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      const userOrders = orders.filter(order => 
+        order.buyerEmail === currentUser.email || order.buyerName === currentUser.username
+      );
+      
+      // Load reviews
+      const reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
+      const userReviews = reviews.filter(review => 
+        review.userId === currentUser.username || review.userName === currentUser.username
+      );
+      
+      // Load enquiries
+      const enquiries = JSON.parse(localStorage.getItem('enquiries') || '[]');
+      const userEnquiries = enquiries.filter(enquiry => 
+        enquiry.email === currentUser.email || enquiry.name === currentUser.username
+      );
+      
+      setUserProfile({
+        username: currentUser.username,
+        email: currentUser.email,
+        orders: userOrders,
+        reviews: userReviews,
+        enquiries: userEnquiries
+      });
+    }
+  };
   
   // Handle login
   const handleLogin = (e) => {
@@ -271,6 +323,19 @@ function HeroBanner() {
     setIsLoggedIn(false);
     setIsAdmin(false);
     localStorage.removeItem('userData');
+    setShowProfile(false);
+  };
+  
+  // Handle profile actions
+  const handleChangePassword = () => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    setShowProfile(false);
+    setShowForgotPassword(true);
+    setForgotPasswordData({
+      identifier: userData.username,
+      isAdmin: userData.isAdmin
+    });
+    setAuthError("");
   };
   
   // Close auth forms when clicking outside
@@ -291,12 +356,21 @@ function HeroBanner() {
       if (showAboutUs && !e.target.closest('.about-modal')) {
         setShowAboutUs(false);
       }
+      if (showProfile && !e.target.closest('.auth-form')) {
+        setShowProfile(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showLoginForm, showSignupForm, showForgotPassword, showResetPassword, showAboutUs]);
+  }, [showLoginForm, showSignupForm, showForgotPassword, showResetPassword, showAboutUs, showProfile]);
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString();
+  };
   
   return (
     <div className="hero-container">
@@ -362,9 +436,17 @@ function HeroBanner() {
           </button>
           
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="btn-outline">
-              Logout
-            </button>
+            <>
+              {/* Only show My Profile for regular users (not admins) */}
+              {!isAdmin && (
+                <button onClick={() => setShowProfile(true)} className="btn-outline">
+                  My Profile
+                </button>
+              )}
+              <button onClick={handleLogout} className="btn-outline">
+                Logout
+              </button>
+            </>
           ) : (
             <>
               <button onClick={() => setShowLoginForm(true)} className="btn-outline">
@@ -401,19 +483,6 @@ function HeroBanner() {
                 required
               />
               {authError && <p className="error-text">{authError}</p>}
-              <div className="forgot-password-link">
-                <button 
-                  type="button" 
-                  className="link-button"
-                  onClick={() => {
-                    setShowLoginForm(false);
-                    setShowForgotPassword(true);
-                    setAuthError("");
-                  }}
-                >
-                  Forgot Password?
-                </button>
-              </div>
               <div className="auth-form-buttons">
                 <button type="submit" className="btn-primary">Login</button>
                 <button 
@@ -615,6 +684,159 @@ function HeroBanner() {
             </form>
             <button 
               onClick={() => setShowSignupForm(false)} 
+              className="close-button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Profile Modal - Only for regular users */}
+      {showProfile && !isAdmin && (
+        <div className="modal-overlay">
+          <div className="auth-form profile-modal">
+            <h3 className="auth-title">My Profile</h3>
+            
+            {/* Profile Tabs */}
+            <div className="profile-tabs">
+              <button 
+                className={`profile-tab ${activeProfileTab === 'info' ? 'active' : ''}`}
+                onClick={() => setActiveProfileTab('info')}
+              >
+                Account Info
+              </button>
+              <button 
+                className={`profile-tab ${activeProfileTab === 'orders' ? 'active' : ''}`}
+                onClick={() => setActiveProfileTab('orders')}
+              >
+                Orders ({userProfile.orders.length})
+              </button>
+              <button 
+                className={`profile-tab ${activeProfileTab === 'reviews' ? 'active' : ''}`}
+                onClick={() => setActiveProfileTab('reviews')}
+              >
+                Reviews ({userProfile.reviews.length})
+              </button>
+              <button 
+                className={`profile-tab ${activeProfileTab === 'enquiries' ? 'active' : ''}`}
+                onClick={() => setActiveProfileTab('enquiries')}
+              >
+                Enquiries ({userProfile.enquiries.length})
+              </button>
+            </div>
+            
+            {/* Profile Tab Content */}
+            <div className="profile-content">
+              {activeProfileTab === 'info' && (
+                <div className="profile-info">
+                  <p><strong>Username:</strong> {userProfile.username}</p>
+                  <p><strong>Email:</strong> {userProfile.email}</p>
+                  <p><strong>Account Type:</strong> User</p>
+                  <div className="auth-form-buttons">
+                    <button 
+                      type="button" 
+                      className="btn-primary"
+                      onClick={handleChangePassword}
+                    >
+                      Change Password
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-secondary"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {activeProfileTab === 'orders' && (
+                <div className="profile-section">
+                  <h4>Your Orders</h4>
+                  {userProfile.orders.length === 0 ? (
+                    <p className="no-data">You haven't placed any orders yet.</p>
+                  ) : (
+                    <div className="profile-list">
+                      {userProfile.orders.map((order, index) => (
+                        <div key={index} className="profile-item">
+                          <p><strong>Product:</strong> {order.title || order.product || 'Unknown'}</p>
+                          <p><strong>Price:</strong> ₹{order.price?.toLocaleString() || '0'}</p>
+                          <p><strong>Status:</strong> 
+                            <span className={`status-badge ${order.status?.toLowerCase() || 'confirmed'}`}>
+                              {order.status || 'Confirmed'}
+                            </span>
+                          </p>
+                          <p><strong>Date:</strong> {formatDate(order.date)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {activeProfileTab === 'reviews' && (
+                <div className="profile-section">
+                  <h4>Your Reviews</h4>
+                  {userProfile.reviews.length === 0 ? (
+                    <p className="no-data">You haven't submitted any reviews yet.</p>
+                  ) : (
+                    <div className="profile-list">
+                      {userProfile.reviews.map((review, index) => (
+                        <div key={index} className="profile-item">
+                          <p><strong>Rating:</strong> 
+                            <span className="rating-stars">
+                              {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                            </span>
+                          </p>
+                          <p><strong>Comment:</strong> {review.comment}</p>
+                          <p><strong>Status:</strong> 
+                            <span className={`status-badge ${review.status?.toLowerCase() || 'pending'}`}>
+                              {review.status || 'Pending'}
+                            </span>
+                          </p>
+                          <p><strong>Date:</strong> {formatDate(review.date)}</p>
+                          {review.beforeImage && (
+                            <div className="review-image-container">
+                              <p><strong>Before Image:</strong></p>
+                              <img src={review.beforeImage} alt="Before" className="review-image" />
+                            </div>
+                          )}
+                          {review.afterImage && (
+                            <div className="review-image-container">
+                              <p><strong>After Image:</strong></p>
+                              <img src={review.afterImage} alt="After" className="review-image" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {activeProfileTab === 'enquiries' && (
+                <div className="profile-section">
+                  <h4>Your Enquiries</h4>
+                  {userProfile.enquiries.length === 0 ? (
+                    <p className="no-data">You haven't made any enquiries yet.</p>
+                  ) : (
+                    <div className="profile-list">
+                      {userProfile.enquiries.map((enquiry, index) => (
+                        <div key={index} className="profile-item">
+                          <p><strong>Enquiry:</strong> {enquiry.message}</p>
+                          <p><strong>Date:</strong> {formatDate(enquiry.timestamp)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <button 
+              onClick={() => setShowProfile(false)} 
               className="close-button"
             >
               ×
@@ -1077,21 +1299,6 @@ const addGlobalStyles = () => {
       font-weight: bold;
     }
     
-    .forgot-password-link {
-      text-align: right;
-      margin-bottom: 15px;
-    }
-    
-    .link-button {
-      background: none;
-      border: none;
-      color: #00d4ff;
-      font-size: 14px;
-      cursor: pointer;
-      text-decoration: underline;
-      padding: 0;
-    }
-    
     .user-type-toggle {
       display: flex;
       margin-bottom: 15px;
@@ -1113,6 +1320,137 @@ const addGlobalStyles = () => {
     .toggle-btn.active {
       background: linear-gradient(135deg, #007bff, #00d4ff);
       color: white;
+    }
+    
+    /* Profile Section */
+    .profile-modal {
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .profile-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      overflow-x: auto;
+    }
+    
+    .profile-tab {
+      padding: 10px 15px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .profile-tab.active {
+      color: #00d4ff;
+      border-bottom: 2px solid #00d4ff;
+    }
+    
+    .profile-content {
+      min-height: 300px;
+    }
+    
+    .profile-info {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .profile-info p {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .profile-info strong {
+      color: #00d4ff;
+    }
+    
+    .profile-section {
+      margin-bottom: 20px;
+    }
+    
+    .profile-section h4 {
+      margin-bottom: 15px;
+      color: #00d4ff;
+      font-size: 18px;
+    }
+    
+    .profile-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .profile-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 3px solid #00d4ff;
+    }
+    
+    .profile-item p {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    .profile-item strong {
+      color: #00d4ff;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 5px;
+    }
+    
+    .status-badge.confirmed, .status-badge.approved {
+      background: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+    }
+    
+    .status-badge.pending {
+      background: rgba(241, 196, 15, 0.2);
+      color: #f1c40f;
+    }
+    
+    .status-badge.cancelled, .status-badge.rejected {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+    
+    .no-data {
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      padding: 20px;
+      font-style: italic;
+    }
+    
+    /* Review specific styles */
+    .rating-stars {
+      color: #ffd700;
+      margin-left: 5px;
+    }
+    
+    .review-image-container {
+      margin-top: 10px;
+    }
+    
+    .review-image {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-top: 5px;
     }
     
     /* About Us Modal */
@@ -1329,6 +1667,15 @@ const addGlobalStyles = () => {
       
       .about-title {
         font-size: 24px;
+      }
+      
+      .profile-modal {
+        width: 95%;
+        max-width: none;
+      }
+      
+      .profile-tabs {
+        flex-wrap: wrap;
       }
     }
     

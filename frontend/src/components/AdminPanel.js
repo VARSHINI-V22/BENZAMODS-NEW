@@ -34,12 +34,33 @@ function AdminPanel() {
   const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [enquiries, setEnquiries] = useState([]); // New state for enquiries
+  const [enquiries, setEnquiries] = useState([]);
   const [userSearch, setUserSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [reviewSearch, setReviewSearch] = useState("");
-  const [enquirySearch, setEnquirySearch] = useState(""); // New search state for enquiries
+  const [enquirySearch, setEnquirySearch] = useState("");
+  
+  // Admin authentication states
+  const [admins, setAdmins] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
+  const [loginError, setLoginError] = useState("");
+  const [loginData, setLoginData] = useState({ username: "", password: "" });
+  const [currentAdmin, setCurrentAdmin] = useState(null);
+  
+  // Admin profile states
+  const [showAdminProfile, setShowAdminProfile] = useState(false);
+  const [showAddAdmin, setShowAddAdmin] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [newAdminData, setNewAdminData] = useState({ username: "", password: "" });
+  const [changePasswordData, setChangePasswordData] = useState({ 
+    currentPassword: "", 
+    newPassword: "", 
+    confirmPassword: "" 
+  });
+  const [adminError, setAdminError] = useState("");
+  const [adminSuccess, setAdminSuccess] = useState("");
 
   useEffect(() => {
     // Load all data from localStorage
@@ -52,7 +73,18 @@ function AdminPanel() {
                           safeStorage.getItem("orderHistory") || 
                           [];
         const existingReviews = safeStorage.getItem("reviews") || [];
-        const existingEnquiries = safeStorage.getItem("enquiries") || []; // Load enquiries
+        const existingEnquiries = safeStorage.getItem("enquiries") || [];
+        
+        // Load admin data
+        const existingAdmins = safeStorage.getItem("admins") || [{ username: "admin", password: "1234" }];
+        
+        // Check if admin is already logged in
+        const loggedInAdmin = safeStorage.getItem("currentAdmin");
+        if (loggedInAdmin && existingAdmins.some(admin => admin.username === loggedInAdmin)) {
+          setIsLoggedIn(true);
+          setCurrentAdmin(loggedInAdmin);
+          setShowLogin(false);
+        }
         
         // Define static users that must always be present
         const staticUsers = [
@@ -120,31 +152,23 @@ function AdminPanel() {
           }
         ];
         
-        // Merge static users with existing users (ensure static users are always present)
+        // Merge static users with existing users
         const allUsers = [...staticUsers, ...existingUsers];
-        
-        // Merge static messages with existing messages (ensure static messages are always present)
         const allMessages = [...staticMessages, ...existingMessages];
-        
-        // Merge static enquiries with existing enquiries (ensure static enquiries are always present)
         const allEnquiries = [...staticEnquiries, ...existingEnquiries];
         
         setUsers(allUsers);
         setOrders(ordersData);
         setMessages(allMessages);
         setReviews(existingReviews);
-        setEnquiries(allEnquiries); // Set enquiries state
+        setEnquiries(allEnquiries);
+        setAdmins(existingAdmins);
         
-        // Save to localStorage if we're using static data
-        if (existingUsers.length === 0) {
-          safeStorage.setItem("users", allUsers);
-        }
-        if (existingMessages.length === 0) {
-          safeStorage.setItem("submittedMessages", allMessages);
-        }
-        if (existingEnquiries.length === 0) {
-          safeStorage.setItem("enquiries", allEnquiries);
-        }
+        // Save to localStorage if needed
+        if (existingUsers.length === 0) safeStorage.setItem("users", allUsers);
+        if (existingMessages.length === 0) safeStorage.setItem("submittedMessages", allMessages);
+        if (existingEnquiries.length === 0) safeStorage.setItem("enquiries", allEnquiries);
+        if (existingAdmins.length === 0) safeStorage.setItem("admins", existingAdmins);
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
       }
@@ -157,7 +181,6 @@ function AdminPanel() {
         const newOrders = safeStorage.getItem("orders") || [];
         
         if (oldOrders.length > 0 && newOrders.length === 0) {
-          // Migrate old orders to new format
           const migratedOrders = oldOrders.map(order => ({
             id: order.id || Date.now(),
             buyerName: order.user || "Unknown Customer",
@@ -182,7 +205,7 @@ function AdminPanel() {
     loadData();
     migrateOrders();
     
-    // Set up storage event listener to sync data across tabs
+    // Set up storage event listener
     const handleStorageChange = (e) => {
       if (e.key === "orders") {
         try {
@@ -196,12 +219,46 @@ function AdminPanel() {
         } catch (error) {
           console.error("Error parsing enquiries data:", error);
         }
+      } else if (e.key === "admins") {
+        try {
+          setAdmins(JSON.parse(e.newValue) || []);
+        } catch (error) {
+          console.error("Error parsing admins data:", error);
+        }
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // Admin authentication handlers
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError("");
+    
+    const admin = admins.find(
+      a => a.username === loginData.username && a.password === loginData.password
+    );
+    
+    if (admin) {
+      setIsLoggedIn(true);
+      setCurrentAdmin(loginData.username);
+      safeStorage.setItem("currentAdmin", loginData.username);
+      setShowLogin(false);
+      setLoginData({ username: "", password: "" });
+    } else {
+      setLoginError("Invalid username or password");
+    }
+  };
+  
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentAdmin(null);
+    safeStorage.setItem("currentAdmin", null);
+    setShowLogin(true);
+    navigate("/");
+  };
 
   // Remove handlers
   const handleRemoveUser = (index) => {
@@ -231,7 +288,6 @@ function AdminPanel() {
         setOrders(updated);
         safeStorage.setItem("orders", updated);
         
-        // Also update alternative key if exists
         if (safeStorage.getItem("orderHistory")) {
           safeStorage.setItem("orderHistory", updated);
         }
@@ -258,7 +314,7 @@ function AdminPanel() {
     }
   };
 
-  const handleRemoveEnquiry = (index) => { // New handler for removing enquiries
+  const handleRemoveEnquiry = (index) => {
     if (window.confirm("Delete this enquiry?")) {
       const updated = enquiries.filter((_, i) => i !== index);
       setEnquiries(updated);
@@ -273,7 +329,101 @@ function AdminPanel() {
     safeStorage.setItem("reviews", updated);
   };
 
-  // Normalize order data for consistent display
+  // Admin handlers
+  const handleAddAdmin = (e) => {
+    e.preventDefault();
+    setAdminError("");
+    setAdminSuccess("");
+    
+    if (!newAdminData.username || !newAdminData.password) {
+      setAdminError("Username and password are required");
+      return;
+    }
+    
+    if (admins.some(admin => admin.username === newAdminData.username)) {
+      setAdminError("Admin with this username already exists");
+      return;
+    }
+    
+    const updatedAdmins = [...admins, { 
+      username: newAdminData.username, 
+      password: newAdminData.password 
+    }];
+    
+    setAdmins(updatedAdmins);
+    safeStorage.setItem("admins", updatedAdmins);
+    
+    setAdminSuccess("Admin added successfully");
+    setNewAdminData({ username: "", password: "" });
+    
+    setTimeout(() => {
+      setShowAddAdmin(false);
+      setAdminSuccess("");
+    }, 2000);
+  };
+  
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    setAdminError("");
+    setAdminSuccess("");
+    
+    const currentAdminData = admins.find(admin => admin.username === currentAdmin);
+    
+    if (!currentAdminData) {
+      setAdminError("Admin not found");
+      return;
+    }
+    
+    if (changePasswordData.currentPassword !== currentAdminData.password) {
+      setAdminError("Current password is incorrect");
+      return;
+    }
+    
+    if (changePasswordData.newPassword !== changePasswordData.confirmPassword) {
+      setAdminError("New passwords do not match");
+      return;
+    }
+    
+    const updatedAdmins = admins.map(admin => {
+      if (admin.username === currentAdmin) {
+        return { ...admin, password: changePasswordData.newPassword };
+      }
+      return admin;
+    });
+    
+    setAdmins(updatedAdmins);
+    safeStorage.setItem("admins", updatedAdmins);
+    
+    setAdminSuccess("Password changed successfully");
+    setChangePasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    
+    setTimeout(() => {
+      setShowChangePassword(false);
+      setAdminSuccess("");
+    }, 2000);
+  };
+  
+  const handleRemoveAdmin = (index) => {
+    const admin = admins[index];
+    
+    if (admin.username === "admin") {
+      alert("Cannot remove the main admin account");
+      return;
+    }
+    
+    if (admin.username === currentAdmin) {
+      alert("Cannot remove your own account while logged in");
+      return;
+    }
+    
+    if (window.confirm("Remove this admin?")) {
+      const updated = admins.filter((_, i) => i !== index);
+      setAdmins(updated);
+      safeStorage.setItem("admins", updated);
+    }
+  };
+
+  // Normalize order data
   const normalizeOrder = (order) => {
     return {
       id: order.id || order._id || Date.now(),
@@ -318,20 +468,68 @@ function AdminPanel() {
       r.status?.toLowerCase().includes(reviewSearch.toLowerCase())
   );
 
-  const filteredEnquiries = enquiries.filter( // New filter for enquiries
+  const filteredEnquiries = enquiries.filter(
     (e) =>
       e.name?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
       e.email?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
       e.message?.toLowerCase().includes(enquirySearch.toLowerCase())
   );
 
+  // Admin Login Form
+  if (showLogin) {
+    return (
+      <div style={styles.loginContainer}>
+        <div style={styles.loginForm}>
+          <h2 style={styles.loginHeading}>Admin Login</h2>
+          <form onSubmit={handleLogin}>
+            <input
+              type="text"
+              placeholder="Admin Username"
+              value={loginData.username}
+              onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+              style={styles.inputField}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Admin Password"
+              value={loginData.password}
+              onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+              style={styles.inputField}
+              required
+            />
+            {loginError && <p style={styles.errorText}>{loginError}</p>}
+            <button type="submit" style={styles.loginBtn}>Login</button>
+          </form>
+          <div style={styles.loginFooter}>
+            <button 
+              style={styles.backBtn} 
+              onClick={() => navigate("/")}
+            >
+              ⬅ Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.heading}>Admin Dashboard</h1>
-        <button style={styles.logoutBtn} onClick={() => navigate("/")}>
-          ⬅ Back to Home
-        </button>
+        <div style={styles.headerActions}>
+          <span style={styles.adminInfo}>Logged in as: <strong>{currentAdmin}</strong></span>
+          <button 
+            style={styles.profileBtn} 
+            onClick={() => setShowAdminProfile(true)}
+          >
+            👤 Admin Profile
+          </button>
+          <button style={styles.logoutBtn} onClick={handleLogout}>
+            ⬅ Logout
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -384,9 +582,15 @@ function AdminPanel() {
         >
           ⭐ Reviews
         </button>
+        <button
+          style={activeTab === "admins" ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab("admins")}
+        >
+          🔐 Admins
+        </button>
       </div>
 
-      {/* ----------------- TAB CONTENT ----------------- */}
+      {/* TAB CONTENT */}
       <div style={styles.tabContent}>
         {activeTab === "dashboard" && (
           <Suspense fallback={<div style={styles.loading}>Loading Dashboard...</div>}>
@@ -519,7 +723,7 @@ function AdminPanel() {
             )}
           </div>
         )}
-        {activeTab === "enquiries" && ( // New Enquiries tab
+        {activeTab === "enquiries" && (
           <div style={styles.tabSection}>
             <h2 style={styles.sectionHeading}>Enquiries ({enquiries.length})</h2>
             <input
@@ -615,7 +819,163 @@ function AdminPanel() {
             )}
           </div>
         )}
+        {activeTab === "admins" && (
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Admins ({admins.length})</h2>
+            <div style={styles.adminActions}>
+              <button 
+                style={styles.addBtn} 
+                onClick={() => setShowAddAdmin(true)}
+              >
+                ➕ Add New Admin
+              </button>
+            </div>
+            <div style={styles.grid}>
+              {admins.map((admin, i) => (
+                <div key={i} style={styles.card}>
+                  <h4 style={styles.cardTitle}>{admin.username}</h4>
+                  <p style={styles.cardText}>Password: {admin.password.replace(/./g, '*')}</p>
+                  <div style={styles.buttonGroup}>
+                    {admin.username !== "admin" && admin.username !== currentAdmin && (
+                      <button
+                        onClick={() => handleRemoveAdmin(i)}
+                        style={styles.deleteBtn}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+      
+      {/* Admin Profile Modal */}
+      {showAdminProfile && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.modalTitle}>Admin Profile</h3>
+            <div style={styles.profileInfo}>
+              <p style={styles.profileInfoText}>
+                <strong style={styles.profileInfoStrong}>Username:</strong> {currentAdmin}
+              </p>
+            </div>
+            <div style={styles.modalButtons}>
+              <button 
+                style={styles.primaryBtn} 
+                onClick={() => {
+                  setShowAdminProfile(false);
+                  setShowChangePassword(true);
+                }}
+              >
+                🔒 Change Password
+              </button>
+              <button 
+                style={styles.secondaryBtn} 
+                onClick={() => setShowAdminProfile(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Add Admin Modal */}
+      {showAddAdmin && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.modalTitle}>Add New Admin</h3>
+            <form onSubmit={handleAddAdmin}>
+              <input
+                type="text"
+                placeholder="Admin Username"
+                value={newAdminData.username}
+                onChange={(e) => setNewAdminData({...newAdminData, username: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Admin Password"
+                value={newAdminData.password}
+                onChange={(e) => setNewAdminData({...newAdminData, password: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              {adminError && <p style={styles.errorText}>{adminError}</p>}
+              {adminSuccess && <p style={styles.successText}>{adminSuccess}</p>}
+              <div style={styles.modalButtons}>
+                <button type="submit" style={styles.primaryBtn}>Add Admin</button>
+                <button 
+                  type="button" 
+                  style={styles.secondaryBtn} 
+                  onClick={() => {
+                    setShowAddAdmin(false);
+                    setAdminError("");
+                    setAdminSuccess("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3 style={styles.modalTitle}>Change Admin Password</h3>
+            <form onSubmit={handleChangePassword}>
+              <input
+                type="password"
+                placeholder="Current Password"
+                value={changePasswordData.currentPassword}
+                onChange={(e) => setChangePasswordData({...changePasswordData, currentPassword: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="New Password"
+                value={changePasswordData.newPassword}
+                onChange={(e) => setChangePasswordData({...changePasswordData, newPassword: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Confirm New Password"
+                value={changePasswordData.confirmPassword}
+                onChange={(e) => setChangePasswordData({...changePasswordData, confirmPassword: e.target.value})}
+                style={styles.inputField}
+                required
+              />
+              {adminError && <p style={styles.errorText}>{adminError}</p>}
+              {adminSuccess && <p style={styles.successText}>{adminSuccess}</p>}
+              <div style={styles.modalButtons}>
+                <button type="submit" style={styles.primaryBtn}>Update Password</button>
+                <button 
+                  type="button" 
+                  style={styles.secondaryBtn} 
+                  onClick={() => {
+                    setShowChangePassword(false);
+                    setAdminError("");
+                    setAdminSuccess("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -637,6 +997,16 @@ const styles = {
     flexWrap: "wrap",
     gap: "15px",
   },
+  headerActions: {
+    display: "flex",
+    gap: "10px",
+    alignItems: "center",
+  },
+  adminInfo: {
+    color: "#e6e6ff",
+    marginRight: "15px",
+    fontWeight: "600",
+  },
   heading: {
     fontSize: "32px",
     fontWeight: "800",
@@ -644,6 +1014,18 @@ const styles = {
     textShadow: "0 0 15px rgba(123, 104, 238, 0.5)",
     letterSpacing: "1px",
     margin: 0,
+  },
+  profileBtn: {
+    background: "linear-gradient(45deg, #ff6b6b, #ee5a24)",
+    color: "white",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontWeight: "600",
+    boxShadow: "0 4px 15px rgba(238, 90, 36, 0.3)",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
   },
   logoutBtn: {
     background: "linear-gradient(45deg, #7b68ee, #6a5acd)",
@@ -764,6 +1146,23 @@ const styles = {
     transition: "all 0.3s ease",
     fontFamily: "'Montserrat', sans-serif",
   },
+  addBtn: {
+    background: "#2ecc71",
+    color: "white",
+    border: "none",
+    padding: "10px 15px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
+    marginBottom: "15px",
+  },
+  adminActions: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: "15px",
+  },
   searchInput: {
     width: "100%",
     padding: "12px 15px",
@@ -821,7 +1220,150 @@ const styles = {
     color: "#a9a9cc",
     marginTop: "10px",
     fontStyle: "italic",
-  }
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: '#1a1a2e',
+    padding: '25px',
+    borderRadius: '15px',
+    width: '90%',
+    maxWidth: '400px',
+    border: '1px solid #2d2d4d',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+    position: 'relative',
+  },
+  modalTitle: {
+    textAlign: 'center',
+    marginBottom: '20px',
+    fontSize: '22px',
+    fontWeight: '700',
+    color: '#fff',
+  },
+  inputField: {
+    width: '100%',
+    padding: '12px 15px',
+    marginBottom: '12px',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    color: '#fff',
+    fontSize: '16px',
+    boxSizing: 'border-box',
+  },
+  modalButtons: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '15px',
+  },
+  primaryBtn: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '8px',
+    background: 'linear-gradient(135deg, #7b68ee, #6a5acd)',
+    color: 'white',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  secondaryBtn: {
+    flex: 1,
+    padding: '10px',
+    borderRadius: '8px',
+    background: 'transparent',
+    color: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  profileInfo: {
+    textAlign: 'left',
+  },
+  profileInfoText: {
+    marginBottom: '10px',
+    fontSize: '16px',
+  },
+  profileInfoStrong: {
+    color: '#00d4ff',
+  },
+  errorText: {
+    color: '#ff4757',
+    textAlign: 'center',
+    marginBottom: '15px',
+    fontSize: '14px',
+  },
+  successText: {
+    color: '#2ed573',
+    textAlign: 'center',
+    marginBottom: '15px',
+    fontSize: '14px',
+  },
+  // Login form styles
+  loginContainer: {
+    minHeight: "100vh",
+    backgroundColor: "#0f0f1a",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "20px",
+  },
+  loginForm: {
+    background: "#1a1a2e",
+    padding: "40px",
+    borderRadius: "20px",
+    width: "100%",
+    maxWidth: "400px",
+    border: "1px solid #2d2d4d",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+  },
+  loginHeading: {
+    textAlign: "center",
+    marginBottom: "30px",
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#7b68ee",
+  },
+  loginBtn: {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "8px",
+    background: "linear-gradient(135deg, #7b68ee, #6a5acd)",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "16px",
+    fontFamily: "'Montserrat', sans-serif",
+    marginTop: "10px",
+  },
+  loginFooter: {
+    marginTop: "20px",
+    textAlign: "center",
+  },
+  backBtn: {
+    background: "transparent",
+    color: "#7b68ee",
+    border: "1px solid #7b68ee",
+    padding: "8px 15px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
+  },
 };
 
 // Add this to your main HTML file or use a CSS-in-JS solution to import fonts
