@@ -53,7 +53,7 @@ const STATIC_REVIEWS = [
   },
   { 
     id: 104, 
-    productId: 6, 
+    productId: 4, 
     userId: "ashwini11@gmail.com", 
     userName: "ashwini", 
     rating: 5, 
@@ -393,26 +393,94 @@ export default function PortfolioAllInOne() {
   const getSimilar = (prod) => PRODUCTS.filter(p => p.id !== prod.id && (p.type === prod.type || p.brand === prod.brand));
   
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col font-sans">
-      {/* Google Fonts import */}
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 flex flex-col font-sans">
+      {/* Custom font styles and animations */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
           body { font-family: 'Inter', sans-serif; }
           h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          
+          @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+          }
+          
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
+          
+          @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.5); }
+          }
+          
+          @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+          }
+          
+          .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+          }
+          
+          .animate-slideIn {
+            animation: slideIn 0.5s ease-out forwards;
+          }
+          
+          .animate-pulse {
+            animation: pulse 2s infinite;
+          }
+          
+          .animate-glow {
+            animation: glow 2s infinite;
+          }
+          
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
+          }
+          
+          .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          
+          .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+          }
+          
+          .gradient-text {
+            background: linear-gradient(90deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+          }
+          
+          .card-shadow {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          }
         `}
       </style>
       
       {/* header */}
-      <header className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 border-b border-gray-700 p-4 sticky top-0 z-40 animate-fadeIn">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Benzamods</h1>
+          <div className="flex items-center animate-pulse">
+            <h1 className="text-2xl font-bold gradient-text">Benzamods</h1>
             <div className="text-sm text-gray-400 ml-3 hidden md:block">Premium Vehicle Customization</div>
           </div>
           
           {/* Search Bar */}
-          <div className="w-full md:w-96 flex items-center">
+          <div className="w-full md:w-96 flex items-center animate-slideIn">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
@@ -420,41 +488,41 @@ export default function PortfolioAllInOne() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-600"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-600 transition-all duration-300"
               />
             </div>
           </div>
           
-          <div className="flex items-center gap-3 flex-wrap justify-center">
+          <div className="flex items-center gap-3 flex-wrap justify-center animate-fadeIn">
             {!currentUser && (
-              <div className="hidden md:flex gap-2 items-center bg-gray-700 px-3 py-2 rounded-lg">
-                <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="px-3 py-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-sm font-medium">Login</button>
-                <button onClick={() => { setAuthMode("signup"); setShowSignupModal(true); }} className="px-3 py-1.5 bg-purple-600 rounded-lg hover:bg-purple-700 transition text-sm font-medium">Signup</button>
+              <div className="hidden md:flex gap-2 items-center bg-gray-700 px-3 py-2 rounded-lg transition-all duration-300 hover:bg-gray-600">
+                <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="px-3 py-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-sm font-medium transform hover:scale-105">Login</button>
+                <button onClick={() => { setAuthMode("signup"); setShowSignupModal(true); }} className="px-3 py-1.5 bg-purple-600 rounded-lg hover:bg-purple-700 transition text-sm font-medium transform hover:scale-105">Signup</button>
               </div>
             )}
             <>
-              <button onClick={() => setShowWishlistModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+              <button onClick={() => setShowWishlistModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm transform hover:scale-105">
                 <Heart size={18} />
                 <span className="hidden md:inline">Wishlist</span>
-                <span className="bg-pink-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{wishlist.length}</span>
+                <span className="bg-pink-600 px-1.5 py-0.5 rounded-full text-xs font-bold animate-pulse">{wishlist.length}</span>
               </button>
-              <button onClick={() => setShowCartModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+              <button onClick={() => setShowCartModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm transform hover:scale-105">
                 <ShoppingCart size={18} />
                 <span className="hidden md:inline">Cart</span>
-                <span className="bg-blue-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{cart.length}</span>
+                <span className="bg-blue-600 px-1.5 py-0.5 rounded-full text-xs font-bold animate-pulse">{cart.length}</span>
               </button>
-              <button onClick={() => setShowReviewsModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+              <button onClick={() => setShowReviewsModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm transform hover:scale-105">
                 <Star size={18} />
                 <span className="hidden md:inline">Reviews</span>
               </button>
               {currentUser && (
                 <>
-                  <button onClick={() => setShowOrdersModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                  <button onClick={() => setShowOrdersModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm transform hover:scale-105">
                     <Package size={18} />
                     <span className="hidden md:inline">Orders</span>
-                    <span className="bg-purple-600 px-1.5 py-0.5 rounded-full text-xs font-bold">{userOrders.length}</span>
+                    <span className="bg-purple-600 px-1.5 py-0.5 rounded-full text-xs font-bold animate-pulse">{userOrders.length}</span>
                   </button>
-                  <button onClick={() => setShowAddReviewModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm">
+                  <button onClick={() => setShowAddReviewModal(true)} className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg transition flex items-center gap-1 text-sm transform hover:scale-105">
                     <MessageSquare size={18} />
                     <span className="hidden md:inline">Add Review</span>
                   </button>
@@ -462,15 +530,15 @@ export default function PortfolioAllInOne() {
               )}
             </>
             {!currentUser && (
-              <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="bg-blue-600 px-3 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium flex items-center gap-1">
+              <button onClick={() => { setAuthMode("login"); setShowLoginModal(true); }} className="bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition text-sm font-medium flex items-center gap-1 transform hover:scale-105 animate-glow">
                 <User size={16} />
                 <span>Login / Signup</span>
               </button>
             )}
             {currentUser && (
               <div className="flex items-center gap-2">
-                <div className="text-sm hidden md:block">Hi, <b>{currentUser.name}</b></div>
-                <button onClick={logout} className="bg-red-600 px-3 py-2 rounded-lg hover:bg-red-700 transition text-sm font-medium flex items-center gap-1">
+                <div className="text-sm hidden md:block bg-gradient-to-r from-blue-700 to-purple-700 px-3 py-1 rounded-full">Hi, <b>{currentUser.name}</b></div>
+                <button onClick={logout} className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 rounded-lg hover:from-red-700 hover:to-red-800 transition text-sm font-medium flex items-center gap-1 transform hover:scale-105">
                   <LogOut size={16} />
                   <span className="hidden md:inline">Logout</span>
                 </button>
@@ -481,27 +549,86 @@ export default function PortfolioAllInOne() {
       </header>
       
       <main className="max-w-7xl mx-auto p-4 flex-1 w-full">
+        {/* Hero Banner Section */}
+        <section className="mb-12 mt-6 animate-fadeIn">
+          <div className="bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 rounded-2xl p-8 md:p-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between">
+              <div className="md:w-1/2 mb-8 md:mb-0">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 animate-fadeIn">Transform Your Vehicle Today</h2>
+                <p className="text-lg text-gray-200 mb-6 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+                  Premium vehicle customization services for cars and bikes. From wraps to custom paint jobs, we bring your vision to life.
+                </p>
+                <div className="flex flex-wrap gap-4 animate-fadeIn" style={{ animationDelay: '0.4s' }}>
+                  {!currentUser ? (
+                    <button 
+                      onClick={() => { setAuthMode("login"); setShowLoginModal(true); }}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                      Get Started
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => setShowAddReviewModal(true)}
+                      className="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                      Share Your Experience
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setShowReviewsModal(true)}
+                    className="bg-gray-800/50 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 border border-gray-600"
+                  >
+                    View Reviews
+                  </button>
+                </div>
+              </div>
+              <div className="md:w-1/2 flex justify-center animate-float">
+                <div className="relative">
+                  <div className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl">
+                    <img src="https://tse2.mm.bing.net/th/id/OIP.BQxXtLW-0gaV2Z3C-151GgHaFM?pid=Api&P=0&h=220" alt="Luxury Car" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transform rotate-3">
+                    Premium Quality
+                  </div>
+                  <div className="absolute -top-4 -left-4 bg-purple-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg transform -rotate-3">
+                    Expert Service
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         {/* Products grid */}
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-blue-500 pl-3">Our Portfolio</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white border-l-4 border-blue-500 pl-3 animate-fadeIn">Our Portfolio</h2>
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-12 bg-gray-800 rounded-xl">
+            <div className="text-center py-12 bg-gray-800 rounded-xl animate-fadeIn">
               <p className="text-gray-400">No products found matching your search.</p>
               <button 
                 onClick={() => setSearchTerm("")} 
-                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-white font-medium"
+                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-white font-medium transform hover:scale-105"
               >
                 Clear Search
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((p) => (
-                <article key={p.id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-[1.02] group border border-gray-700">
+              {filteredProducts.map((p, index) => (
+                <article 
+                  key={p.id} 
+                  className="bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 group border border-gray-700 hover-lift card-shadow animate-fadeIn" 
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
                   <div className="h-48 cursor-pointer relative overflow-hidden" onClick={() => setProductModal(p)}>
-                    <img src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity"></div>
-                    <div className="absolute bottom-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+                    <img 
+                      src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} 
+                      alt={p.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300"></div>
+                    <div className="absolute bottom-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded transform transition-transform duration-300 group-hover:scale-110">
                       {p.type.toUpperCase()}
                     </div>
                   </div>
@@ -511,15 +638,26 @@ export default function PortfolioAllInOne() {
                     <div className="flex items-center justify-between">
                       <div className="font-bold text-blue-400 text-lg">{`₹${p.price.toLocaleString()}`}</div>
                       <div className="flex gap-2">
-                        <button onClick={() => addToWishlist(p)} className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition" title="Add to wishlist">
+                        <button 
+                          onClick={() => addToWishlist(p)} 
+                          className="p-2 rounded-lg bg-gray-700 hover:bg-pink-600 transition-all duration-300 transform hover:scale-110" 
+                          title="Add to wishlist"
+                        >
                           <Heart size={16} />
                         </button>
-                        <button onClick={() => addToCart(p)} className="p-2 rounded-lg bg-gray-700 hover:bg-blue-600 transition" title="Add to cart">
+                        <button 
+                          onClick={() => addToCart(p)} 
+                          className="p-2 rounded-lg bg-gray-700 hover:bg-blue-600 transition-all duration-300 transform hover:scale-110" 
+                          title="Add to cart"
+                        >
                           <ShoppingCart size={16} />
                         </button>
                       </div>
                     </div>
-                    <button onClick={() => openBuy(p)} className="w-full mt-3 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition text-white font-medium">
+                    <button 
+                      onClick={() => openBuy(p)} 
+                      className="w-full mt-3 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 text-white font-medium shadow-md"
+                    >
                       Buy Now
                     </button>
                   </div>
@@ -531,7 +669,7 @@ export default function PortfolioAllInOne() {
       </main>
       
       {/* Footer Section */}
-      <footer className="bg-gray-800 border-t border-gray-700 py-12 px-4 mt-12">
+      <footer className="bg-gradient-to-b from-gray-900 to-black border-t border-gray-800 py-12 px-4 mt-12 animate-fadeIn">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About Section */}
           <div>
@@ -541,9 +679,8 @@ export default function PortfolioAllInOne() {
               Transform your vehicle with our expert services.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-gray-400 hover:text-white transition">
-                {/* Social icons would go here */}
-              </a>
+             
+             
             </div>
           </div>
           
@@ -551,11 +688,11 @@ export default function PortfolioAllInOne() {
           <div>
             <h3 className="text-xl font-bold mb-4 text-white"></h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
             </ul>
           </div>
           
@@ -563,24 +700,24 @@ export default function PortfolioAllInOne() {
           <div>
             <h3 className="text-xl font-bold mb-4 text-white">Contact Us</h3>
             <ul className="space-y-3 text-gray-400">
-              <li className="flex items-center gap-2">
-                <Phone size={18} /> 
+              <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
+                <Phone size={18} className="text-blue-400" /> 
                 <span>+91 8904708819</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail size={18} /> 
+              <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
+                <Mail size={18} className="text-blue-400" /> 
                 <span>info@Benzamods12.com</span>
               </li>
-              <li className="flex items-start gap-2">
-                <MapPin size={18} className="mt-1 flex-shrink-0" /> 
+              <li className="flex items-start gap-2 transition-all duration-300 hover:translate-x-1">
+                <MapPin size={18} className="text-blue-400 mt-1 flex-shrink-0" /> 
                 <span>1st cross, 2nd stage jayanagar opp to myura bakery, Bengaluru, karnataka, india</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Clock size={18} /> 
+              <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
+                <Clock size={18} className="text-blue-400" /> 
                 <span>Monday - Saturday: 9:00 AM - 8:00 PM</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Clock size={18} /> 
+              <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
+                <Clock size={18} className="text-blue-400" /> 
                 <span>Sunday: Closed</span>
               </li>
             </ul>
@@ -588,7 +725,7 @@ export default function PortfolioAllInOne() {
         </div>
         
         {/* Copyright */}
-        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-700 text-center text-gray-500">
+        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-800 text-center text-gray-500">
           <p>© {new Date().getFullYear()} Benzamods. All rights reserved.</p>
         </div>
       </footer>
@@ -610,9 +747,9 @@ export default function PortfolioAllInOne() {
 
 /* ---------------------- reusable modals & components ---------------------- */
 const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, getSimilar, setProductModal, reviews, setShowAddReviewModal, setReviewForm }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-4 text-white">{product.title}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-4">
@@ -629,19 +766,19 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
           <p className="mb-4 text-gray-300">{product.description}</p>
           <div className="font-bold text-2xl mb-4 text-blue-400">₹{product.price.toLocaleString()}</div>
           <div className="flex flex-wrap gap-2 mb-4">
-            <button onClick={() => addToCart(product)} className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">
+            <button onClick={() => addToCart(product)} className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium transform hover:scale-105">
               <ShoppingCart size={16} /> Add to Cart
             </button>
-            <button onClick={() => addToWishlist(product)} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">
+            <button onClick={() => addToWishlist(product)} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium transform hover:scale-105">
               <Heart size={16} /> Wishlist
             </button>
-            <button onClick={() => openBuy(product)} className="flex items-center gap-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition font-medium">
+            <button onClick={() => openBuy(product)} className="flex items-center gap-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition font-medium transform hover:scale-105">
               Buy Now
             </button>
             <button onClick={() => { 
               setShowAddReviewModal(true); 
               setReviewForm(prev => ({ ...prev, productId: product.id })); 
-            }} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">
+            }} className="flex items-center gap-1 bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium transform hover:scale-105">
               <Star size={16} /> Add Review
             </button>
           </div>
@@ -657,7 +794,7 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
         {reviews && reviews.filter(r => r.status === "approved").length > 0 ? (
           <div className="space-y-4">
             {reviews.filter(r => r.status === "approved").map(review => (
-              <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+              <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
                 <div className="flex items-center justify-between mb-2">
                   <div className="font-semibold text-white">{review.userName}</div>
                   <div className="text-sm text-gray-400">{review.date}</div>
@@ -695,14 +832,14 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
           <h3 className="font-bold mb-4 text-xl text-white border-b border-gray-700 pb-2">Similar Products</h3>
           <div className="flex gap-4 overflow-x-auto pb-4">
             {getSimilar(product).map(p => (
-              <div key={p.id} className="flex flex-col items-center min-w-[180px] cursor-pointer group" onClick={() => setProductModal(p)}>
+              <div key={p.id} className="flex flex-col items-center min-w-[180px] cursor-pointer group transition-all duration-300 transform hover:scale-105" onClick={() => setProductModal(p)}>
                 <div className="relative overflow-hidden rounded-lg w-full h-40">
                   <img 
                     src={p.beforeAfter?.[0] || "https://via.placeholder.com/220"} 
                     alt={p.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300"></div>
                 </div>
                 <span className="text-sm mt-2 text-center font-medium text-white">{p.title}</span>
                 <span className="text-xs text-blue-400 font-bold">₹{p.price.toLocaleString()}</span>
@@ -716,22 +853,22 @@ const ProductModal = ({ product, onClose, addToCart, addToWishlist, openBuy, get
 );
 
 const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
         <ShoppingCart size={24} /> Your Cart
       </h2>
       {cart.length === 0 ? (
         <div className="text-center py-8 bg-gray-700 rounded-xl">
-          <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
+          <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4 animate-float" />
           <p className="text-gray-400 mb-4">Your cart is empty</p>
-          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium transform hover:scale-105">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {cart.map(c => (
-            <div key={c.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700">
+            <div key={c.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
               <div className="flex items-center gap-4">
                 <img src={c.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={c.title} className="w-20 h-16 object-cover rounded-lg" />
                 <div>
@@ -740,8 +877,8 @@ const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => { openBuy(c); onClose(); }} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition font-medium">Checkout</button>
-                <button onClick={() => removeFromCart(c.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Remove</button>
+                <button onClick={() => { openBuy(c); onClose(); }} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition font-medium transform hover:scale-105">Checkout</button>
+                <button onClick={() => removeFromCart(c.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105">Remove</button>
               </div>
             </div>
           ))}
@@ -749,7 +886,7 @@ const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
             <div className="font-bold text-lg text-white">
               Total: ₹{cart.reduce((total, item) => total + item.price, 0).toLocaleString()}
             </div>
-            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">Continue Shopping</button>
+            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium transform hover:scale-105">Continue Shopping</button>
           </div>
         </div>
       )}
@@ -758,22 +895,22 @@ const CartModal = ({ cart, onClose, removeFromCart, openBuy }) => (
 );
 
 const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
         <Heart size={24} /> Your Wishlist
       </h2>
       {wishlist.length === 0 ? (
         <div className="text-center py-8 bg-gray-700 rounded-xl">
-          <Heart size={48} className="mx-auto text-gray-400 mb-4" />
+          <Heart size={48} className="mx-auto text-gray-400 mb-4 animate-float" />
           <p className="text-gray-400 mb-4">Your wishlist is empty</p>
-          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium transform hover:scale-105">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {wishlist.map(w => (
-            <div key={w.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700">
+            <div key={w.id} className="flex flex-col md:flex-row items-center justify-between border border-gray-700 rounded-lg p-4 gap-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
               <div className="flex items-center gap-4">
                 <img src={w.beforeAfter?.[0] || "https://via.placeholder.com/220"} alt={w.title} className="w-20 h-16 object-cover rounded-lg" />
                 <div>
@@ -782,13 +919,13 @@ const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => 
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => addToCart(w)} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition font-medium">Add to Cart</button>
-                <button onClick={() => removeFromWishlist(w.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Remove</button>
+                <button onClick={() => addToCart(w)} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition font-medium transform hover:scale-105">Add to Cart</button>
+                <button onClick={() => removeFromWishlist(w.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105">Remove</button>
               </div>
             </div>
           ))}
           <div className="mt-6">
-            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium">Continue Shopping</button>
+            <button onClick={onClose} className="bg-gray-700 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium transform hover:scale-105">Continue Shopping</button>
           </div>
         </div>
       )}
@@ -797,22 +934,22 @@ const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => 
 );
 
 const OrdersModal = ({ orders, onClose, cancelOrder }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
         <Package size={24} /> Your Orders
       </h2>
       {orders.length === 0 ? (
         <div className="text-center py-8 bg-gray-700 rounded-xl">
-          <Package size={48} className="mx-auto text-gray-400 mb-4" />
+          <Package size={48} className="mx-auto text-gray-400 mb-4 animate-float" />
           <p className="text-gray-400 mb-4">You haven't placed any orders yet</p>
-          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">Continue Shopping</button>
+          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium transform hover:scale-105">Continue Shopping</button>
         </div>
       ) : (
         <div className="space-y-4">
           {orders.map(order => (
-            <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+            <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
               <div className="flex items-center gap-4 mb-3">
                 <img src={order.image} alt={order.title} className="w-16 h-12 object-cover rounded-lg" />
                 <div className="flex-1">
@@ -823,7 +960,7 @@ const OrdersModal = ({ orders, onClose, cancelOrder }) => (
                   </div>
                 </div>
                 {order.status === 'Confirmed' && (
-                  <button onClick={() => cancelOrder(order.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium">Cancel</button>
+                  <button onClick={() => cancelOrder(order.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105">Cancel</button>
                 )}
               </div>
               <div className="text-sm text-gray-400 space-y-1">
@@ -843,16 +980,16 @@ const ReviewsModal = ({ reviews, products, onClose }) => {
   const approvedReviews = reviews.filter(review => review.status === "approved");
   
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-      <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700">
-        <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+      <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+        <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
         <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
           <Star size={24} /> Client Reviews
         </h2>
         
         {approvedReviews.length === 0 ? (
           <div className="text-center py-8 bg-gray-700 rounded-xl">
-            <Star size={48} className="mx-auto text-gray-400 mb-4" />
+            <Star size={48} className="mx-auto text-gray-400 mb-4 animate-float" />
             <p className="text-gray-400">No reviews available yet.</p>
           </div>
         ) : (
@@ -860,7 +997,7 @@ const ReviewsModal = ({ reviews, products, onClose }) => {
             {approvedReviews.map(review => {
               const product = products.find(p => p.id == review.productId);
               return (
-                <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+                <div key={review.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-semibold text-white">{product?.title || "Unknown Product"}</h3>
@@ -903,9 +1040,9 @@ const ReviewsModal = ({ reviews, products, onClose }) => {
 };
 
 const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitReview, onClose, products }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-4 text-white flex items-center gap-2">
         <Plus size={24} /> Add Your Review
       </h2>
@@ -916,7 +1053,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
           <select 
             value={reviewForm.productId} 
             onChange={e => setReviewForm({...reviewForm, productId: e.target.value})}
-            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
           >
             <option value="">Choose a product</option>
             {products.map(product => (
@@ -933,7 +1070,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
                 key={star}
                 type="button"
                 onClick={() => setReviewForm({...reviewForm, rating: star})}
-                className="text-2xl focus:outline-none text-gray-400 hover:text-yellow-400 transition"
+                className="text-2xl focus:outline-none text-gray-400 hover:text-yellow-400 transition transform hover:scale-110"
               >
                 {star <= reviewForm.rating ? 
                   <span className="text-yellow-400">★</span> : 
@@ -949,7 +1086,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
           <textarea 
             value={reviewForm.comment} 
             onChange={e => setReviewForm({...reviewForm, comment: e.target.value})}
-            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
             rows="4"
             placeholder="Share your experience with this product..."
           ></textarea>
@@ -962,7 +1099,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
               type="file" 
               accept="image/*"
               onChange={e => handleImageUpload(e, 'before')}
-              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs"
+              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs transition-all duration-300"
             />
             {reviewForm.beforeImagePreview && (
               <img src={reviewForm.beforeImagePreview} alt="Before preview" className="mt-2 w-full h-32 object-cover rounded-lg" />
@@ -975,7 +1112,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
               type="file" 
               accept="image/*"
               onChange={e => handleImageUpload(e, 'after')}
-              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs"
+              className="border border-gray-600 bg-gray-700 text-white p-1.5 rounded-lg w-full text-xs transition-all duration-300"
             />
             {reviewForm.afterImagePreview && (
               <img src={reviewForm.afterImagePreview} alt="After preview" className="mt-2 w-full h-32 object-cover rounded-lg" />
@@ -985,7 +1122,7 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
         
         <button 
           onClick={submitReview}
-          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium mt-4"
+          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium mt-4 transform hover:scale-105"
         >
           Submit Review
         </button>
@@ -995,47 +1132,47 @@ const AddReviewModal = ({ reviewForm, setReviewForm, handleImageUpload, submitRe
 );
 
 const OrderModal = ({ orderProduct, orderForm, setOrderForm, placeOrder, onClose }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-4 text-white">Order: {orderProduct.title}</h2>
       <div className="flex flex-col gap-3">
-        <input type="text" placeholder="Name" value={orderForm.name} onChange={e => setOrderForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-        <input type="email" placeholder="Email" value={orderForm.email} onChange={e => setOrderForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-        <textarea placeholder="Address" value={orderForm.address} onChange={e => setOrderForm(f => ({ ...f, address: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none" rows="3"/>
+        <input type="text" placeholder="Name" value={orderForm.name} onChange={e => setOrderForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"/>
+        <input type="email" placeholder="Email" value={orderForm.email} onChange={e => setOrderForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"/>
+        <textarea placeholder="Address" value={orderForm.address} onChange={e => setOrderForm(f => ({ ...f, address: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300" rows="3"/>
         <div className="border border-gray-600 bg-gray-700 p-2.5 rounded-lg w-full text-gray-300">
           Payment Method: COD (Cash on Delivery)
         </div>
         <div className="font-bold text-lg mt-2 text-white">Total: ₹{orderProduct.price.toLocaleString()}</div>
-        <button onClick={placeOrder} className="bg-green-600 text-white px-4 py-2.5 rounded-lg mt-2 hover:bg-green-700 transition font-medium">Place Order</button>
+        <button onClick={placeOrder} className="bg-green-600 text-white px-4 py-2.5 rounded-lg mt-2 hover:bg-green-700 transition font-medium transform hover:scale-105">Place Order</button>
       </div>
     </div>
   </div>
 );
 
 const AuthModal = ({ mode, authForm, setAuthForm, login, signup, switchMode, onClose }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
-      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition" onClick={onClose}>✕</button>
+  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700 animate-slideIn">
+      <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-4 text-white">{mode === "login" ? "Login" : "Signup"}</h2>
       <div className="flex flex-col gap-3">
-        {mode === "signup" && <input placeholder="Name" value={authForm.name} onChange={e => setAuthForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>}
-        <input placeholder="Email" type="email" value={authForm.email} onChange={e => setAuthForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-        <input placeholder="Password" type="password" value={authForm.password} onChange={e => setAuthForm(f => ({ ...f, password: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"/>
-        <button onClick={mode === "login" ? login : signup} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">{mode === "login" ? "Login" : "Signup"}</button>
-        <p className="text-sm text-gray-400 text-center">Or <span className="text-blue-400 cursor-pointer hover:underline" onClick={switchMode}>{mode === "login" ? "Signup" : "Login"}</span></p>
+        {mode === "signup" && <input placeholder="Name" value={authForm.name} onChange={e => setAuthForm(f => ({ ...f, name: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"/>}
+        <input placeholder="Email" type="email" value={authForm.email} onChange={e => setAuthForm(f => ({ ...f, email: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"/>
+        <input placeholder="Password" type="password" value={authForm.password} onChange={e => setAuthForm(f => ({ ...f, password: e.target.value }))} className="border border-gray-600 bg-gray-700 text-white p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"/>
+        <button onClick={mode === "login" ? login : signup} className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium transform hover:scale-105">{mode === "login" ? "Login" : "Signup"}</button>
+        <p className="text-sm text-gray-400 text-center">Or <span className="text-blue-400 cursor-pointer hover:underline transition transform hover:scale-105" onClick={switchMode}>{mode === "login" ? "Signup" : "Login"}</span></p>
       </div>
     </div>
   </div>
 );
 
 const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-sm text-center border border-gray-700">
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
+    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-sm text-center border border-gray-700 animate-slideIn">
       <p className="mb-4 text-white">{message}</p>
       <div className="flex justify-center gap-4">
-        <button onClick={onConfirm} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium">Yes</button>
-        <button onClick={onCancel} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium">No</button>
+        <button onClick={onConfirm} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium transform hover:scale-105">Yes</button>
+        <button onClick={onCancel} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium transform hover:scale-105">No</button>
       </div>
     </div>
   </div>

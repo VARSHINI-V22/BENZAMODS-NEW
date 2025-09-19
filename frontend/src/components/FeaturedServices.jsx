@@ -50,7 +50,6 @@ const CombinedApp = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [authData, setAuthData] = useState({ name: "", email: "", password: "" });
-  const [showProfile, setShowProfile] = useState(false);
   const [showBuy, setShowBuy] = useState(false);
   const [buyItem, setBuyItem] = useState(null);
   const [orderData, setOrderData] = useState({ address: "", payment: "COD" });
@@ -431,7 +430,7 @@ const CombinedApp = () => {
   // Render either admin panel or user view
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 p-4 font-sans">
-      {/* Custom font styles */}
+      {/* Custom font styles and animations */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -441,12 +440,110 @@ const CombinedApp = () => {
           h1, h2, h3, h4, h5, h6, .font-heading {
             font-family: 'Montserrat', sans-serif;
           }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          
+          @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+          }
+          
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
+          
+          @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.5); }
+          }
+          
+          @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+          }
+          
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+          }
+          
+          @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+          }
+          
+          .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+          }
+          
+          .animate-slideIn {
+            animation: slideIn 0.5s ease-out forwards;
+          }
+          
+          .animate-pulse {
+            animation: pulse 2s infinite;
+          }
+          
+          .animate-glow {
+            animation: glow 2s infinite;
+          }
+          
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
+          }
+          
+          .animate-bounce:hover {
+            animation: bounce 0.5s ease-in-out;
+          }
+          
+          .shimmer {
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .shimmer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+          }
+          
+          .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+          
+          .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+          }
+          
+          .gradient-text {
+            background: linear-gradient(90deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+          }
+          
+          .card-shadow {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          }
         `}
       </style>
       
       {/* Notification */}
       {notification.show && (
-        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${
+        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 animate-fadeIn ${
           notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'
         } text-white`}>
           <div className="flex items-center">
@@ -461,16 +558,14 @@ const CombinedApp = () => {
       {isAdmin ? (
         // Admin Panel View
         <div className="min-h-screen bg-gray-900 text-gray-100 p-6 font-sans">
-          <header className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
-              Admin Dashboard
-            </h1>
+          {/* Admin Navigation */}
+          <div className="flex justify-between items-center mb-8 animate-fadeIn">
             <div className="flex gap-4">
               <button 
                 onClick={() => setAdminTab('products')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   adminTab === 'products' 
-                    ? 'bg-indigo-600 text-white' 
+                    ? 'bg-indigo-600 text-white shadow-lg' 
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
@@ -478,30 +573,30 @@ const CombinedApp = () => {
               </button>
               <button 
                 onClick={() => setAdminTab('services')}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   adminTab === 'services' 
-                    ? 'bg-indigo-600 text-white' 
+                    ? 'bg-indigo-600 text-white shadow-lg' 
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
                 Services
               </button>
-              <button 
-                onClick={() => setIsAdmin(false)}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg transition-all flex items-center shadow-md"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Store
-              </button>
             </div>
-          </header>
+            <button 
+              onClick={() => setIsAdmin(false)}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center shadow-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Store
+            </button>
+          </div>
           
           {adminTab === 'products' ? (
             // Products Admin
             <div>
-              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700">
+              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700 animate-fadeIn">
                 <h3 className="text-xl font-semibold mb-4 text-white">
                   {editingProductId ? "Edit Product" : "Add New Product"}
                 </h3>
@@ -574,7 +669,7 @@ const CombinedApp = () => {
                     <div className="flex gap-2">
                       <button 
                         type="submit" 
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1"
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
                       >
                         {editingProductId ? "Update Product" : "Add Product"}
                       </button>
@@ -583,7 +678,7 @@ const CombinedApp = () => {
                         <button 
                           type="button"
                           onClick={handleCancelProductEdit}
-                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
                         >
                           Cancel
                         </button>
@@ -594,13 +689,17 @@ const CombinedApp = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map(p => (
-                  <div key={p._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
+                {products.map((p, index) => (
+                  <div 
+                    key={p._id} 
+                    className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 hover-lift card-shadow animate-fadeIn"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
                     <div className="relative">
                       <img 
                         src={getImageSource(p.image)} 
                         alt={p.name} 
-                        className="h-48 w-full object-cover"
+                        className="h-48 w-full object-cover shimmer"
                         onError={(e) => {
                           e.target.onerror = null; 
                           e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
@@ -619,7 +718,7 @@ const CombinedApp = () => {
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleEditProduct(p)} 
-                          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -628,7 +727,7 @@ const CombinedApp = () => {
                         </button>
                         <button 
                           onClick={() => handleDeleteProduct(p._id)} 
-                          className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                          className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -642,7 +741,7 @@ const CombinedApp = () => {
               </div>
               
               {products.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-400 animate-fadeIn">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-16M9 9h6m-6 4h6m-6 4h6" />
                   </svg>
@@ -654,7 +753,7 @@ const CombinedApp = () => {
           ) : (
             // Services Admin
             <div>
-              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700">
+              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700 animate-fadeIn">
                 <h3 className="text-xl font-semibold mb-4 text-white">
                   {editingServiceId ? "Edit Service" : "Add New Service"}
                 </h3>
@@ -714,7 +813,7 @@ const CombinedApp = () => {
                     <div className="flex gap-2">
                       <button 
                         type="submit" 
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1"
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
                       >
                         {editingServiceId ? "Update Service" : "Add Service"}
                       </button>
@@ -723,7 +822,7 @@ const CombinedApp = () => {
                         <button 
                           type="button"
                           onClick={handleCancelServiceEdit}
-                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300"
+                          className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105"
                         >
                           Cancel
                         </button>
@@ -734,13 +833,17 @@ const CombinedApp = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {services.map(s => (
-                  <div key={s._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
+                {services.map((s, index) => (
+                  <div 
+                    key={s._id} 
+                    className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 hover-lift card-shadow animate-fadeIn"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
                     <div className="relative">
                       <img 
                         src={getImageSource(s.image)} 
                         alt={s.name} 
-                        className="h-48 w-full object-cover"
+                        className="h-48 w-full object-cover shimmer"
                         onError={(e) => {
                           e.target.onerror = null; 
                           e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
@@ -759,7 +862,7 @@ const CombinedApp = () => {
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleEditService(s)} 
-                          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                          className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -768,7 +871,7 @@ const CombinedApp = () => {
                         </button>
                         <button 
                           onClick={() => handleDeleteService(s._id)} 
-                          className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
+                          className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -782,7 +885,7 @@ const CombinedApp = () => {
               </div>
               
               {services.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-400 animate-fadeIn">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-16M9 9h6m-6 4h6m-6 4h6" />
                   </svg>
@@ -797,26 +900,26 @@ const CombinedApp = () => {
         // User View (FeaturedServices)
         <div>
           {/* Header */}
-          <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 px-6 py-4 rounded-xl shadow-2xl mb-6 sticky top-2 z-10 border border-gray-700">
+          <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 px-6 py-4 rounded-xl shadow-2xl mb-6 sticky top-2 z-10 border border-gray-700 animate-fadeIn">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex items-center">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg mr-3 shadow-md">
+              <div className="flex items-center animate-float">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg mr-3 shadow-md animate-glow">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Benzamods</h1>
+                <h1 className="text-2xl font-bold gradient-text">Benzamods</h1>
               </div>
               
               {/* Search Bar */}
-              <div className="flex-1 max-w-xl w-full">
+              <div className="flex-1 max-w-xl w-full animate-slideIn">
                 <div className="relative">
                   <input 
                     type="text" 
                     placeholder="Search products and services..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-md border border-gray-700 placeholder-gray-400"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-md border border-gray-700 placeholder-gray-400 transition-all duration-300"
                   />
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute right-3 top-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -824,17 +927,18 @@ const CombinedApp = () => {
                 </div>
               </div>
               
-              <nav className="flex flex-wrap gap-3 items-center">
+              <nav className="flex flex-wrap gap-3 items-center animate-fadeIn">
                 {currentUser ? (
                   <>
-                    <span className="bg-gradient-to-r from-blue-700 to-purple-700 px-3 py-1 rounded-full text-sm">{currentUser.name}</span>
-                    <button onClick={() => setShowProfile(true)} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-3 py-2 rounded-lg transition-all flex items-center shadow-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Profile
-                    </button>
-                    <button onClick={handleLogout} className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-3 py-2 rounded-lg transition-all flex items-center shadow-md">
+                    <div className="flex items-center">
+                      <div className="bg-gradient-to-r from-blue-700 to-purple-700 px-3 py-1 rounded-full text-sm flex items-center transition-all duration-300 hover:scale-105">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Hi, {currentUser.name}
+                      </div>
+                    </div>
+                    <button onClick={handleLogout} className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center shadow-md">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
@@ -844,7 +948,7 @@ const CombinedApp = () => {
                 ) : (
                   <button 
                     onClick={() => { setShowAuth(true); setIsLogin(true); }} 
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-4 py-2 rounded-lg transition-all flex items-center shadow-md"
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center shadow-md"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -854,55 +958,45 @@ const CombinedApp = () => {
                 )}
                 <button 
                   onClick={() => setShowWishlistModal(true)} 
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 px-3 py-2 rounded-lg transition-all flex items-center relative shadow-md"
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center relative shadow-md"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                   Wishlist
                   {wishlist.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md animate-pulse">
                       {wishlist.length}
                     </span>
                   )}
                 </button>
                 <button 
                   onClick={() => setShowCartModal(true)} 
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-3 py-2 rounded-lg transition-all flex items-center relative shadow-md"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center relative shadow-md"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   Cart
                   {cart.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md animate-pulse">
                       {cart.length}
                     </span>
                   )}
                 </button>
                 <button 
                   onClick={() => setShowOrdersModal(true)} 
-                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 px-3 py-2 rounded-lg transition-all flex items-center relative shadow-md"
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center relative shadow-md"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
                   Orders
                   {orders.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md animate-pulse">
                       {orders.length}
                     </span>
                   )}
-                </button>
-                <button 
-                  onClick={() => setIsAdmin(true)} 
-                  className="bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 px-3 py-2 rounded-lg transition-all flex items-center shadow-md"
-                >
-                  <svg xmlns="" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  
                 </button>
               </nav>
             </div>
@@ -913,11 +1007,11 @@ const CombinedApp = () => {
             {/* Products Section */}
             <section className="mb-10">
               <div
-                className="bg-gradient-to-r from-blue-700 via-purple-700 to-blue-700 rounded-xl shadow-2xl p-6 cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-500/30"
+                className="bg-gradient-to-r from-blue-700 via-purple-700 to-blue-700 rounded-xl shadow-2xl p-6 cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border border-blue-500/30 animate-fadeIn"
                 onClick={() => setShowProducts(!showProducts)}
               >
                 <div className="flex items-center">
-                  <div className="bg-white/10 p-3 rounded-lg mr-4 backdrop-blur-sm border border-white/10">
+                  <div className="bg-white/10 p-3 rounded-lg mr-4 backdrop-blur-sm border border-white/10 animate-pulse">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                     </svg>
@@ -936,14 +1030,14 @@ const CombinedApp = () => {
               
               {showProducts && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {filteredProducts.map((p) => (
-                    <div key={p._id} className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-700">
+                  {filteredProducts.map((p, index) => (
+                    <div key={p._id} className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-700 hover-lift card-shadow animate-fadeIn" style={{ animationDelay: `${index * 0.1}s` }}>
                       <div className="relative">
-                        <img src={getImageSource(p.image)} alt={p.name} className="h-56 w-full object-cover" />
+                        <img src={getImageSource(p.image)} alt={p.name} className="h-56 w-full object-cover shimmer" />
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
                         <button 
                           onClick={() => handleWishlist(p)}
-                          className="absolute top-3 right-3 bg-gray-900/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-red-500/80 transition-all"
+                          className="absolute top-3 right-3 bg-gray-900/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-red-500/80 transition-all duration-300 transform hover:scale-110"
                         >
                           {wishlist.find(i => i._id === p._id) ? (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -963,7 +1057,7 @@ const CombinedApp = () => {
                         <div className="flex flex-col gap-2">
                           <button 
                             onClick={() => handleBuyNow(p)} 
-                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2 rounded-lg transition-all flex items-center justify-center shadow-md"
+                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center shadow-md animate-bounce"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -972,7 +1066,7 @@ const CombinedApp = () => {
                           </button>
                           <button 
                             onClick={() => handleAddCart(p)} 
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 rounded-lg transition-all flex items-center justify-center shadow-md"
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center shadow-md animate-bounce"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -990,11 +1084,11 @@ const CombinedApp = () => {
             {/* Services Section */}
             <section className="mb-10">
               <div
-                className="bg-gradient-to-r from-green-700 via-teal-700 to-green-700 rounded-xl shadow-2xl p-6 cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border border-green-500/30"
+                className="bg-gradient-to-r from-green-700 via-teal-700 to-green-700 rounded-xl shadow-2xl p-6 cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 border border-green-500/30 animate-fadeIn"
                 onClick={() => setShowServices(!showServices)}
               >
                 <div className="flex items-center">
-                  <div className="bg-white/10 p-3 rounded-lg mr-4 backdrop-blur-sm border border-white/10">
+                  <div className="bg-white/10 p-3 rounded-lg mr-4 backdrop-blur-sm border border-white/10 animate-pulse">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -1013,14 +1107,14 @@ const CombinedApp = () => {
               
               {showServices && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {filteredServices.map((s) => (
-                    <div key={s._id} className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-700">
+                  {filteredServices.map((s, index) => (
+                    <div key={s._id} className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-700 hover-lift card-shadow animate-fadeIn" style={{ animationDelay: `${index * 0.1}s` }}>
                       <div className="relative">
-                        <img src={getImageSource(s.image)} alt={s.name} className="h-56 w-full object-cover" />
+                        <img src={getImageSource(s.image)} alt={s.name} className="h-56 w-full object-cover shimmer" />
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-70"></div>
                         <button 
                           onClick={() => handleWishlist(s)}
-                          className="absolute top-3 right-3 bg-gray-900/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-red-500/80 transition-all"
+                          className="absolute top-3 right-3 bg-gray-900/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-red-500/80 transition-all duration-300 transform hover:scale-110"
                         >
                           {wishlist.find(i => i._id === s._id) ? (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -1040,7 +1134,7 @@ const CombinedApp = () => {
                         <div className="flex flex-col gap-2">
                           <button 
                             onClick={() => handleBuyNow(s)} 
-                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2 rounded-lg transition-all flex items-center justify-center shadow-md"
+                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center shadow-md animate-bounce"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -1049,7 +1143,7 @@ const CombinedApp = () => {
                           </button>
                           <button 
                             onClick={() => handleAddCart(s)} 
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 rounded-lg transition-all flex items-center justify-center shadow-md"
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center shadow-md animate-bounce"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1066,7 +1160,7 @@ const CombinedApp = () => {
           </main>
           
           {/* Footer Section */}
-          <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 mt-12 border-t border-gray-800">
+          <footer className="bg-gradient-to-b from-gray-900 to-black text-white py-12 px-4 mt-12 border-t border-gray-800 animate-fadeIn">
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* About Section */}
               <div>
@@ -1076,18 +1170,7 @@ const CombinedApp = () => {
                   Transform your vehicle with our expert services.
                 </p>
                 <div className="flex gap-4">
-                  <a href="#" className="text-gray-300 hover:text-white transition">
-                    {/* Social media icons would go here */}
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition">
-                    {/* Social media icons would go here */}
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition">
-                    {/* Social media icons would go here */}
-                  </a>
-                  <a href="#" className="text-gray-300 hover:text-white transition">
-                    {/* Social media icons would go here */}
-                  </a>
+                  {/* Social media icons can be added here */}
                 </div>
               </div>
               
@@ -1095,11 +1178,11 @@ const CombinedApp = () => {
               <div>
                 <h3 className="text-xl font-bold mb-4 text-white font-heading"></h3>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
                 </ul>
               </div>
               
@@ -1107,23 +1190,23 @@ const CombinedApp = () => {
               <div>
                 <h3 className="text-xl font-bold mb-4 text-white font-heading">Contact Us</h3>
                 <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
                     <Phone size={18} className="text-blue-400" /> 
                     <span>+91 8904708819</span>
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
                     <Mail size={18} className="text-blue-400" /> 
                     <span>info@Benzamods12.com</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className="flex items-start gap-2 transition-all duration-300 hover:translate-x-1">
                     <MapPin size={18} className="text-blue-400 mt-1 flex-shrink-0" /> 
                     <span>1st cross, 2nd stage jayanagar opp to myura bakery, Bengaluru, karnataka, india</span>
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
                     <Clock size={18} className="text-blue-400" /> 
                     <span>Monday - Saturday: 9:00 AM - 8:00 PM</span>
                   </li>
-                  <li className="flex items-center gap-2">
+                  <li className="flex items-center gap-2 transition-all duration-300 hover:translate-x-1">
                     <Clock size={18} className="text-blue-400" /> 
                     <span>Sunday: Closed</span>
                   </li>
@@ -1139,8 +1222,8 @@ const CombinedApp = () => {
           
           {/* --- Modals for Auth, Cart, Wishlist, Buy, Orders, Profile --- */}
           {showAuth && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <form onSubmit={handleAuthSubmit} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <form onSubmit={handleAuthSubmit} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700 animate-slideIn">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">{isLogin ? "Login" : "Create Account"}</h2>
                 {!isLogin && (
                   <div className="mb-4">
@@ -1150,7 +1233,7 @@ const CombinedApp = () => {
                       placeholder="Enter your name" 
                       value={authData.name} 
                       onChange={(e) => setAuthData({ ...authData, name: e.target.value })} 
-                      className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                      className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" 
                     />
                   </div>
                 )}
@@ -1161,7 +1244,7 @@ const CombinedApp = () => {
                     placeholder="Enter your email" 
                     value={authData.email} 
                     onChange={(e) => setAuthData({ ...authData, email: e.target.value })} 
-                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" 
                   />
                 </div>
                 <div className="mb-6">
@@ -1171,10 +1254,10 @@ const CombinedApp = () => {
                     placeholder="Enter your password" 
                     value={authData.password} 
                     onChange={(e) => setAuthData({ ...authData, password: e.target.value })} 
-                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" 
                   />
                 </div>
-                <button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-3 rounded-lg w-full hover:from-purple-700 hover:to-purple-800 transition-all mb-4 font-medium shadow-md">
+                <button className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-3 rounded-lg w-full hover:from-purple-700 hover:to-purple-800 transition-all duration-300 transform hover:scale-105 mb-4 font-medium shadow-md">
                   {isLogin ? "Login" : "Create Account"}
                 </button>
                 <p className="text-center">
@@ -1184,7 +1267,7 @@ const CombinedApp = () => {
                   <button 
                     type="button"
                     onClick={() => setIsLogin(!isLogin)} 
-                    className="text-purple-400 hover:underline font-medium"
+                    className="text-purple-400 hover:underline font-medium transition-all duration-300"
                   >
                     {isLogin ? "Sign up" : "Login"}
                   </button>
@@ -1192,7 +1275,7 @@ const CombinedApp = () => {
                 <button 
                   type="button"
                   onClick={() => setShowAuth(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1203,8 +1286,8 @@ const CombinedApp = () => {
           )}
           
           {showBuy && buyItem && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <form onSubmit={confirmOrder} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <form onSubmit={confirmOrder} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700 animate-slideIn">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">Confirm Order</h2>
                 <div className="flex items-center mb-6 p-4 bg-gray-900 rounded-lg">
                   <img src={getImageSource(buyItem.image)} alt={buyItem.name} className="w-20 h-20 object-contain rounded-lg mr-4" />
@@ -1250,7 +1333,7 @@ const CombinedApp = () => {
                     placeholder="Enter your complete delivery address" 
                     value={orderData.address} 
                     onChange={(e) => setOrderData({ ...orderData, address: e.target.value })} 
-                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                    className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all" 
                     rows="3"
                     required 
                   />
@@ -1259,14 +1342,14 @@ const CombinedApp = () => {
                 <div className="flex gap-3">
                   <button 
                     type="submit" 
-                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all font-medium shadow-md"
+                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:scale-105 font-medium shadow-md"
                   >
                     Confirm Order
                   </button>
                   <button 
                     type="button" 
                     onClick={() => setShowBuy(false)} 
-                    className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-3 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all font-medium shadow-md"
+                    className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-3 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 font-medium shadow-md"
                   >
                     Cancel
                   </button>
@@ -1275,7 +1358,7 @@ const CombinedApp = () => {
                 <button 
                   type="button"
                   onClick={() => setShowBuy(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1286,8 +1369,8 @@ const CombinedApp = () => {
           )}
           
           {showCartModal && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 animate-slideIn">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">Shopping Cart</h2>
                 {cart.length === 0 ? (
                   <div className="text-center py-10">
@@ -1297,7 +1380,7 @@ const CombinedApp = () => {
                     <p className="text-gray-400 text-lg">Your cart is empty</p>
                     <button 
                       onClick={() => setShowCartModal(false)} 
-                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md"
+                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-md"
                     >
                       Continue Shopping
                     </button>
@@ -1305,7 +1388,7 @@ const CombinedApp = () => {
                 ) : (
                   <>
                     {cart.map((c) => (
-                      <div key={c._id} className="flex items-center gap-4 border-b border-gray-700 py-4">
+                      <div key={c._id} className="flex items-center gap-4 border-b border-gray-700 py-4 transition-all duration-300 hover:bg-gray-750 rounded-lg p-2">
                         <img src={getImageSource(c.image)} alt={c.name} className="w-16 h-16 object-contain rounded-lg" />
                         <div className="flex-1">
                           <p className="font-semibold text-white">{c.name}</p>
@@ -1313,20 +1396,20 @@ const CombinedApp = () => {
                           <div className="flex gap-2 mt-2">
                             <button 
                               onClick={() => handleQuantityChange(c._id, -1)} 
-                              className="bg-gray-700 px-2 py-1 rounded hover:bg-gray-600 transition-all"
+                              className="bg-gray-700 px-2 py-1 rounded hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
                             >
                               -
                             </button>
                             <span className="px-2 text-white">{c.quantity}</span>
                             <button 
                               onClick={() => handleQuantityChange(c._id, 1)} 
-                              className="bg-gray-700 px-2 py-1 rounded hover:bg-gray-600 transition-all"
+                              className="bg-gray-700 px-2 py-1 rounded hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
                             >
                               +
                             </button>
                             <button 
                               onClick={() => handleRemoveCartItem(c._id)} 
-                              className="text-red-400 hover:text-red-300 ml-4 transition-all"
+                              className="text-red-400 hover:text-red-300 ml-4 transition-all duration-300 transform hover:scale-105"
                             >
                               Remove
                             </button>
@@ -1346,7 +1429,7 @@ const CombinedApp = () => {
                             setShowCartModal(false);
                           }
                         }} 
-                        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all font-medium mb-3 shadow-md"
+                        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:scale-105 font-medium mb-3 shadow-md"
                       >
                         Checkout All Items
                       </button>
@@ -1355,7 +1438,7 @@ const CombinedApp = () => {
                 )}
                 <button 
                   onClick={() => setShowCartModal(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1366,8 +1449,8 @@ const CombinedApp = () => {
           )}
           
           {showWishlistModal && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 animate-slideIn">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">My Wishlist</h2>
                 {wishlist.length === 0 ? (
                   <div className="text-center py-10">
@@ -1377,7 +1460,7 @@ const CombinedApp = () => {
                     <p className="text-gray-400 text-lg">Your wishlist is empty</p>
                     <button 
                       onClick={() => setShowWishlistModal(false)} 
-                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md"
+                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-md"
                     >
                       Continue Shopping
                     </button>
@@ -1385,7 +1468,7 @@ const CombinedApp = () => {
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
                     {wishlist.map((w) => (
-                      <div key={w._id} className="flex items-center gap-4 border border-gray-700 rounded-lg p-4 bg-gray-900">
+                      <div key={w._id} className="flex items-center gap-4 border border-gray-700 rounded-lg p-4 bg-gray-900 transition-all duration-300 hover:bg-gray-850 hover-lift">
                         <img src={getImageSource(w.image)} alt={w.name} className="w-16 h-16 object-contain rounded-lg" />
                         <div className="flex-1">
                           <p className="font-semibold text-white">{w.name}</p>
@@ -1394,7 +1477,7 @@ const CombinedApp = () => {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => handleAddCart(w)} 
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center shadow-md"
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 flex items-center shadow-md"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1403,7 +1486,7 @@ const CombinedApp = () => {
                           </button>
                           <button 
                             onClick={() => handleRemoveWishlistItem(w._id)} 
-                            className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1 rounded-lg hover:from-red-700 hover:to-red-800 transition-all flex items-center shadow-md"
+                            className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 flex items-center shadow-md"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1417,7 +1500,7 @@ const CombinedApp = () => {
                 )}
                 <button 
                   onClick={() => setShowWishlistModal(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1428,8 +1511,8 @@ const CombinedApp = () => {
           )}
           
           {showOrdersModal && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 animate-slideIn">
                 <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">My Orders</h2>
                 {orders.length === 0 ? (
                   <div className="text-center py-10">
@@ -1439,7 +1522,7 @@ const CombinedApp = () => {
                     <p className="text-gray-400 text-lg">You haven't placed any orders yet</p>
                     <button 
                       onClick={() => setShowOrdersModal(false)} 
-                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md"
+                      className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-md"
                     >
                       Continue Shopping
                     </button>
@@ -1447,7 +1530,7 @@ const CombinedApp = () => {
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
                     {orders.map((order) => (
-                      <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-900">
+                      <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-900 transition-all duration-300 hover:bg-gray-850 hover-lift">
                         <div className="flex flex-col md:flex-row gap-4">
                           <img src={getImageSource(order.image)} alt={order.title} className="w-24 h-24 object-contain rounded-lg" />
                           <div className="flex-1">
@@ -1471,7 +1554,7 @@ const CombinedApp = () => {
                           <div className="mt-4">
                             <button 
                               onClick={() => handleCancelOrder(order.id)} 
-                              className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-md"
+                              className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-md"
                             >
                               Cancel Order
                             </button>
@@ -1483,55 +1566,7 @@ const CombinedApp = () => {
                 )}
                 <button 
                   onClick={() => setShowOrdersModal(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {showProfile && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700">
-                <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">User Profile</h2>
-                {currentUser ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-300 mb-2">Name</label>
-                      <input 
-                        type="text" 
-                        value={currentUser.name} 
-                        readOnly
-                        className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">Email</label>
-                      <input 
-                        type="email" 
-                        value={currentUser.email} 
-                        readOnly
-                        className="border border-gray-700 bg-gray-900 text-white p-3 w-full rounded-lg" 
-                      />
-                    </div>
-                    <div className="pt-4">
-                      <button 
-                        onClick={handleLogout} 
-                        className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 rounded-lg hover:from-red-700 hover:to-red-800 transition-all font-medium shadow-md"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center py-4 text-gray-400">Please login to view your profile</p>
-                )}
-                <button 
-                  onClick={() => setShowProfile(false)} 
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
