@@ -10,6 +10,9 @@ function HeroBanner() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showSignupForm, setShowSignupForm] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showAboutUs, setShowAboutUs] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [signupData, setSignupData] = useState({ 
     username: "", 
@@ -17,7 +20,25 @@ function HeroBanner() {
     confirmPassword: "",
     email: "" 
   });
+  const [forgotPasswordData, setForgotPasswordData] = useState({ 
+    identifier: "", 
+    isAdmin: false 
+  });
+  const [resetPasswordData, setResetPasswordData] = useState({ 
+    username: "", 
+    newPassword: "", 
+    confirmPassword: "" 
+  });
   const [authError, setAuthError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  
+  // Initialize admin password if not exists
+  useEffect(() => {
+    if (!localStorage.getItem('adminPassword')) {
+      localStorage.setItem('adminPassword', JSON.stringify("1234"));
+    }
+  }, []);
   
   // Background images
   const backgroundMedia = [
@@ -59,8 +80,9 @@ function HeroBanner() {
     e.preventDefault();
     setAuthError("");
     
-    // Check admin credentials
-    if (loginData.username === "admin" && loginData.password === "1234") {
+    // Check admin credentials using stored password
+    const adminPassword = JSON.parse(localStorage.getItem('adminPassword') || '"1234"');
+    if (loginData.username === "admin" && loginData.password === adminPassword) {
       setIsLoggedIn(true);
       setIsAdmin(true);
       localStorage.setItem('userData', JSON.stringify({ 
@@ -127,6 +149,123 @@ function HeroBanner() {
     setShowSignupForm(false);
   };
   
+  // Handle forgot password request
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    setResetMessage("");
+    
+    if (forgotPasswordData.isAdmin) {
+      // Handle admin password reset
+      if (forgotPasswordData.identifier === "admin") {
+        // Generate a simple token (in a real app, this would be more secure)
+        const token = Math.random().toString(36).substring(2, 15);
+        setResetToken(token);
+        localStorage.setItem('adminResetToken', token);
+        
+        setResetMessage("Admin password reset initiated. Check your console for the reset token.");
+        console.log("Admin Reset Token:", token);
+        
+        setTimeout(() => {
+          setShowForgotPassword(false);
+          setShowResetPassword(true);
+          setResetPasswordData({
+            ...resetPasswordData,
+            username: "admin"
+          });
+        }, 2000);
+      } else {
+        setAuthError("Admin username not found");
+      }
+    } else {
+      // Handle regular user password reset
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.email === forgotPasswordData.identifier || u.username === forgotPasswordData.identifier);
+      
+      if (user) {
+        // Generate a simple token (in a real app, this would be more secure)
+        const token = Math.random().toString(36).substring(2, 15);
+        setResetToken(token);
+        localStorage.setItem('userResetToken', token);
+        localStorage.setItem('resetUsername', user.username);
+        
+        setResetMessage("Password reset initiated. Check your console for the reset token.");
+        console.log("User Reset Token:", token);
+        
+        setTimeout(() => {
+          setShowForgotPassword(false);
+          setShowResetPassword(true);
+          setResetPasswordData({
+            ...resetPasswordData,
+            username: user.username
+          });
+        }, 2000);
+      } else {
+        setAuthError("Email or username not found in our records");
+      }
+    }
+  };
+  
+  // Handle password reset
+  const handleResetPassword = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    // Verify token
+    const storedToken = resetPasswordData.username === "admin" 
+      ? localStorage.getItem('adminResetToken') 
+      : localStorage.getItem('userResetToken');
+    
+    if (storedToken !== resetToken) {
+      setAuthError("Invalid or expired reset token");
+      return;
+    }
+    
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      setAuthError("Passwords do not match");
+      return;
+    }
+    
+    if (resetPasswordData.username === "admin") {
+      // Update admin password in localStorage
+      localStorage.setItem('adminPassword', JSON.stringify(resetPasswordData.newPassword));
+      
+      setResetMessage("Admin password has been reset successfully!");
+      
+      // Clear tokens
+      localStorage.removeItem('adminResetToken');
+      
+      setTimeout(() => {
+        setShowResetPassword(false);
+        setShowLoginForm(true);
+        setResetMessage("");
+      }, 2000);
+    } else {
+      // Update user password
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex(u => u.username === resetPasswordData.username);
+      
+      if (userIndex !== -1) {
+        users[userIndex].password = resetPasswordData.newPassword;
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        setResetMessage("Password has been reset successfully!");
+        
+        // Clear tokens
+        localStorage.removeItem('userResetToken');
+        localStorage.removeItem('resetUsername');
+        
+        setTimeout(() => {
+          setShowResetPassword(false);
+          setShowLoginForm(true);
+          setResetMessage("");
+        }, 2000);
+      } else {
+        setAuthError("User not found");
+      }
+    }
+  };
+  
   // Handle logout
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -143,12 +282,21 @@ function HeroBanner() {
       if (showSignupForm && !e.target.closest('.auth-form')) {
         setShowSignupForm(false);
       }
+      if (showForgotPassword && !e.target.closest('.auth-form')) {
+        setShowForgotPassword(false);
+      }
+      if (showResetPassword && !e.target.closest('.auth-form')) {
+        setShowResetPassword(false);
+      }
+      if (showAboutUs && !e.target.closest('.about-modal')) {
+        setShowAboutUs(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showLoginForm, showSignupForm]);
+  }, [showLoginForm, showSignupForm, showForgotPassword, showResetPassword, showAboutUs]);
   
   return (
     <div className="hero-container">
@@ -200,6 +348,9 @@ function HeroBanner() {
           <button onClick={() => navigate('/services')} className="btn-outline">
             Services
           </button>
+          <button onClick={() => setShowAboutUs(true)} className="btn-outline">
+            About Us
+          </button>
         </div>
         <div className="hero-auth-buttons">
           <button 
@@ -250,6 +401,19 @@ function HeroBanner() {
                 required
               />
               {authError && <p className="error-text">{authError}</p>}
+              <div className="forgot-password-link">
+                <button 
+                  type="button" 
+                  className="link-button"
+                  onClick={() => {
+                    setShowLoginForm(false);
+                    setShowForgotPassword(true);
+                    setAuthError("");
+                  }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="auth-form-buttons">
                 <button type="submit" className="btn-primary">Login</button>
                 <button 
@@ -266,6 +430,128 @@ function HeroBanner() {
             </form>
             <button 
               onClick={() => setShowLoginForm(false)} 
+              className="close-button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Forgot Password Form Modal */}
+      {showForgotPassword && (
+        <div className="modal-overlay">
+          <div className="auth-form">
+            <h3 className="auth-title">Reset Password</h3>
+            <p className="auth-subtitle">Enter your username or email to reset your password</p>
+            <form onSubmit={handleForgotPassword}>
+              <div className="user-type-toggle">
+                <button
+                  type="button"
+                  className={`toggle-btn ${!forgotPasswordData.isAdmin ? 'active' : ''}`}
+                  onClick={() => setForgotPasswordData({...forgotPasswordData, isAdmin: false})}
+                >
+                  User
+                </button>
+                <button
+                  type="button"
+                  className={`toggle-btn ${forgotPasswordData.isAdmin ? 'active' : ''}`}
+                  onClick={() => setForgotPasswordData({...forgotPasswordData, isAdmin: true})}
+                >
+                  Admin
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder={forgotPasswordData.isAdmin ? "Admin Username" : "Username or Email"}
+                value={forgotPasswordData.identifier}
+                onChange={(e) => setForgotPasswordData({...forgotPasswordData, identifier: e.target.value})}
+                className="input-field"
+                required
+              />
+              {authError && <p className="error-text">{authError}</p>}
+              {resetMessage && <p className="success-text">{resetMessage}</p>}
+              <div className="auth-form-buttons">
+                <button type="submit" className="btn-primary">Reset Password</button>
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setShowLoginForm(true);
+                  }}
+                >
+                  Back to Login
+                </button>
+              </div>
+            </form>
+            <button 
+              onClick={() => setShowForgotPassword(false)} 
+              className="close-button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Reset Password Form Modal */}
+      {showResetPassword && (
+        <div className="modal-overlay">
+          <div className="auth-form">
+            <h3 className="auth-title">Set New Password</h3>
+            <p className="auth-subtitle">Enter your new password below</p>
+            <form onSubmit={handleResetPassword}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={resetPasswordData.username}
+                onChange={(e) => setResetPasswordData({...resetPasswordData, username: e.target.value})}
+                className="input-field"
+                disabled
+              />
+              <input
+                type="password"
+                placeholder="New Password"
+                value={resetPasswordData.newPassword}
+                onChange={(e) => setResetPasswordData({...resetPasswordData, newPassword: e.target.value})}
+                className="input-field"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Confirm New Password"
+                value={resetPasswordData.confirmPassword}
+                onChange={(e) => setResetPasswordData({...resetPasswordData, confirmPassword: e.target.value})}
+                className="input-field"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Reset Token (check console)"
+                value={resetToken}
+                onChange={(e) => setResetToken(e.target.value)}
+                className="input-field"
+                required
+              />
+              {authError && <p className="error-text">{authError}</p>}
+              {resetMessage && <p className="success-text">{resetMessage}</p>}
+              <div className="auth-form-buttons">
+                <button type="submit" className="btn-primary">Update Password</button>
+                <button 
+                  type="button" 
+                  className="btn-secondary"
+                  onClick={() => {
+                    setShowResetPassword(false);
+                    setShowLoginForm(true);
+                  }}
+                >
+                  Back to Login
+                </button>
+              </div>
+            </form>
+            <button 
+              onClick={() => setShowResetPassword(false)} 
               className="close-button"
             >
               ×
@@ -329,6 +615,70 @@ function HeroBanner() {
             </form>
             <button 
               onClick={() => setShowSignupForm(false)} 
+              className="close-button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* About Us Modal */}
+      {showAboutUs && (
+        <div className="modal-overlay">
+          <div className="about-modal">
+            <h3 className="about-title">About Benzamods</h3>
+            <div className="about-content">
+              <div className="about-section">
+                <h4>Our Story</h4>
+                <p>
+                  Founded in 2015, Benzamods started as a passion project by automotive enthusiasts 
+                  who wanted to transform ordinary vehicles into extraordinary works of art. What began 
+                  in a small garage has now grown into a premier automotive customization studio known 
+                  for quality, innovation, and attention to detail.
+                </p>
+              </div>
+              
+              <div className="about-section">
+                <h4>Our Mission</h4>
+                <p>
+                  At Benzamods, we believe that every vehicle has the potential to be a masterpiece. 
+                  Our mission is to bring our clients' automotive dreams to life through expert 
+                  craftsmanship, cutting-edge technology, and a deep understanding of automotive design.
+                </p>
+              </div>
+              
+              <div className="about-section">
+                <h4>Our Team</h4>
+                <p>
+                  Our team consists of certified automotive technicians, designers, and engineers 
+                  with decades of combined experience. Each member of our team shares a passion for 
+                  automobiles and a commitment to excellence in every project we undertake.
+                </p>
+              </div>
+              
+              <div className="about-section">
+                <h4>What We Do</h4>
+                <ul>
+                  <li>Custom body kits and aerodynamic enhancements</li>
+                  <li>Performance engine tuning and upgrades</li>
+                  <li>Luxury interior customization</li>
+                  <li>Advanced lighting and audio systems</li>
+                  <li>Paint protection and ceramic coating</li>
+                  <li>Wheel and tire customization</li>
+                </ul>
+              </div>
+              
+              <div className="about-section">
+                <h4>Our Values</h4>
+                <p>
+                  Quality, innovation, and customer satisfaction are at the core of everything we do. 
+                  We treat every vehicle as if it were our own and every client as part of the Benzamods family.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowAboutUs(false)} 
               className="close-button"
             >
               ×
@@ -671,6 +1021,13 @@ const addGlobalStyles = () => {
       color: #fff;
     }
     
+    .auth-subtitle {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
     .input-field {
       width: 100%;
       padding: 12px 15px;
@@ -683,8 +1040,20 @@ const addGlobalStyles = () => {
       box-sizing: border-box;
     }
     
+    .input-field:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
     .error-text {
       color: #ff4757;
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    
+    .success-text {
+      color: #2ed573;
       text-align: center;
       margin-bottom: 15px;
       font-size: 14px;
@@ -706,6 +1075,106 @@ const addGlobalStyles = () => {
       font-size: 24px;
       cursor: pointer;
       font-weight: bold;
+    }
+    
+    .forgot-password-link {
+      text-align: right;
+      margin-bottom: 15px;
+    }
+    
+    .link-button {
+      background: none;
+      border: none;
+      color: #00d4ff;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+    
+    .user-type-toggle {
+      display: flex;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-btn.active {
+      background: linear-gradient(135deg, #007bff, #00d4ff);
+      color: white;
+    }
+    
+    /* About Us Modal */
+    .about-modal {
+      background: rgba(26, 26, 26, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .about-title {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+    }
+    
+    .about-content {
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+    }
+    
+    .about-section {
+      margin-bottom: 25px;
+    }
+    
+    .about-section h4 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #00d4ff;
+    }
+    
+    .about-section p {
+      margin-bottom: 15px;
+    }
+    
+    .about-section ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .about-section li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .about-section li:before {
+      content: "•";
+      color: #00d4ff;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
     }
     
     /* Animations */
@@ -851,6 +1320,15 @@ const addGlobalStyles = () => {
       
       .auth-title {
         font-size: 20px;
+      }
+      
+      .about-modal {
+        width: 95%;
+        padding: 20px;
+      }
+      
+      .about-title {
+        font-size: 24px;
       }
     }
     

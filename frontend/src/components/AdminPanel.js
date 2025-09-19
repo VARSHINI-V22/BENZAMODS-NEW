@@ -34,10 +34,12 @@ function AdminPanel() {
   const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [enquiries, setEnquiries] = useState([]); // New state for enquiries
   const [userSearch, setUserSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [reviewSearch, setReviewSearch] = useState("");
+  const [enquirySearch, setEnquirySearch] = useState(""); // New search state for enquiries
 
   useEffect(() => {
     // Load all data from localStorage
@@ -50,6 +52,7 @@ function AdminPanel() {
                           safeStorage.getItem("orderHistory") || 
                           [];
         const existingReviews = safeStorage.getItem("reviews") || [];
+        const existingEnquiries = safeStorage.getItem("enquiries") || []; // Load enquiries
         
         // Define static users that must always be present
         const staticUsers = [
@@ -89,16 +92,48 @@ function AdminPanel() {
           }
         ];
         
+        // Define static enquiries that must always be present
+        const staticEnquiries = [
+          { 
+            name: "varshini", 
+            email: "varshini22@gmail.com", 
+            message: "I'm interested in a full car wrap. What options do you have?", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "ashwini", 
+            email: "ashwini11@gmail.com", 
+            message: "I want to upgrade my car's lighting system. Can you help?", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "varshini", 
+            email: "varshini22@gmail.com", 
+            message: "Looking for engine tuning options for my Mercedes.", 
+            timestamp: new Date().toLocaleString() 
+          },
+          { 
+            name: "ashwini", 
+            email: "ashwini11@gmail.com", 
+            message: "I'd like to customize my car's interior. What materials do you offer?", 
+            timestamp: new Date().toLocaleString() 
+          }
+        ];
+        
         // Merge static users with existing users (ensure static users are always present)
         const allUsers = [...staticUsers, ...existingUsers];
         
         // Merge static messages with existing messages (ensure static messages are always present)
         const allMessages = [...staticMessages, ...existingMessages];
         
+        // Merge static enquiries with existing enquiries (ensure static enquiries are always present)
+        const allEnquiries = [...staticEnquiries, ...existingEnquiries];
+        
         setUsers(allUsers);
         setOrders(ordersData);
         setMessages(allMessages);
         setReviews(existingReviews);
+        setEnquiries(allEnquiries); // Set enquiries state
         
         // Save to localStorage if we're using static data
         if (existingUsers.length === 0) {
@@ -106,6 +141,9 @@ function AdminPanel() {
         }
         if (existingMessages.length === 0) {
           safeStorage.setItem("submittedMessages", allMessages);
+        }
+        if (existingEnquiries.length === 0) {
+          safeStorage.setItem("enquiries", allEnquiries);
         }
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
@@ -151,6 +189,12 @@ function AdminPanel() {
           setOrders(JSON.parse(e.newValue) || []);
         } catch (error) {
           console.error("Error parsing orders data:", error);
+        }
+      } else if (e.key === "enquiries") {
+        try {
+          setEnquiries(JSON.parse(e.newValue) || []);
+        } catch (error) {
+          console.error("Error parsing enquiries data:", error);
         }
       }
     };
@@ -214,6 +258,14 @@ function AdminPanel() {
     }
   };
 
+  const handleRemoveEnquiry = (index) => { // New handler for removing enquiries
+    if (window.confirm("Delete this enquiry?")) {
+      const updated = enquiries.filter((_, i) => i !== index);
+      setEnquiries(updated);
+      safeStorage.setItem("enquiries", updated);
+    }
+  };
+
   const handleToggleReviewStatus = (index) => {
     const updated = [...reviews];
     updated[index].status = updated[index].status === "approved" ? "pending" : "approved";
@@ -266,6 +318,13 @@ function AdminPanel() {
       r.status?.toLowerCase().includes(reviewSearch.toLowerCase())
   );
 
+  const filteredEnquiries = enquiries.filter( // New filter for enquiries
+    (e) =>
+      e.name?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
+      e.email?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
+      e.message?.toLowerCase().includes(enquirySearch.toLowerCase())
+  );
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -312,6 +371,12 @@ function AdminPanel() {
           onClick={() => setActiveTab("messages")}
         >
           ✉️ Messages
+        </button>
+        <button
+          style={activeTab === "enquiries" ? styles.activeTab : styles.tab}
+          onClick={() => setActiveTab("enquiries")}
+        >
+          📝 Enquiries
         </button>
         <button
           style={activeTab === "reviews" ? styles.activeTab : styles.tab}
@@ -440,10 +505,45 @@ function AdminPanel() {
                     <h4 style={styles.cardTitle}>{m.name}</h4>
                     <p style={styles.cardText}>Email: {m.email}</p>
                     <p style={styles.cardText}>Phone: {m.phone}</p>
-<p style={styles.cardText}>Message: {m.message}</p>
+                    <p style={styles.cardText}>Message: {m.message}</p>
                     <p style={styles.timestamp}>{m.timestamp}</p>
                     <button
                       onClick={() => handleRemoveMessage(i)}
+                      style={styles.deleteBtn}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {activeTab === "enquiries" && ( // New Enquiries tab
+          <div style={styles.tabSection}>
+            <h2 style={styles.sectionHeading}>Enquiries ({enquiries.length})</h2>
+            <input
+              type="text"
+              placeholder="Search Enquiries..."
+              value={enquirySearch}
+              onChange={(e) => setEnquirySearch(e.target.value)}
+              style={styles.searchInput}
+            />
+            {filteredEnquiries.length === 0 ? (
+              <div style={styles.emptyState}>
+                <h3 style={styles.emptyStateHeading}>No enquiries found</h3>
+                <p style={styles.emptyStateText}>Enquiries submitted from the Explore page will appear here.</p>
+              </div>
+            ) : (
+              <div style={styles.grid}>
+                {filteredEnquiries.map((e, i) => (
+                  <div key={i} style={styles.card}>
+                    <h4 style={styles.cardTitle}>{e.name}</h4>
+                    <p style={styles.cardText}>Email: {e.email}</p>
+                    <p style={styles.cardText}>Message: {e.message}</p>
+                    <p style={styles.timestamp}>{e.timestamp}</p>
+                    <button
+                      onClick={() => handleRemoveEnquiry(i)}
                       style={styles.deleteBtn}
                     >
                       Delete
