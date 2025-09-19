@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Package, Truck, CheckCircle } from "lucide-react";
 
 const CombinedApp = () => {
   // Check if we're in a browser environment
@@ -56,6 +56,8 @@ const CombinedApp = () => {
   const [showCartModal, setShowCartModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [showTrackOrderModal, setShowTrackOrderModal] = useState(false);
+  const [trackingOrder, setTrackingOrder] = useState(null);
   
   // Admin states
   const [formProduct, setFormProduct] = useState({
@@ -77,29 +79,38 @@ const CombinedApp = () => {
   
   // Demo data - Expanded to 10 products and 10 services
   const demoProducts = [
-    { _id: "1", name: "Performance Exhaust System", category: "car", description: "High-performance exhaust system for improved engine efficiency and sound.", price: 25000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "2", name: "Carbon Fiber Spoiler", category: "car", description: "Lightweight carbon fiber spoiler for enhanced aerodynamics.", price: 18000, image: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "4", name: "LED Headlight Kit", category: "car", description: "Ultra-bright LED headlights with improved visibility and modern look.", price: 12000, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "5", name: "Alloy Wheels", category: "car", description: "Premium alloy wheels to enhance your vehicle's appearance and performance.", price: 45000, image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "6", name: "Performance Brakes", category: "car", description: "High-performance brake system for improved stopping power and safety.", price: 28000, image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "7", name: "Car Cover", category: "car", description: "Dust and water-resistant car cover for all-weather protection.", price: 3500, image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "8", name: "Seat Covers", category: "car", description: "Premium leather seat covers for comfort and style.", price: 8500, image: "https://images.unsplash.com/photo-1552831916-5a8698319e98?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "9", name: "Floor Mats", category: "car", description: "Heavy-duty rubber floor mats for all-weather protection.", price: 2500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "10", name: "High-Flow Air Filter", category: "car", description: "Performance air filter for improved engine airflow and efficiency.", price: 4500, image: "https://images.unsplash.com/photo-1548943487-a2e4a5402c6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
+    { _id: "1", name: "Performance Exhaust System", category: "car", description: "High-performance exhaust system for improved engine efficiency and sound.", price: 25000, image: "https://tse2.mm.bing.net/th/id/OIP.FPvcDC0I2QAT2-ZMzMbvVQHaE8?pid=Api&P=0&h=220" },
+    { _id: "2", name: "Carbon Fiber Spoiler", category: "car", description: "Lightweight carbon fiber spoiler for enhanced aerodynamics.", price: 18000, image: "https://m.media-amazon.com/images/I/61gAb77Hs9L.jpg" },
+    { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://tse2.mm.bing.net/th/id/OIP.JulTBx1UPcpJ4JIhtMdR2wHaFe?pid=Api&P=0&h=220" },
+    { _id: "4", name: "LED Headlight Kit", category: "car", description: "Ultra-bright LED headlights with improved visibility and modern look.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.K1VijNzI40PetpAFkZSrMQHaHa?pid=Api&P=0&h=220" },
+    { _id: "5", name: "Alloy Wheels", category: "car", description: "Premium alloy wheels to enhance your vehicle's appearance and performance.", price: 45000, image: "https://tse4.mm.bing.net/th/id/OIP.DOeQUu06qYkdkobQAlO4ygHaHa?pid=Api&P=0&h=220" },
+    { _id: "6", name: "Performance Brakes", category: "car", description: "High-performance brake system for improved stopping power and safety.", price: 28000, image: "https://tse2.mm.bing.net/th/id/OIP.fDlAkDnxBDnMu_Z77e8X7AHaE7?pid=Api&P=0&h=220" },
+    { _id: "7", name: "Car Cover", category: "car", description: "Dust and water-resistant car cover for all-weather protection.", price: 3500, image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" },
+    { _id: "8", name: "Seat Covers", category: "car", description: "Premium leather seat covers for comfort and style.", price: 8500, image: "https://tse1.mm.bing.net/th/id/OIP.C3jpE0tjow0TPhfqf0usCgHaHa?pid=Api&P=0&h=220" },
+    { _id: "9", name: "Floor Mats", category: "car", description: "Heavy-duty rubber floor mats for all-weather protection.", price: 2500, image: "https://tse1.mm.bing.net/th/id/OIP.ifQJfWptFruDzownGRBhTQHaHa?pid=Api&P=0&h=220" },
+    { _id: "10", name: "High-Flow Air Filter", category: "car", description: "Performance air filter for improved engine airflow and efficiency.", price: 4500, image: "https://tse4.mm.bing.net/th/id/OIP.cJpgEEhbWs0dq9z4Ekjs-AHaHa?pid=Api&P=0&h=220" }
   ];
   
   const demoServices = [
-    { _id: "s1", name: "Engine Tuning", description: "Professional engine tuning for optimal performance.", price: 12000, image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://images.unsplash.com/photo-1552831916-5a8698319e98?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://images.unsplash.com/photo-1558618666-fcd25c85caca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://images.unsplash.com/photo-1549399542-7e246b199b00?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
-    { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://images.unsplash.com/photo-1548943487-a2e4a5402c6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
+    { _id: "s1", name: "Engine Tuning", description: "Professional engine tuning for optimal performance.", price: 12000, image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" },
+    { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" },
+    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" },
+    { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" },
+    { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" },
+    { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://tse3.mm.bing.net/th/id/OIP.M8k9NSGf2a8mlMuUc30VHgHaE7?pid=Api&P=0&h=220" },
+    { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://tse3.mm.bing.net/th/id/OIP.PdznukrEVKu2nvngXFC0hgHaHa?pid=Api&P=0&h=220" },
+    { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.aEVoNVK7wzp-9EFd-kRZcAHaEo?pid=Api&P=0&h=220" },
+    { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://tse1.mm.bing.net/th/id/OIP.KtO4Dq7chvlU418aBZ0LjwHaEK?pid=Api&P=0&h=220" },
+    { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://tse1.mm.bing.net/th/id/OIP.hh9Fgy01NNOzIn397Y-xAgHaEo?pid=Api&P=0&h=220" }
+  ];
+  
+  // Order tracking stages
+  const orderStages = [
+    { id: 1, name: "Order Confirmed", description: "We have received your order.", icon: <CheckCircle size={24} />, duration: 0 },
+    { id: 2, name: "Processing", description: "Your order is being prepared.", icon: <Package size={24} />, duration: 24 * 60 * 60 * 1000 }, // 24 hours
+    { id: 3, name: "Shipped", description: "Your order has been shipped.", icon: <Truck size={24} />, duration: 48 * 60 * 60 * 1000 }, // 48 hours
+    { id: 4, name: "Out for Delivery", description: "Your order is out for delivery.", icon: <Truck size={24} />, duration: 24 * 60 * 60 * 1000 }, // 24 hours
+    { id: 5, name: "Delivered", description: "Your order has been delivered.", icon: <CheckCircle size={24} />, duration: 0 } // Final stage
   ];
   
   // Helper function to handle image sources
@@ -173,6 +184,60 @@ const CombinedApp = () => {
       }
     }
   }, []);
+  
+  // Effect to update order status based on time
+  useEffect(() => {
+    if (!isBrowser || orders.length === 0) return;
+    
+    const updateOrderStatus = () => {
+      const now = Date.now();
+      let updatedOrders = [...orders];
+      let hasChanges = false;
+      
+      updatedOrders = updatedOrders.map(order => {
+        if (order.status === "Cancelled" || order.trackingStatus === "Delivered") {
+          return order;
+        }
+        
+        const orderDate = new Date(order.date).getTime();
+        const timeSinceOrder = now - orderDate;
+        
+        let currentStageIndex = 0;
+        let accumulatedTime = 0;
+        
+        for (let i = 0; i < orderStages.length; i++) {
+          accumulatedTime += orderStages[i].duration;
+          if (timeSinceOrder >= accumulatedTime) {
+            currentStageIndex = i;
+          } else {
+            break;
+          }
+        }
+        
+        const newTrackingStatus = orderStages[currentStageIndex].name;
+        
+        if (order.trackingStatus !== newTrackingStatus) {
+          hasChanges = true;
+          return { ...order, trackingStatus: newTrackingStatus };
+        }
+        
+        return order;
+      });
+      
+      if (hasChanges) {
+        setOrders(updatedOrders);
+        safeStorage.setItem("orders", updatedOrders);
+      }
+    };
+    
+    // Update status every minute
+    const interval = setInterval(updateOrderStatus, 60000);
+    
+    // Initial update
+    updateOrderStatus();
+    
+    return () => clearInterval(interval);
+  }, [orders]);
   
   // Persist localStorage when state changes
   useEffect(() => { 
@@ -310,15 +375,15 @@ const CombinedApp = () => {
       price: buyItem.price,
       address: orderData.address,
       payment: "Cash on Delivery",
-      date: new Date().toLocaleString(),
+      date: new Date().toISOString(),
       image: buyItem.image,
-      status: "Confirmed"
+      status: "Confirmed",
+      trackingStatus: "Order Confirmed"
     };
     
     const updatedOrders = [...orders, newOrder];
     setOrders(updatedOrders);
     safeStorage.setItem("orders", updatedOrders);
-    safeStorage.setItem("orderHistory", updatedOrders);
     
     setShowBuy(false);
     setOrderData({ address: "", payment: "COD" });
@@ -331,10 +396,14 @@ const CombinedApp = () => {
         order.id === orderId ? { ...order, status: "Cancelled" } : order
       );
       safeStorage.setItem("orders", updatedOrders);
-      safeStorage.setItem("orderHistory", updatedOrders);
       return updatedOrders;
     });
     alert("Order has been cancelled!");
+  };
+  
+  const handleTrackOrder = (order) => {
+    setTrackingOrder(order);
+    setShowTrackOrderModal(true);
   };
   
   const totalAmount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -1190,13 +1259,13 @@ const CombinedApp = () => {
               
               {/* Quick Links */}
               <div>
-                <h3 className="text-xl font-bold mb-4 text-white font-heading"></h3>
+                <h3 className="text-xl font-bold mb-4 text-white font-heading">Quick Links</h3>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
-                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block"></a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block">Home</a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block">Products</a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block">Services</a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block">About Us</a></li>
+                  <li><a href="#" className="text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-1 inline-block">Contact</a></li>
                 </ul>
               </div>
               
@@ -1234,7 +1303,7 @@ const CombinedApp = () => {
             </div>
           </footer>
           
-          {/* --- Modals for Auth, Cart, Wishlist, Buy, Orders, Profile --- */}
+          {/* --- Modals for Auth, Cart, Wishlist, Buy, Orders, Profile, Track Order --- */}
           {showAuth && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
               <form onSubmit={handleAuthSubmit} className="bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-2xl border border-gray-700 animate-slideIn">
@@ -1551,7 +1620,7 @@ const CombinedApp = () => {
                             <p className="font-semibold text-lg text-white">{order.title}</p>
                             <p className="text-red-400 font-medium">₹{order.price.toLocaleString()}</p>
                             <p className="text-gray-400">Order ID: {order.id}</p>
-                            <p className="text-gray-400">Placed on: {order.date}</p>
+                            <p className="text-gray-400">Placed on: {new Date(order.date).toLocaleString()}</p>
                             <p className="text-gray-400">Status: 
                               <span className={`font-semibold ${
                                 order.status === "Confirmed" ? "text-green-400" : 
@@ -1560,26 +1629,123 @@ const CombinedApp = () => {
                                 {order.status}
                               </span>
                             </p>
+                            <p className="text-gray-400">Tracking Status: 
+                              <span className={`font-semibold ${
+                                order.trackingStatus === "Order Confirmed" ? "text-blue-400" : 
+                                order.trackingStatus === "Processing" ? "text-yellow-400" :
+                                order.trackingStatus === "Shipped" ? "text-purple-400" :
+                                order.trackingStatus === "Out for Delivery" ? "text-indigo-400" :
+                                order.trackingStatus === "Delivered" ? "text-green-400" : "text-gray-400"
+                              }`}>
+                                {order.trackingStatus || "Order Confirmed"}
+                              </span>
+                            </p>
                             <p className="text-gray-400">Delivery Address: {order.address}</p>
                             <p className="text-gray-400">Payment Method: {order.payment}</p>
                           </div>
                         </div>
-                        {order.status === "Confirmed" && (
-                          <div className="mt-4">
+                        <div className="flex gap-3 mt-4">
+                          {order.status === "Confirmed" && (
                             <button 
                               onClick={() => handleCancelOrder(order.id)} 
                               className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:scale-105 shadow-md"
                             >
                               Cancel Order
                             </button>
-                          </div>
-                        )}
+                          )}
+                          <button 
+                            onClick={() => handleTrackOrder(order)} 
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-md"
+                          >
+                            Track Order
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
                 <button 
                   onClick={() => setShowOrdersModal(false)} 
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {showTrackOrderModal && trackingOrder && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+              <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700 animate-slideIn">
+                <h2 className="text-2xl font-bold mb-6 text-center text-white font-heading">Track Your Order</h2>
+                
+                <div className="flex items-center mb-6 p-4 bg-gray-900 rounded-lg">
+                  <img src={getImageSource(trackingOrder.image)} alt={trackingOrder.title} className="w-20 h-20 object-contain rounded-lg mr-4" />
+                  <div>
+                    <p className="font-semibold text-lg text-white">{trackingOrder.title}</p>
+                    <p className="text-red-400 font-bold text-xl">₹{trackingOrder.price.toLocaleString()}</p>
+                    <p className="text-gray-400">Order ID: {trackingOrder.id}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Order Status</h3>
+                  <div className="space-y-4">
+                    {orderStages.map((stage, index) => {
+                      const currentStageIndex = orderStages.findIndex(s => s.name === trackingOrder.trackingStatus);
+                      const isCompleted = index < currentStageIndex;
+                      const isActive = index === currentStageIndex;
+                      
+                      return (
+                        <div key={stage.id} className="flex items-start">
+                          <div className={`flex flex-col items-center mr-4 ${
+                            isCompleted ? 'text-green-400' : isActive ? 'text-blue-400' : 'text-gray-500'
+                          }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              isCompleted ? 'bg-green-500' : isActive ? 'bg-blue-500' : 'bg-gray-700'
+                            }`}>
+                              {stage.icon}
+                            </div>
+                            {index < orderStages.length - 1 && (
+                              <div className={`h-16 w-1 ${
+                                isCompleted ? 'bg-green-500' : 'bg-gray-700'
+                              }`}></div>
+                            )}
+                          </div>
+                          <div className="pb-6">
+                            <h4 className={`font-semibold ${
+                              isCompleted ? 'text-green-400' : isActive ? 'text-blue-400' : 'text-gray-400'
+                            }`}>{stage.name}</h4>
+                            <p className="text-gray-400 text-sm">{stage.description}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white mb-2">Delivery Information</h3>
+                  <div className="bg-gray-900 p-4 rounded-lg">
+                    <p className="text-gray-300"><span className="font-medium">Address:</span> {trackingOrder.address}</p>
+                    <p className="text-gray-300"><span className="font-medium">Payment Method:</span> {trackingOrder.payment}</p>
+                    <p className="text-gray-300"><span className="font-medium">Order Date:</span> {new Date(trackingOrder.date).toLocaleString()}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setShowTrackOrderModal(false)} 
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 font-medium shadow-md"
+                  >
+                    Close
+                  </button>
+                </div>
+                
+                <button 
+                  onClick={() => setShowTrackOrderModal(false)} 
                   className="absolute top-4 right-4 text-gray-400 hover:text-white transition-all duration-300 transform hover:scale-110"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

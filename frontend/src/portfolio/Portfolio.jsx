@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Phone, Mail, MapPin, Clock, Search, ShoppingCart, Heart, Star, User, LogOut, Package, MessageSquare, Plus } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Search, ShoppingCart, Heart, Star, User, LogOut, Package, MessageSquare, Plus, Truck, CheckCircle, XCircle, Clock as Processing, MapPin as LocationPin } from "lucide-react";
 
 /* ---------------------- sample products ---------------------- */
 const PRODUCTS = [
@@ -65,8 +65,68 @@ const STATIC_REVIEWS = [
   }
 ];
 
+/* ---------------------- order status flow ---------------------- */
+const ORDER_STATUS_FLOW = {
+  "Order Placed": { 
+    next: "Order Confirmed", 
+    icon: <ShoppingCart size={20} />, 
+    color: "text-blue-500",
+    bgColor: "bg-blue-500",
+    description: "Your order has been received"
+  },
+  "Order Confirmed": { 
+    next: "Processing", 
+    icon: <CheckCircle size={20} />, 
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500",
+    description: "Your order has been confirmed"
+  },
+  "Processing": { 
+    next: "Shipped", 
+    icon: <Processing size={20} />, 
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500",
+    description: "Your order is being prepared"
+  },
+  "Shipped": { 
+    next: "Out for Delivery", 
+    icon: <Truck size={20} />, 
+    color: "text-purple-500",
+    bgColor: "bg-purple-500",
+    description: "Your order is on the way"
+  },
+  "Out for Delivery": { 
+    next: "Delivered", 
+    icon: <Truck size={20} />, 
+    color: "text-teal-500",
+    bgColor: "bg-teal-500",
+    description: "Your order is out for delivery"
+  },
+  "Delivered": { 
+    next: null, 
+    icon: <CheckCircle size={20} />, 
+    color: "text-green-500",
+    bgColor: "bg-green-500",
+    description: "Your order has been delivered"
+  },
+  "Cancelled": { 
+    next: null, 
+    icon: <XCircle size={20} />, 
+    color: "text-red-500",
+    bgColor: "bg-red-500",
+    description: "Your order has been cancelled"
+  },
+  // Fallback for legacy statuses
+  "Confirmed": { 
+    next: "Processing", 
+    icon: <CheckCircle size={20} />, 
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500",
+    description: "Your order has been confirmed"
+  }
+};
+
 /* ---------------------- localStorage helpers ---------------------- */
-// Check if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
 const readLS = (key, fallback) => {
   if (!isBrowser) return fallback;
@@ -94,7 +154,7 @@ export default function PortfolioAllInOne() {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [reviews, setReviews] = useState(STATIC_REVIEWS); // Initialize with static reviews
+  const [reviews, setReviews] = useState(STATIC_REVIEWS);
   const [searchTerm, setSearchTerm] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
@@ -102,9 +162,11 @@ export default function PortfolioAllInOne() {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [showOrderTrackingModal, setShowOrderTrackingModal] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [showAddReviewModal, setShowAddReviewModal] = useState(false);
   const [orderProduct, setOrderProduct] = useState(null);
+  const [trackingOrder, setTrackingOrder] = useState(null);
   const [productModal, setProductModal] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [authMode, setAuthMode] = useState("login");
@@ -127,14 +189,33 @@ export default function PortfolioAllInOne() {
       setCurrentUser(readLS("currentUser", null));
       setCart(readLS("cart", []));
       setWishlist(readLS("wishlist", []));
-      setOrders(readLS("orders", []));
+      
+      // Initialize orders with statusHistory for backward compatibility
+      const storedOrders = readLS("orders", []);
+      const ordersWithHistory = storedOrders.map(order => {
+        // Map legacy statuses to new ones
+        let status = order.status || "Order Placed";
+        if (status === "Confirmed") {
+          status = "Order Confirmed";
+        }
+        
+        return {
+          ...order,
+          status,
+          statusHistory: order.statusHistory || [
+            { status: status, timestamp: order.date || new Date().toLocaleString(), note: "Order placed" }
+          ],
+          estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          trackingNumber: order.trackingNumber || `TRK${order.id || Date.now()}`
+        };
+      });
+      setOrders(ordersWithHistory);
       
       // Initialize reviews with static reviews if none exist in localStorage
       const storedReviews = readLS("reviews", []);
       if (storedReviews.length > 0) {
         setReviews(storedReviews);
       } else {
-        // Save static reviews to localStorage if none exist
         setReviews(STATIC_REVIEWS);
         writeLS("reviews", STATIC_REVIEWS);
       }
@@ -262,8 +343,6 @@ export default function PortfolioAllInOne() {
       return;
     }
     
-    // In a real app, you would upload the images to a server
-    // For this demo, we'll store them as data URLs (not recommended for production)
     const newReview = {
       id: Date.now(),
       productId: reviewForm.productId,
@@ -274,7 +353,7 @@ export default function PortfolioAllInOne() {
       beforeImage: reviewForm.beforeImagePreview,
       afterImage: reviewForm.afterImagePreview,
       date: new Date().toLocaleString(),
-      status: "approved" // Auto-approve for client reviews
+      status: "approved"
     };
     
     const newReviews = [...reviews, newReview];
@@ -354,8 +433,10 @@ export default function PortfolioAllInOne() {
     if (!orderProduct) return;
     const { name, email, address, payment } = orderForm;
     if (!name || !email || !address) return alert("Fill name, email & address");
+    
+    const orderId = Date.now();
     const newOrder = { 
-      id: Date.now(), 
+      id: orderId, 
       productId: orderProduct.id, 
       title: orderProduct.title, 
       price: orderProduct.price, 
@@ -365,8 +446,14 @@ export default function PortfolioAllInOne() {
       payment, 
       date: new Date().toLocaleString(),
       image: orderProduct.beforeAfter?.[0] || "https://via.placeholder.com/220",
-      status: "Confirmed"
+      status: "Order Placed",
+      statusHistory: [
+        { status: "Order Placed", timestamp: new Date().toLocaleString(), note: "Order placed successfully" }
+      ],
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      trackingNumber: `TRK${orderId}`
     };
+    
     const newOrders = [...orders, newOrder];
     setOrders(newOrders);
     const newCart = cart.filter(p => p.id !== orderProduct.id);
@@ -374,20 +461,54 @@ export default function PortfolioAllInOne() {
     setShowOrderModal(false);
     setOrderProduct(null);
     setOrderForm({ name: "", email: "", address: "", payment: "COD" });
-    alert("Order placed successfully");
+    alert("Order placed successfully! You can track your order in the Orders section.");
   };
   
   const cancelOrder = (orderId) => {
     setConfirmDialog({ 
       message: "Cancel this order?", 
       onConfirm: () => { 
-        const updatedOrders = orders.map(order => 
-          order.id === orderId ? {...order, status: "Cancelled"} : order
-        ); 
+        const updatedOrders = orders.map(order => {
+          if (order.id === orderId) {
+            const updatedHistory = [
+              ...(order.statusHistory || []),
+              { status: "Cancelled", timestamp: new Date().toLocaleString(), note: "Order cancelled by customer" }
+            ];
+            return {
+              ...order, 
+              status: "Cancelled",
+              statusHistory: updatedHistory
+            };
+          }
+          return order;
+        }); 
         setOrders(updatedOrders); 
         setConfirmDialog(null); 
       }
     });
+  };
+  
+  const updateOrderStatus = (orderId, newStatus, note = "") => {
+    const updatedOrders = orders.map(order => {
+      if (order.id === orderId) {
+        const updatedHistory = [
+          ...(order.statusHistory || []),
+          { status: newStatus, timestamp: new Date().toLocaleString(), note }
+        ];
+        return {
+          ...order, 
+          status: newStatus,
+          statusHistory: updatedHistory
+        };
+      }
+      return order;
+    });
+    setOrders(updatedOrders);
+  };
+  
+  const trackOrder = (order) => {
+    setTrackingOrder(order);
+    setShowOrderTrackingModal(true);
   };
   
   const getSimilar = (prod) => PRODUCTS.filter(p => p.id !== prod.id && (p.type === prod.type || p.brand === prod.brand));
@@ -467,6 +588,51 @@ export default function PortfolioAllInOne() {
           
           .card-shadow {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          }
+          
+          .tracking-step {
+            position: relative;
+            padding-left: 2rem;
+          }
+          
+          .tracking-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #4b5563;
+            z-index: 1;
+          }
+          
+          .tracking-step.active::before {
+            background-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+          }
+          
+          .tracking-step.completed::before {
+            background-color: #10b981;
+          }
+          
+          .tracking-step::after {
+            content: '';
+            position: absolute;
+            left: 0.45rem;
+            top: 1.5rem;
+            width: 0.1rem;
+            height: calc(100% + 1rem);
+            background-color: #4b5563;
+          }
+          
+          .tracking-step:last-child::after {
+            display: none;
+          }
+          
+          .tracking-step.active::after,
+          .tracking-step.completed::after {
+            background-color: #3b82f6;
           }
         `}
       </style>
@@ -737,7 +903,8 @@ export default function PortfolioAllInOne() {
       {showOrderModal && orderProduct && <OrderModal orderProduct={orderProduct} orderForm={orderForm} setOrderForm={setOrderForm} placeOrder={placeOrder} onClose={() => { setShowOrderModal(false); setOrderProduct(null); }} />}
       {showLoginModal && <AuthModal mode="login" authForm={authForm} setAuthForm={setAuthForm} login={login} switchMode={() => { setAuthMode("signup"); setShowLoginModal(false); setShowSignupModal(true); }} onClose={() => setShowLoginModal(false)} />}
       {showSignupModal && <AuthModal mode="signup" authForm={authForm} setAuthForm={setAuthForm} signup={signup} switchMode={() => { setAuthMode("login"); setShowSignupModal(false); setShowLoginModal(true); }} onClose={() => setShowSignupModal(false)} />}
-      {showOrdersModal && <OrdersModal orders={userOrders} onClose={() => setShowOrdersModal(false)} cancelOrder={cancelOrder} />}
+      {showOrdersModal && <OrdersModal orders={userOrders} onClose={() => setShowOrdersModal(false)} cancelOrder={cancelOrder} updateOrderStatus={updateOrderStatus} trackOrder={trackOrder} ORDER_STATUS_FLOW={ORDER_STATUS_FLOW} />}
+      {showOrderTrackingModal && trackingOrder && <OrderTrackingModal order={trackingOrder} onClose={() => setShowOrderTrackingModal(false)} ORDER_STATUS_FLOW={ORDER_STATUS_FLOW} />}
       {showReviewsModal && <ReviewsModal reviews={reviews} products={PRODUCTS} onClose={() => setShowReviewsModal(false)} />}
       {showAddReviewModal && <AddReviewModal reviewForm={reviewForm} setReviewForm={setReviewForm} handleImageUpload={handleImageUpload} submitReview={submitReview} onClose={() => setShowAddReviewModal(false)} products={PRODUCTS} />}
       {confirmDialog && <ConfirmDialog message={confirmDialog.message} onConfirm={confirmDialog.onConfirm} onCancel={() => setConfirmDialog(null)} />}
@@ -933,9 +1100,9 @@ const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => 
   </div>
 );
 
-const OrdersModal = ({ orders, onClose, cancelOrder }) => (
+const OrdersModal = ({ orders, onClose, cancelOrder, updateOrderStatus, trackOrder, ORDER_STATUS_FLOW }) => (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
-    <div className="bg-gray-800 rounded-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+    <div className="bg-gray-800 rounded-2xl w-full max-w-6xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
       <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
       <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
         <Package size={24} /> Your Orders
@@ -950,23 +1117,55 @@ const OrdersModal = ({ orders, onClose, cancelOrder }) => (
         <div className="space-y-4">
           {orders.map(order => (
             <div key={order.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700 transition-all duration-300 hover:bg-gray-750">
-              <div className="flex items-center gap-4 mb-3">
-                <img src={order.image} alt={order.title} className="w-16 h-12 object-cover rounded-lg" />
-                <div className="flex-1">
-                  <div className="font-medium text-white">{order.title}</div>
-                  <div className="text-sm text-gray-400">₹{order.price.toLocaleString()}</div>
-                  <div className={`text-sm font-semibold ${order.status === 'Confirmed' ? 'text-green-400' : 'text-red-400'}`}>
-                    Status: {order.status}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="md:w-1/4">
+                  <img src={order.image} alt={order.title} className="w-full h-32 object-cover rounded-lg" />
+                </div>
+                <div className="md:w-3/4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-semibold text-white text-lg">{order.title}</h3>
+                      <div className="text-sm text-gray-400">Order ID: #{order.id}</div>
+                      <div className="text-sm text-gray-400">Tracking ID: {order.trackingNumber}</div>
+                    </div>
+                    <div className={`flex items-center gap-1 font-semibold ${ORDER_STATUS_FLOW[order.status]?.color || 'text-blue-400'}`}>
+                      {ORDER_STATUS_FLOW[order.status]?.icon || <CheckCircle size={16} />}
+                      <span>{order.status}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-3">
+                    <div className="font-bold text-blue-400 text-lg">₹{order.price.toLocaleString()}</div>
+                    <div className="text-sm text-gray-400">Ordered on: {order.date}</div>
+                    <div className="text-sm text-gray-400">Estimated Delivery: {order.estimatedDelivery}</div>
+                    <div className="text-sm text-gray-400">Payment: {order.payment}</div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      onClick={() => trackOrder(order)}
+                      className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition font-medium transform hover:scale-105"
+                    >
+                      Track Order
+                    </button>
+                    {order.status !== "Cancelled" && order.status !== "Delivered" && ORDER_STATUS_FLOW[order.status]?.next && (
+                      <button 
+                        onClick={() => updateOrderStatus(order.id, ORDER_STATUS_FLOW[order.status].next)}
+                        className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition font-medium transform hover:scale-105"
+                      >
+                        Mark as {ORDER_STATUS_FLOW[order.status].next}
+                      </button>
+                    )}
+                    {order.status === "Order Placed" && (
+                      <button 
+                        onClick={() => cancelOrder(order.id)} 
+                        className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105"
+                      >
+                        Cancel Order
+                      </button>
+                    )}
                   </div>
                 </div>
-                {order.status === 'Confirmed' && (
-                  <button onClick={() => cancelOrder(order.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105">Cancel</button>
-                )}
-              </div>
-              <div className="text-sm text-gray-400 space-y-1">
-                <div>Ordered on: {order.date}</div>
-                <div>Payment: {order.payment}</div>
-                <div>Address: {order.address}</div>
               </div>
             </div>
           ))}
@@ -975,6 +1174,120 @@ const OrdersModal = ({ orders, onClose, cancelOrder }) => (
     </div>
   </div>
 );
+
+const OrderTrackingModal = ({ order, onClose, ORDER_STATUS_FLOW }) => {
+  const statusSteps = Object.keys(ORDER_STATUS_FLOW).filter(status => status !== "Cancelled");
+  const currentStatusIndex = statusSteps.indexOf(order.status);
+  
+  // Get status info with fallback
+  const getStatusInfo = (status) => {
+    return ORDER_STATUS_FLOW[status] || {
+      icon: <CheckCircle size={20} />,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500",
+      description: "Order status updated"
+    };
+  };
+  
+  const currentStatusInfo = getStatusInfo(order.status);
+  
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
+      <div className="bg-gray-800 rounded-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
+        <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
+        <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+          <Truck size={24} /> Track Your Order
+        </h2>
+        
+        <div className="bg-gray-700 rounded-xl p-6 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white">{order.title}</h3>
+              <div className="text-gray-400">Order ID: #{order.id}</div>
+              <div className="text-gray-400">Tracking ID: {order.trackingNumber}</div>
+            </div>
+            <div className="text-right mt-4 md:mt-0">
+              <div className="text-2xl font-bold text-blue-400">₹{order.price.toLocaleString()}</div>
+              <div className="text-gray-400">Estimated Delivery: {order.estimatedDelivery}</div>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between mb-2">
+              {statusSteps.map((status, index) => {
+                const statusInfo = getStatusInfo(status);
+                const isActive = index <= currentStatusIndex;
+                
+                return (
+                  <div key={status} className="flex flex-col items-center relative" style={{ width: `${100 / (statusSteps.length - 1)}%` }}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+                      isActive 
+                        ? statusInfo.bgColor + ' text-white' 
+                        : 'bg-gray-600 text-gray-400'
+                    }`}>
+                      {statusInfo.icon}
+                    </div>
+                    <div className="text-xs text-center font-medium">
+                      <div className={isActive ? 'text-white' : 'text-gray-400'}>{status}</div>
+                    </div>
+                    {index < statusSteps.length - 1 && (
+                      <div className={`absolute top-4 left-8 right-0 h-0.5 ${
+                        index < currentStatusIndex ? 'bg-blue-500' : 'bg-gray-600'
+                      }`}></div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Current Status */}
+          <div className="bg-gray-600 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={currentStatusInfo.color}>
+                {currentStatusInfo.icon}
+              </div>
+              <span className="text-lg font-semibold text-white">Current Status: {order.status}</span>
+            </div>
+            <p className="text-gray-300">{currentStatusInfo.description}</p>
+          </div>
+          
+          {/* Status Timeline */}
+          <div>
+            <h4 className="font-medium text-white mb-4">Status History</h4>
+            <div className="space-y-4">
+              {(order.statusHistory || []).map((historyItem, index) => {
+                const historyStatusInfo = getStatusInfo(historyItem.status);
+                return (
+                  <div key={index} className="tracking-step active">
+                    <div className="flex items-center gap-2">
+                      <div className={historyStatusInfo.color}>
+                        {historyStatusInfo.icon}
+                      </div>
+                      <div className="text-sm font-medium text-white">{historyItem.status}</div>
+                    </div>
+                    <div className="text-xs text-gray-400">{historyItem.timestamp}</div>
+                    {historyItem.note && <div className="text-xs text-gray-300 mt-1">{historyItem.note}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Delivery Address */}
+          <div className="mt-6 pt-4 border-t border-gray-600">
+            <h4 className="font-medium text-white mb-2">Delivery Address</h4>
+            <div className="flex items-start gap-2 text-gray-300">
+              <LocationPin size={16} className="mt-0.5 flex-shrink-0" />
+              <span>{order.address}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ReviewsModal = ({ reviews, products, onClose }) => {
   const approvedReviews = reviews.filter(review => review.status === "approved");
