@@ -107,6 +107,13 @@ function AdminPanel() {
           { name: "ashwini", email: "ashwini11@gmail.com" }
         ];
         
+        // Only add static users if they don't already exist
+        const filteredStaticUsers = staticUsers.filter(staticUser => 
+          !existingUsers.some(user => 
+            user.name === staticUser.name && user.email === staticUser.email
+          )
+        );
+        
         // Define static messages that must always be present
         const staticMessages = [
           { 
@@ -242,7 +249,7 @@ function AdminPanel() {
         setOrderStatuses(initialStatuses);
         
         // Merge static data with existing data
-        const allUsers = [...staticUsers, ...existingUsers];
+        const allUsers = [...filteredStaticUsers, ...existingUsers];
         const allMessages = [...staticMessages, ...existingMessages];
         const allEnquiries = [...staticEnquiries, ...existingEnquiries];
         const allOrders = [...staticOrders, ...ordersData];
@@ -369,15 +376,7 @@ function AdminPanel() {
   const handleRemoveUser = (index) => {
     const user = users[index];
     
-    // Prevent removal of static users
-    const isStaticUser = 
-      (user.name === "varshini" && user.email === "varshini22@gmail.com") ||
-      (user.name === "ashwini" && user.email === "ashwini11@gmail.com");
-    
-    if (isStaticUser) {
-      alert("Cannot remove static users (varshini and ashwini)");
-      return;
-    }
+    // Static user protection removed - now all users can be deleted
     
     if (window.confirm("Remove this user?")) {
       const updated = users.filter((_, i) => i !== index);
@@ -642,9 +641,9 @@ function AdminPanel() {
           <div style={styles.loginFooter}>
             <button 
               style={styles.backBtn} 
-              onClick={() => navigate("/")}
+              onClick={() => navigate(-1)}
             >
-              ⬅ Back to Home
+              ⬅ Back
             </button>
           </div>
         </div>

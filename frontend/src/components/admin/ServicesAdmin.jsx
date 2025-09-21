@@ -28,31 +28,87 @@ const saveServices = (services) => {
   localStorage.setItem('services', JSON.stringify(services));
 };
 
-// Demo services data
-const demoServices = [
+// Static services data - matching the demo services from CombinedApp
+const staticServices = [
   { 
     _id: "s1", 
     name: "Engine Tuning", 
     category: "car",
     description: "Professional engine tuning for optimal performance.",
     price: 12000, 
-    image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+    image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" 
   },
   { 
     _id: "s2", 
     name: "Body Wrap Installation", 
     category: "car",
-    description: "Custom body wrap installation for a unique look.",
+    description: "Premium body wrap installation with custom designs.",
     price: 25000, 
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+    image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" 
   },
   { 
     _id: "s3", 
     name: "Interior Customization", 
     category: "car",
-    description: "Premium interior customization services.",
+    description: "Complete interior customization with premium materials.",
     price: 40000, 
-    image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+    image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s4", 
+    name: "Wheel Alignment", 
+    category: "car",
+    description: "Precision wheel alignment for optimal handling and tire longevity.",
+    price: 2500, 
+    image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s5", 
+    name: "Car Wash & Detailing", 
+    category: "car",
+    description: "Complete interior and exterior detailing for a showroom finish.",
+    price: 3500, 
+    image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s6", 
+    name: "Paint Protection Film", 
+    category: "car",
+    description: "Invisible paint protection film to preserve your car's finish.",
+    price: 18000, 
+    image: "https://tse3.mm.bing.net/th/id/OIP.M8k9NSGf2a8mlMuUc30VHgHaE7?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s7", 
+    name: "Window Tinting", 
+    category: "car",
+    description: "Premium window tinting for privacy and UV protection.",
+    price: 7500, 
+    image: "https://tse3.mm.bing.net/th/id/OIP.PdznukrEVKu2nvngXFC0hgHaHa?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s8", 
+    name: "Tire Replacement", 
+    category: "car",
+    description: "Professional tire replacement with premium brands.",
+    price: 12000, 
+    image: "https://tse3.mm.bing.net/th/id/OIP.aEVoNVK7wzp-9EFd-kRZcAHaEo?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s9", 
+    name: "Battery Replacement", 
+    category: "car",
+    description: "Quick and reliable battery replacement service.",
+    price: 5500, 
+    image: "https://tse1.mm.bing.net/th/id/OIP.KtO4Dq7chvlU418aBZ0LjwHaEK?pid=Api&P=0&h=220" 
+  },
+  { 
+    _id: "s10", 
+    name: "AC Service", 
+    category: "car",
+    description: "Complete air conditioning service for optimal cooling performance.",
+    price: 4500, 
+    image: "https://tse1.mm.bing.net/th/id/OIP.hh9Fgy01NNOzIn397Y-xAgHaEo?pid=Api&P=0&h=220" 
   }
 ];
 
@@ -68,14 +124,14 @@ export default function ServicesAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   
-  // Load services from localStorage on component mount, or use demo data if empty
+  // Load services from localStorage on component mount, or use static data if empty
   useEffect(() => {
     const storedServices = getStoredServices();
     if (storedServices && storedServices.length > 0) {
       setServices(storedServices);
     } else {
-      setServices(demoServices);
-      saveServices(demoServices);
+      setServices(staticServices);
+      saveServices(staticServices);
     }
   }, []);
   
@@ -113,6 +169,12 @@ export default function ServicesAdmin() {
   };
   
   const handleDelete = (id) => {
+    // Prevent deletion of static services
+    if (staticServices.some(s => s._id === id)) {
+      showNotification("Cannot delete static services!", 'error');
+      return;
+    }
+    
     if (!window.confirm("Are you sure you want to delete this service?")) return;
     
     const newServices = services.filter(s => s._id !== id);
@@ -122,6 +184,12 @@ export default function ServicesAdmin() {
   };
   
   const handleEdit = (service) => {
+    // Prevent editing of static services
+    if (staticServices.some(s => s._id === service._id)) {
+      showNotification("Cannot edit static services!", 'error');
+      return;
+    }
+    
     setForm({
       name: service.name,
       category: service.category,
@@ -143,9 +211,17 @@ export default function ServicesAdmin() {
       setServices(storedServices);
       showNotification("Services refreshed from local storage!");
     } else {
-      setServices(demoServices);
-      saveServices(demoServices);
-      showNotification("Demo services loaded!");
+      setServices(staticServices);
+      saveServices(staticServices);
+      showNotification("Static services loaded!");
+    }
+  };
+  
+  const resetToStatic = () => {
+    if (window.confirm("Are you sure you want to reset to static services? This will remove all custom services.")) {
+      setServices(staticServices);
+      saveServices(staticServices);
+      showNotification("Services reset to static data!");
     }
   };
   
@@ -155,15 +231,26 @@ export default function ServicesAdmin() {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
           Services Admin Dashboard
         </h1>
-        <button 
-          onClick={refreshServices}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={refreshServices}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+          <button 
+            onClick={resetToStatic}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Reset to Static
+          </button>
+        </div>
       </header>
       
       {/* Notification */}
@@ -273,51 +360,58 @@ export default function ServicesAdmin() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map(s => (
-          <div key={s._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
-            <div className="relative">
-              <img 
-                src={getImageSource(s.image)} 
-                alt={s.name} 
-                className="h-48 w-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null; 
-                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                }}
-              />
-              <span className="absolute top-3 right-3 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                {s.category}
-              </span>
-            </div>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">{s.name}</h3>
-              <p className="text-gray-400 mb-3 text-sm">{s.description}</p>
-              <div className="flex justify-between items-center mb-4">
-                <p className="text-xl font-bold text-indigo-400">₹{s.price}</p>
+        {services.map(s => {
+          const isStatic = staticServices.some(ss => ss._id === s._id);
+          return (
+            <div key={s._id} className={`bg-gray-800 rounded-xl shadow-lg overflow-hidden border ${isStatic ? 'border-yellow-500/30' : 'border-gray-700'} transform transition-transform duration-300 hover:scale-105`}>
+              <div className="relative">
+                <img 
+                  src={getImageSource(s.image)} 
+                  alt={s.name} 
+                  className="h-48 w-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                  }}
+                />
+                <div className="absolute top-3 right-3 flex gap-2">
+                  <span className={`text-xs font-semibold px-2 py-1 rounded ${isStatic ? 'bg-yellow-600' : 'bg-green-600'} text-white`}>
+                    {isStatic ? 'Static' : s.category}
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleEdit(s)} 
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
-                </button>
-                <button 
-                  onClick={() => handleDelete(s._id)} 
-                  className="flex-1 bg-red-700 hover:bg-red-600 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">{s.name}</h3>
+                <p className="text-gray-400 mb-3 text-sm">{s.description}</p>
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-xl font-bold text-green-400">₹{s.price}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleEdit(s)} 
+                    disabled={isStatic}
+                    className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors ${isStatic ? 'bg-gray-700 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(s._id)} 
+                    disabled={isStatic}
+                    className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors ${isStatic ? 'bg-gray-700 cursor-not-allowed' : 'bg-red-700 hover:bg-red-600'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
       {services.length === 0 && (

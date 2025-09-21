@@ -22,6 +22,7 @@ function HeroBanner() {
   });
   const [forgotPasswordData, setForgotPasswordData] = useState({ 
     identifier: "" 
+    // Removed isAdmin property
   });
   const [resetPasswordData, setResetPasswordData] = useState({ 
     username: "", 
@@ -44,12 +45,8 @@ function HeroBanner() {
   
   // Initialize admin password if not exists
   useEffect(() => {
-    const adminPassword = localStorage.getItem('adminPassword');
-    if (!adminPassword) {
+    if (!localStorage.getItem('adminPassword')) {
       localStorage.setItem('adminPassword', "1234");
-      console.log("Admin password initialized to '1234'");
-    } else {
-      console.log("Admin password found in localStorage:", adminPassword);
     }
   }, []);
   
@@ -140,16 +137,9 @@ function HeroBanner() {
     e.preventDefault();
     setAuthError("");
     
-    // Debug: Log the input values
-    console.log("Login attempt with:", loginData);
-    
-    // Get the admin password from localStorage
-    const adminPassword = localStorage.getItem('adminPassword');
-    console.log("Admin password from localStorage:", adminPassword);
-    
-    // Check admin credentials
+    // Check admin credentials using stored password
+    const adminPassword = localStorage.getItem('adminPassword') || "1234";
     if (loginData.username === "admin" && loginData.password === adminPassword) {
-      console.log("Admin login successful");
       setIsLoggedIn(true);
       setIsAdmin(true);
       localStorage.setItem('userData', JSON.stringify({ 
@@ -168,7 +158,6 @@ function HeroBanner() {
     const user = users.find(u => u.username === loginData.username && u.password === loginData.password);
     
     if (user) {
-      console.log("User login successful");
       setIsLoggedIn(true);
       setIsAdmin(false);
       localStorage.setItem('userData', JSON.stringify({ 
@@ -177,7 +166,6 @@ function HeroBanner() {
       }));
       setShowLoginForm(false);
     } else {
-      console.log("Login failed");
       setAuthError("Invalid username or password");
     }
   };
@@ -356,6 +344,7 @@ function HeroBanner() {
     setShowForgotPassword(true);
     setForgotPasswordData({
       identifier: userData.username
+      // Removed isAdmin property
     });
     setAuthError("");
   };
@@ -536,6 +525,7 @@ function HeroBanner() {
             <h3 className="auth-title">Reset Password</h3>
             <p className="auth-subtitle">Enter your username or email to reset your password</p>
             <form onSubmit={handleForgotPassword}>
+              {/* Removed the user-type toggle */}
               <input
                 type="text"
                 placeholder="Username or Email"
