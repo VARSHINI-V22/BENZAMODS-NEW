@@ -69,46 +69,6 @@ const staticProducts = [
     description: "Premium alloy wheels to enhance your vehicle's appearance and performance.",
     price: 45000, 
     image: "https://tse4.mm.bing.net/th/id/OIP.DOeQUu06qYkdkobQAlO4ygHaHa?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "6", 
-    name: "Performance Brakes", 
-    category: "car",
-    description: "High-performance brake system for improved stopping power and safety.",
-    price: 28000, 
-    image: "https://tse2.mm.bing.net/th/id/OIP.fDlAkDnxBDnMu_Z77e8X7AHaE7?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "7", 
-    name: "Car Cover", 
-    category: "car",
-    description: "Dust and water-resistant car cover for all-weather protection.",
-    price: 3500, 
-    image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "8", 
-    name: "Seat Covers", 
-    category: "car",
-    description: "Premium leather seat covers for comfort and style.",
-    price: 8500, 
-    image: "https://tse1.mm.bing.net/th/id/OIP.C3jpE0tjow0TPhfqf0usCgHaHa?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "9", 
-    name: "Floor Mats", 
-    category: "car",
-    description: "Heavy-duty rubber floor mats for all-weather protection.",
-    price: 2500, 
-    image: "https://tse1.mm.bing.net/th/id/OIP.ifQJfWptFruDzownGRBhTQHaHa?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "10", 
-    name: "High-Flow Air Filter", 
-    category: "car",
-    description: "Performance air filter for improved engine airflow and efficiency.",
-    price: 4500, 
-    image: "https://tse4.mm.bing.net/th/id/OIP.cJpgEEhbWs0dqz9zEkjs-AHaHa?pid=Api&P=0&h=220" 
   }
 ];
 
@@ -169,12 +129,6 @@ export default function ProductsAdmin() {
   };
   
   const handleDelete = (id) => {
-    // Prevent deletion of static products
-    if (staticProducts.some(p => p._id === id)) {
-      showNotification("Cannot delete static products!", 'error');
-      return;
-    }
-    
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     
     const newProducts = products.filter(p => p._id !== id);
@@ -184,12 +138,6 @@ export default function ProductsAdmin() {
   };
   
   const handleEdit = (product) => {
-    // Prevent editing of static products
-    if (staticProducts.some(p => p._id === product._id)) {
-      showNotification("Cannot edit static products!", 'error');
-      return;
-    }
-    
     setForm({
       name: product.name,
       category: product.category,
@@ -205,52 +153,12 @@ export default function ProductsAdmin() {
     setEditingId(null);
   };
   
-  const refreshProducts = () => {
-    const storedProducts = getStoredProducts();
-    if (storedProducts && storedProducts.length > 0) {
-      setProducts(storedProducts);
-      showNotification("Products refreshed from local storage!");
-    } else {
-      setProducts(staticProducts);
-      saveProducts(staticProducts);
-      showNotification("Static products loaded!");
-    }
-  };
-  
-  const resetToStatic = () => {
-    if (window.confirm("Are you sure you want to reset to static products? This will remove all custom products.")) {
-      setProducts(staticProducts);
-      saveProducts(staticProducts);
-      showNotification("Products reset to static data!");
-    }
-  };
-  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 font-sans">
-      <header className="flex justify-between items-center mb-8">
+      <header className="mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
           Product Admin Dashboard
         </h1>
-        <div className="flex gap-3">
-          <button 
-            onClick={refreshProducts}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh
-          </button>
-          <button 
-            onClick={resetToStatic}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Reset to Static
-          </button>
-        </div>
       </header>
       
       {/* Notification */}
@@ -360,64 +268,59 @@ export default function ProductsAdmin() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(p => {
-          const isStatic = staticProducts.some(sp => sp._id === p._id);
-          return (
-            <div key={p._id} className={`bg-gray-800 rounded-xl shadow-lg overflow-hidden border ${isStatic ? 'border-yellow-500/30' : 'border-gray-700'} transform transition-transform duration-300 hover:scale-105`}>
-              <div className="relative">
-                <img 
-                  src={getImageSource(p.image)} 
-                  alt={p.name} 
-                  className="h-48 w-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null; 
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                  }}
-                />
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <span className={`text-xs font-semibold px-2 py-1 rounded ${isStatic ? 'bg-yellow-600' : 'bg-indigo-600'} text-white`}>
-                    {isStatic ? 'Static' : p.category}
-                  </span>
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">{p.name}</h3>
-                <p className="text-gray-400 mb-3 text-sm">{p.description}</p>
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-xl font-bold text-indigo-400">₹{p.price}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => handleEdit(p)} 
-                    disabled={isStatic}
-                    className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors ${isStatic ? 'bg-gray-700 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-600'}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(p._id)} 
-                    disabled={isStatic}
-                    className={`flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors ${isStatic ? 'bg-gray-700 cursor-not-allowed' : 'bg-red-700 hover:bg-red-600'}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete
-                  </button>
-                </div>
+        {products.map(p => (
+          <div key={p._id} className="bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105">
+            <div className="relative">
+              <img 
+                src={getImageSource(p.image)} 
+                alt={p.name} 
+                className="h-48 w-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMzAwIDIwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                }}
+              />
+              <div className="absolute top-3 right-3 flex gap-2">
+                <span className="text-xs font-semibold px-2 py-1 rounded bg-green-600 text-white">
+                  {p.category}
+                </span>
               </div>
             </div>
-          );
-        })}
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-white mb-2">{p.name}</h3>
+              <p className="text-gray-400 mb-3 text-sm">{p.description}</p>
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-xl font-bold text-green-400">₹{p.price}</p>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleEdit(p)} 
+                  className="flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors bg-gray-700 hover:bg-gray-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(p._id)} 
+                  className="flex-1 py-2 px-3 rounded-lg flex items-center justify-center transition-colors bg-red-700 hover:bg-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
       
       {products.length === 0 && (
         <div className="text-center py-12 text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-16M9 9h6m-6 4h6m-6 4h6" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           <p className="text-xl">No products found</p>
           <p className="mt-2">Add your first product using the form above</p>

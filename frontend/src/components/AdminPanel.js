@@ -1,5 +1,5 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Admin components - lazy loaded
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
@@ -42,18 +42,19 @@ function AdminPanel() {
   const [messageSearch, setMessageSearch] = useState("");
   const [reviewSearch, setReviewSearch] = useState("");
   const [enquirySearch, setEnquirySearch] = useState("");
-  
+  const [orderStatuses, setOrderStatuses] = useState({});
+
   // Admin authentication states
-  const [admins, setAdmins] = useState([]);
+  const [admins, setAdmins] = useState([{ username: "admin", password: "1234" }]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLogin, setShowLogin] = useState(true);
   const [loginError, setLoginError] = useState("");
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [currentAdmin, setCurrentAdmin] = useState(null);
-  
+
   // Logout state
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
+
   // Admin profile states
   const [showAdminProfile, setShowAdminProfile] = useState(false);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
@@ -66,10 +67,10 @@ function AdminPanel() {
   });
   const [adminError, setAdminError] = useState("");
   const [adminSuccess, setAdminSuccess] = useState("");
-  
+
   // Order status tracking
-  const [orderStatuses, setOrderStatuses] = useState({});
   const orderStatusOptions = [
+    "Order Placed",
     "Confirmed",
     "Processing",
     "Shipped",
@@ -77,6 +78,56 @@ function AdminPanel() {
     "Delivered",
     "Cancelled"
   ];
+
+  // Load products and services from localStorage
+  const loadProductsAndServices = () => {
+    try {
+      const storedProducts = safeStorage.getItem("products");
+      const storedServices = safeStorage.getItem("services");
+      
+      if (storedProducts && storedProducts.length > 0) {
+        setProducts(storedProducts);
+      } else {
+        // Initialize with static products if none exist
+        const staticProducts = [
+          { id: 1, name: "Premium Car Wrap", description: "High-quality vinyl wrap", price: 18500, image: "https://picsum.photos/seed/car-wrap/300/200.jpg" },
+          { id: 2, name: "LED Headlight Upgrade", description: "Modern LED headlights", price: 9500, image: "https://picsum.photos/seed/headlights/300/200.jpg" },
+          { id: 3, name: "Performance Engine Tuning", description: "Enhanced engine performance", price: 27500, image: "https://picsum.photos/seed/engine-tuning/300/200.jpg" },
+          { id: 4, name: "Custom Interior Upholstery", description: "Premium leather upholstery", price: 22000, image: "https://picsum.photos/seed/interior/300/200.jpg" },
+          { id: 5, name: "Alloy Wheel Package", description: "Premium alloy wheels", price: 32000, image: "https://picsum.photos/seed/alloy-wheels/300/200.jpg" },
+          { id: 6, name: "Window Tinting", description: "Premium window tinting", price: 12000, image: "https://picsum.photos/seed/window-tint/300/200.jpg" },
+          { id: 7, name: "Ceramic Coating", description: "Protective ceramic coating", price: 25000, image: "https://picsum.photos/seed/ceramic/300/200.jpg" },
+          { id: 8, name: "Car Audio System", description: "Premium audio upgrade", price: 18000, image: "https://picsum.photos/seed/audio/300/200.jpg" },
+          { id: 9, name: "Suspension Upgrade", description: "Performance suspension", price: 28000, image: "https://picsum.photos/seed/suspension/300/200.jpg" },
+          { id: 10, name: "Brake System Upgrade", description: "High-performance brakes", price: 22000, image: "https://picsum.photos/seed/brakes/300/200.jpg" }
+        ];
+        setProducts(staticProducts);
+        safeStorage.setItem("products", staticProducts);
+      }
+      
+      if (storedServices && storedServices.length > 0) {
+        setServices(storedServices);
+      } else {
+        // Initialize with static services if none exist
+        const staticServices = [
+          { id: 1, name: "Car Wrapping Service", description: "Professional vehicle wrapping", price: 15000, image: "https://picsum.photos/seed/wrap-service/300/200.jpg" },
+          { id: 2, name: "Lighting Installation", description: "LED light installation", price: 8000, image: "https://picsum.photos/seed/lighting/300/200.jpg" },
+          { id: 3, name: "Engine Tuning Service", description: "Performance engine tuning", price: 25000, image: "https://picsum.photos/seed/tuning/300/200.jpg" },
+          { id: 4, name: "Interior Customization", description: "Custom interior design", price: 20000, image: "https://picsum.photos/seed/interior-custom/300/200.jpg" },
+          { id: 5, name: "Wheel Upgrade Service", description: "Alloy wheel installation", price: 30000, image: "https://picsum.photos/seed/wheel-upgrade/300/200.jpg" },
+          { id: 6, name: "Window Tinting Service", description: "Professional window tinting", price: 10000, image: "https://picsum.photos/seed/tint-service/300/200.jpg" },
+          { id: 7, name: "Ceramic Coating Service", description: "Professional ceramic coating", price: 22000, image: "https://picsum.photos/seed/ceramic-service/300/200.jpg" },
+          { id: 8, name: "Audio Installation", description: "Premium audio installation", price: 15000, image: "https://picsum.photos/seed/audio-service/300/200.jpg" },
+          { id: 9, name: "Suspension Tuning", description: "Professional suspension tuning", price: 25000, image: "https://picsum.photos/seed/suspension-service/300/200.jpg" },
+          { id: 10, name: "Brake System Service", description: "Brake system upgrade", price: 20000, image: "https://picsum.photos/seed/brake-service/300/200.jpg" }
+        ];
+        setServices(staticServices);
+        safeStorage.setItem("services", staticServices);
+      }
+    } catch (error) {
+      console.error("Error loading products and services:", error);
+    }
+  };
 
   useEffect(() => {
     // Load all data from localStorage
@@ -90,12 +141,10 @@ function AdminPanel() {
                           [];
         const existingReviews = safeStorage.getItem("reviews") || [];
         const existingEnquiries = safeStorage.getItem("enquiries") || [];
-        const existingProducts = safeStorage.getItem("products") || [];
-        const existingServices = safeStorage.getItem("services") || [];
-        
+
         // Load admin data
         const existingAdmins = safeStorage.getItem("admins") || [{ username: "admin", password: "1234" }];
-        
+
         // Check if admin is already logged in
         const loggedInAdmin = safeStorage.getItem("currentAdmin");
         if (loggedInAdmin && existingAdmins.some(admin => admin.username === loggedInAdmin)) {
@@ -109,14 +158,61 @@ function AdminPanel() {
           { name: "varshini", email: "varshini22@gmail.com" },
           { name: "ashwini", email: "ashwini11@gmail.com" }
         ];
-        
+
         // Only add static users if they don't already exist
         const filteredStaticUsers = staticUsers.filter(staticUser => 
           !existingUsers.some(user => 
             user.name === staticUser.name && user.email === staticUser.email
           )
         );
-        
+
+        // Define static orders that must always be present
+        const staticOrders = [
+          { 
+            id: 1, 
+            buyerName: "varshini", 
+            buyerEmail: "varshini22@gmail.com", 
+            title: "Premium Car Wrap", 
+            price: 18500, 
+            payment: "Paid", 
+            status: "Order Placed", 
+            date: new Date().toLocaleString(), 
+            address: "123, Main Street, City, State", 
+            image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" 
+          },
+          { 
+            id: 2, 
+            buyerName: "ashwini", 
+            buyerEmail: "ashwini11@gmail.com", 
+            title: "LED Headlight Upgrade", 
+            price: 9500, 
+            payment: "Paid", 
+            status: "Order Placed", 
+            date: new Date().toLocaleString(), 
+            address: "456, Oak Avenue, City, State", 
+            image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" 
+          },
+          { 
+            id: 3, 
+            buyerName: "varshini", 
+            buyerEmail: "varshini22@gmail.com", 
+            title: "Performance Engine Tuning", 
+            price: 27500, 
+            payment: "Paid", 
+            status: "Order Placed", 
+            date: new Date().toLocaleString(), 
+            address: "123, Main Street, City, State", 
+            image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" 
+          }
+        ];
+
+        // Only add static orders if they don't already exist
+        const filteredStaticOrders = staticOrders.filter(staticOrder => 
+          !ordersData.some(order => 
+            order.id === staticOrder.id
+          )
+        );
+
         // Define static messages that must always be present
         const staticMessages = [
           { 
@@ -148,7 +244,7 @@ function AdminPanel() {
             timestamp: new Date().toLocaleString() 
           }
         ];
-        
+
         // Only add static messages if they don't already exist
         const filteredStaticMessages = staticMessages.filter(staticMessage => 
           !existingMessages.some(message => 
@@ -157,7 +253,7 @@ function AdminPanel() {
             message.message === staticMessage.message
           )
         );
-        
+
         // Define static enquiries that must always be present
         const staticEnquiries = [
           { 
@@ -185,7 +281,7 @@ function AdminPanel() {
             timestamp: new Date().toLocaleString() 
           }
         ];
-        
+
         // Only add static enquiries if they don't already exist
         const filteredStaticEnquiries = staticEnquiries.filter(staticEnquiry => 
           !existingEnquiries.some(enquiry => 
@@ -194,145 +290,27 @@ function AdminPanel() {
             enquiry.message === staticEnquiry.message
           )
         );
-        
-        // Define static orders for varshini and ashwini
-        const staticOrders = [
-          {
-            id: 1001,
-            buyerName: "varshini",
-            buyerEmail: "varshini22@gmail.com",
-            title: "Premium Car Wrap Package",
-            price: 18500,
-            payment: "Credit Card",
-            status: "Confirmed",
-            date: new Date(Date.now() - 86400000 * 3).toLocaleString(), // 3 days ago
-            address: "123 Main Street, Cityville",
-            image: null
-          },
-          {
-            id: 1002,
-            buyerName: "ashwini",
-            buyerEmail: "ashwini11@gmail.com",
-            title: "LED Headlight Upgrade",
-            price: 9500,
-            payment: "Cash on Delivery",
-            status: "Processing",
-            date: new Date(Date.now() - 86400000 * 2).toLocaleString(), // 2 days ago
-            address: "456 Park Avenue, Townsville",
-            image: null
-          },
-          {
-            id: 1003,
-            buyerName: "varshini",
-            buyerEmail: "varshini22@gmail.com",
-            title: "Performance Engine Tuning",
-            price: 27500,
-            payment: "Bank Transfer",
-            status: "Shipped",
-            date: new Date(Date.now() - 86400000 * 1).toLocaleString(), // 1 day ago
-            address: "789 Oak Road, Villageburg",
-            image: null
-          },
-          {
-            id: 1004,
-            buyerName: "ashwini",
-            buyerEmail: "ashwini11@gmail.com",
-            title: "Custom Interior Upholstery",
-            price: 22000,
-            payment: "Credit Card",
-            status: "Out for Delivery",
-            date: new Date().toLocaleString(), // today
-            address: "321 Pine Street, Hamletton",
-            image: null
-          },
-          {
-            id: 1005,
-            buyerName: "varshini",
-            buyerEmail: "varshini22@gmail.com",
-            title: "Alloy Wheel Package",
-            price: 32000,
-            payment: "Cash on Delivery",
-            status: "Delivered",
-            date: new Date(Date.now() - 86400000 * 5).toLocaleString(), // 5 days ago
-            address: "654 Elm Avenue, Borough City",
-            image: null
-          }
-        ];
-        
-        // Only add static orders if they don't already exist
-        const filteredStaticOrders = staticOrders.filter(staticOrder => 
-          !ordersData.some(order => 
-            order.id === staticOrder.id
-          )
-        );
-        
-        // Initialize order statuses
-        const initialStatuses = {};
-        staticOrders.forEach(order => {
-          initialStatuses[order.id] = order.status;
-        });
-        ordersData.forEach(order => {
-          initialStatuses[order.id] = order.status;
-        });
-        setOrderStatuses(initialStatuses);
-        
+
         // Merge static data with existing data
         const allUsers = [...filteredStaticUsers, ...existingUsers];
+        const allOrders = [...filteredStaticOrders, ...ordersData];
         const allMessages = [...filteredStaticMessages, ...existingMessages];
         const allEnquiries = [...filteredStaticEnquiries, ...existingEnquiries];
-        const allOrders = [...filteredStaticOrders, ...ordersData];
-        
+
         setUsers(allUsers);
         setOrders(allOrders);
         setMessages(allMessages);
         setReviews(existingReviews);
         setEnquiries(allEnquiries);
-        setProducts(existingProducts);
-        setServices(existingServices);
         setAdmins(existingAdmins);
-        
-        // Save to localStorage if needed
-        if (filteredStaticUsers.length > 0) safeStorage.setItem("users", allUsers);
-        if (filteredStaticMessages.length > 0) safeStorage.setItem("submittedMessages", allMessages);
-        if (filteredStaticEnquiries.length > 0) safeStorage.setItem("enquiries", allEnquiries);
-        if (filteredStaticOrders.length > 0) safeStorage.setItem("orders", allOrders);
-        if (existingAdmins.length === 0) safeStorage.setItem("admins", existingAdmins);
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
       }
     };
     
-    // Data migration for existing orders
-    const migrateOrders = () => {
-      try {
-        const oldOrders = safeStorage.getItem("orderHistory") || [];
-        const newOrders = safeStorage.getItem("orders") || [];
-        
-        if (oldOrders.length > 0 && newOrders.length === 0) {
-          const migratedOrders = oldOrders.map(order => ({
-            id: order.id || Date.now(),
-            buyerName: order.user || "Unknown Customer",
-            buyerEmail: order.email || "No email",
-            title: order.product || order.name || "Unknown Item",
-            price: order.price || 0,
-            payment: order.payment || "Cash on Delivery",
-            status: order.status || "Confirmed",
-            date: order.date || new Date().toLocaleString(),
-            address: order.address || "No address provided",
-            image: order.image || null
-          }));
-          
-          setOrders(migratedOrders);
-          safeStorage.setItem("orders", migratedOrders);
-        }
-      } catch (error) {
-        console.error("Error migrating orders:", error);
-      }
-    };
-    
     loadData();
-    migrateOrders();
-    
+    loadProductsAndServices();
+
     // Set up storage event listener
     const handleStorageChange = (e) => {
       if (e.key === "orders") {
@@ -369,8 +347,26 @@ function AdminPanel() {
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    
+    // Set up interval to check for localStorage changes (for same-tab updates)
+    const intervalId = setInterval(() => {
+      const currentProducts = safeStorage.getItem("products") || [];
+      const currentServices = safeStorage.getItem("services") || [];
+      
+      if (currentProducts.length !== products.length) {
+        setProducts(currentProducts);
+      }
+      
+      if (currentServices.length !== services.length) {
+        setServices(currentServices);
+      }
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, [products.length, services.length]);
 
   // Handle logout navigation
   useEffect(() => {
@@ -394,7 +390,6 @@ function AdminPanel() {
       setCurrentAdmin(loginData.username);
       safeStorage.setItem("currentAdmin", loginData.username);
       setShowLogin(false);
-      setLoginData({ username: "", password: "" });
     } else {
       setLoginError("Invalid username or password");
     }
@@ -484,10 +479,7 @@ function AdminPanel() {
     safeStorage.setItem("orders", updatedOrders);
     
     // Update the orderStatuses state
-    setOrderStatuses(prev => ({
-      ...prev,
-      [orderId]: newStatus
-    }));
+    setOrderStatuses({...orderStatuses, [orderId]: newStatus});
   };
 
   // Admin handlers
@@ -584,56 +576,87 @@ function AdminPanel() {
     }
   };
 
-  // Normalize order data
+  // Normalize order function
   const normalizeOrder = (order) => {
-    return {
-      id: order.id || order._id || Date.now(),
-      buyerName: order.buyerName || order.user || "Unknown Customer",
-      buyerEmail: order.buyerEmail || order.email || "No email",
-      title: order.title || order.product || order.name || "Unknown Product/Service",
-      price: order.price || 0,
-      payment: order.payment || "Cash on Delivery",
-      status: order.status || "Confirmed",
-      date: order.date || new Date().toLocaleString(),
-      address: order.address || "No address provided",
-      image: order.image || null
-    };
+    if (!order) return order;
+    
+    // Create a normalized copy of the order
+    const normalized = { ...order };
+    
+    // Ensure buyerName exists
+    if (!normalized.buyerName && normalized.name) {
+      normalized.buyerName = normalized.name;
+    }
+    
+    // Ensure buyerEmail exists
+    if (!normalized.buyerEmail && normalized.email) {
+      normalized.buyerEmail = normalized.email;
+    }
+    
+    // Ensure title exists
+    if (!normalized.title && normalized.productName) {
+      normalized.title = normalized.productName;
+    }
+    
+    // Ensure price exists and is a number
+    if (normalized.price === undefined || normalized.price === null) {
+      normalized.price = 0;
+    } else if (typeof normalized.price !== 'number') {
+      normalized.price = Number(normalized.price) || 0;
+    }
+    
+    // Ensure status exists
+    if (!normalized.status) {
+      normalized.status = "Order Placed";
+    }
+    
+    // Ensure date exists
+    if (!normalized.date) {
+      normalized.date = new Date().toLocaleString();
+    }
+    
+    // Ensure id exists
+    if (!normalized.id) {
+      normalized.id = Date.now().toString();
+    }
+    
+    return normalized;
   };
 
-  // Filtered data
+  // Filtered data - Fixed with null checks
   const filteredUsers = users.filter(
     (u) =>
-      u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email?.toLowerCase().includes(userSearch.toLowerCase())
+      (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+      (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase()))
   );
 
   const filteredOrders = orders
     .map(normalizeOrder)
     .filter((o) =>
-      o.buyerName.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      o.buyerEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      o.title.toLowerCase().includes(orderSearch.toLowerCase())
+      (o.buyerName && o.buyerName.toLowerCase().includes(orderSearch.toLowerCase())) ||
+      (o.buyerEmail && o.buyerEmail.toLowerCase().includes(orderSearch.toLowerCase())) ||
+      (o.title && o.title.toLowerCase().includes(orderSearch.toLowerCase()))
     );
 
   const filteredMessages = messages.filter(
     (m) =>
-      m.name?.toLowerCase().includes(messageSearch.toLowerCase()) ||
-      m.email?.toLowerCase().includes(messageSearch.toLowerCase()) ||
-      m.message?.toLowerCase().includes(messageSearch.toLowerCase())
+      (m.name && m.name.toLowerCase().includes(messageSearch.toLowerCase())) ||
+      (m.email && m.email.toLowerCase().includes(messageSearch.toLowerCase())) ||
+      (m.message && m.message.toLowerCase().includes(messageSearch.toLowerCase()))
   );
 
   const filteredReviews = reviews.filter(
     (r) =>
-      r.userName?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
-      r.comment?.toLowerCase().includes(reviewSearch.toLowerCase()) ||
-      r.status?.toLowerCase().includes(reviewSearch.toLowerCase())
+      (r.userName && r.userName.toLowerCase().includes(reviewSearch.toLowerCase())) ||
+      (r.comment && r.comment.toLowerCase().includes(reviewSearch.toLowerCase())) ||
+      (r.status && r.status.toLowerCase().includes(reviewSearch.toLowerCase()))
   );
 
   const filteredEnquiries = enquiries.filter(
     (e) =>
-      e.name?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
-      e.email?.toLowerCase().includes(enquirySearch.toLowerCase()) ||
-      e.message?.toLowerCase().includes(enquirySearch.toLowerCase())
+      (e.name && e.name.toLowerCase().includes(enquirySearch.toLowerCase())) ||
+      (e.email && e.email.toLowerCase().includes(enquirySearch.toLowerCase())) ||
+      (e.message && e.message.toLowerCase().includes(enquirySearch.toLowerCase()))
   );
 
   // Prepare data for charts
@@ -692,7 +715,7 @@ function AdminPanel() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.heading}>Admin Chart</h1>
+        <h1 style={styles.heading}>Admin Dashboard</h1>
         <div style={styles.headerActions}>
           <span style={styles.adminInfo}>Logged in as: <strong>{currentAdmin}</strong></span>
           <button 
@@ -713,7 +736,7 @@ function AdminPanel() {
           style={activeTab === "chart" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("chart")}
         >
-          📊 Chart
+          📊 Dashboard
         </button>
         <button
           style={activeTab === "products" ? styles.activeTab : styles.tab}
@@ -813,7 +836,7 @@ function AdminPanel() {
                       <div 
                         style={{
                           ...styles.barChartBar,
-                          height: `${(item.value / maxValue) * 100}%`,
+                          height: `${(item.value / maxValue) *100}%`,
                           background: `linear-gradient(180deg, ${item.color}, ${item.color}dd)`
                         }}
                       />
@@ -889,11 +912,12 @@ function AdminPanel() {
                     <p style={styles.cardText}>Price: ₹{o.price.toLocaleString()}</p>
                     <p style={styles.cardText}>Payment: {o.payment}</p>
                     
-                    {/* Order Status Tracking */}
+                    {/* Order Status Tracking with Images */}
                     <div style={styles.statusContainer}>
                       <p style={styles.cardText}>Status: 
                         <span style={{ 
-                          color: o.status === "Confirmed" ? "#3498db" : 
+                          color: o.status === "Order Placed" ? "#3498db" : 
+                                o.status === "Confirmed" ? "#3498db" : 
                                 o.status === "Processing" ? "#f39c12" :
                                 o.status === "Shipped" ? "#9b59b6" :
                                 o.status === "Out for Delivery" ? "#1abc9c" :
@@ -1034,7 +1058,7 @@ function AdminPanel() {
                     <p style={styles.cardText}>Comment: {r.comment}</p>
                     <p style={styles.cardText}>Status: 
                       <span style={{ 
-                        color: r.status === "approved" ? "#2ecc71" : "#f39c12",
+                        color: r.status === "approved" ? "#2ed573" : "#f39c12",
                         fontWeight: "bold",
                         marginLeft: "5px"
                       }}>
@@ -1253,6 +1277,14 @@ const styles = {
     flexWrap: "wrap",
     gap: "15px",
   },
+  heading: {
+    fontSize: "32px",
+    fontWeight: "800",
+    color: "#7b68ee",
+    textShadow: "0 0 15px rgba(123, 104, 238, 0.5)",
+    letterSpacing: "1px",
+    margin: 0,
+  },
   headerActions: {
     display: "flex",
     gap: "10px",
@@ -1262,14 +1294,6 @@ const styles = {
     color: "#e6e6ff",
     marginRight: "15px",
     fontWeight: "600",
-  },
-  heading: {
-    fontSize: "32px",
-    fontWeight: "800",
-    color: "#7b68ee",
-    textShadow: "0 0 15px rgba(123, 104, 238, 0.5)",
-    letterSpacing: "1px",
-    margin: 0,
   },
   profileBtn: {
     background: "linear-gradient(45deg, #ff6b6b, #ee5a24)",
@@ -1345,7 +1369,7 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
     gap: "20px",
     marginTop: "20px",
   },
@@ -1423,12 +1447,11 @@ const styles = {
     width: "100%",
     padding: "12px 15px",
     borderRadius: "10px",
-    border: "2px solid #2d2d4d",
-    backgroundColor: "#252547",
-    color: "#e6e6ff",
+    border: "2px solid rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    color: "#fff",
     fontSize: "16px",
-    marginBottom: "15px",
-    fontFamily: "'Montserrat', sans-serif",
+    boxSizing: "border-box",
     outline: "none",
     transition: "border-color 0.3s ease",
   },
@@ -1442,7 +1465,7 @@ const styles = {
   },
   buttonGroup: {
     display: "flex",
-    justifyContent: "space-between",
+    gap: "10px",
     marginTop: "15px",
   },
   loading: {
@@ -1451,9 +1474,14 @@ const styles = {
     fontSize: '18px',
     color: '#a9a9cc'
   },
+  noDataText: {
+    textAlign: 'center',
+    color: '#a9a9cc',
+    fontSize: '18px',
+    padding: '30px'
+  },
   emptyState: {
     textAlign: 'center',
-    padding: '40px',
     color: '#a9a9cc'
   },
   emptyStateHeading: {
@@ -1465,19 +1493,12 @@ const styles = {
     fontSize: '16px',
     lineHeight: '1.5'
   },
-  noDataText: {
-    textAlign: 'center',
-    color: '#a9a9cc',
-    fontSize: '18px',
-    padding: '30px'
-  },
   timestamp: {
     fontSize: "14px",
     color: "#a9a9cc",
     marginTop: "10px",
     fontStyle: "italic",
   },
-  // Chart styles
   chartContainer: {
     backgroundColor: "#1a1a2e",
     padding: "25px",
@@ -1500,10 +1521,9 @@ const styles = {
     boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
     border: "1px solid #3d3d6b",
     textAlign: "center",
-    transition: "all 0.3s ease",
-    cursor: "pointer",
-    position: "relative",
-    overflow: "hidden",
+    transition: "transform 0.3s ease",
+    position: 'relative',
+    overflow: 'hidden',
   },
   statIcon: {
     fontSize: "32px",
@@ -1524,7 +1544,6 @@ const styles = {
     margin: 0,
     textShadow: "0 0 10px rgba(123, 104, 238, 0.5)",
   },
-  // Bar Chart styles
   barChartSection: {
     marginTop: "40px",
     marginBottom: "40px",
@@ -1578,7 +1597,6 @@ const styles = {
     fontWeight: "700",
     marginTop: "10px",
   },
-  // Modal styles
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -1611,13 +1629,15 @@ const styles = {
   inputField: {
     width: '100%',
     padding: '12px 15px',
-    marginBottom: '12px',
     borderRadius: '8px',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     color: '#fff',
     fontSize: '16px',
     boxSizing: 'border-box',
+    outline: 'none',
+    transition: 'border-color 0.3s ease',
+    marginBottom: '10px',
   },
   modalButtons: {
     display: 'flex',
@@ -1633,6 +1653,7 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     fontWeight: '600',
+    transition: 'all 0.3s ease',
     fontFamily: "'Montserrat', sans-serif",
   },
   secondaryBtn: {
@@ -1644,6 +1665,7 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
     fontWeight: '600',
+    transition: 'all 0.3s ease',
     fontFamily: "'Montserrat', sans-serif",
   },
   profileInfo: {
@@ -1656,73 +1678,6 @@ const styles = {
   profileInfoStrong: {
     color: '#00d4ff',
   },
-  errorText: {
-    color: '#ff4757',
-    textAlign: 'center',
-    marginBottom: '15px',
-    fontSize: '14px',
-  },
-  successText: {
-    color: '#2ed573',
-    textAlign: 'center',
-    marginBottom: '15px',
-    fontSize: '14px',
-  },
-  // Login form styles
-  loginContainer: {
-    minHeight: "100vh",
-    backgroundColor: "#0f0f1a",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "20px",
-    backgroundImage: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)",
-  },
-  loginForm: {
-    background: "#1a1a2e",
-    padding: "40px",
-    borderRadius: "20px",
-    width: "100%",
-    maxWidth: "400px",
-    border: "1px solid #2d2d4d",
-    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
-  },
-  loginHeading: {
-    textAlign: "center",
-    marginBottom: "30px",
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#7b68ee",
-  },
-  loginBtn: {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "8px",
-    background: "linear-gradient(135deg, #7b68ee, #6a5acd)",
-    color: "white",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "16px",
-    fontFamily: "'Montserrat', sans-serif",
-    marginTop: "10px",
-  },
-  loginFooter: {
-    marginTop: "20px",
-    textAlign: "center",
-  },
-  backBtn: {
-    background: "transparent",
-    color: "#7b68ee",
-    border: "1px solid #7b68ee",
-    padding: "8px 15px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    transition: "all 0.3s ease",
-    fontFamily: "'Montserrat', sans-serif",
-  },
-  // Order status tracking styles
   statusContainer: {
     margin: "15px 0",
     padding: "10px",
@@ -1755,12 +1710,70 @@ const styles = {
     transition: "all 0.3s ease",
     fontFamily: "'Montserrat', sans-serif",
   },
+  loginContainer: {
+    minHeight: "100vh",
+    backgroundColor: "#0f0f1a",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundImage: "linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)",
+  },
+  loginForm: {
+    background: "#1a1a2e",
+    padding: "40px",
+    borderRadius: "20px",
+    width: "90%",
+    maxWidth: "400px",
+    border: "1px solid #2d2d4d",
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
+  },
+  loginHeading: {
+    textAlign: "center",
+    marginBottom: "30px",
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#fff",
+  },
+  loginBtn: {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "8px",
+    background: "linear-gradient(135deg, #7b68ee, #6a5acd)",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "16px",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  loginFooter: {
+    marginTop: "20px",
+    textAlign: "center",
+  },
+  backBtn: {
+    background: "transparent",
+    color: "#7b68ee",
+    border: "1px solid #7b68ee",
+    padding: "8px 15px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  errorText: {
+    color: "#e74c3c",
+    fontSize: "14px",
+    marginTop: "10px",
+    textAlign: "center",
+  },
+  successText: {
+    color: "#2ecc71",
+    fontSize: "14px",
+    marginTop: "10px",
+    textAlign: "center",
+  },
 };
-
-// Add this to your main HTML file or use a CSS-in-JS solution to import fonts
-const fontLink = document.createElement("link");
-fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap";
-fontLink.rel = "stylesheet";
-document.head.appendChild(fontLink);
 
 export default AdminPanel;
