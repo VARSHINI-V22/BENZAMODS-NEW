@@ -466,23 +466,36 @@ export default function PortfolioAllInOne() {
   
   const cancelOrder = (orderId) => {
     setConfirmDialog({ 
-      message: "Cancel this order?", 
+      message: "Are you sure you want to cancel this order?", 
       onConfirm: () => { 
         const updatedOrders = orders.map(order => {
           if (order.id === orderId) {
-            const updatedHistory = [
-              ...(order.statusHistory || []),
-              { status: "Cancelled", timestamp: new Date().toLocaleString(), note: "Order cancelled by customer" }
-            ];
-            return {
-              ...order, 
-              status: "Cancelled",
-              statusHistory: updatedHistory
-            };
+            // Only allow cancellation if order is in "Order Placed" or "Order Confirmed" status
+            if (order.status === "Order Placed" || order.status === "Order Confirmed") {
+              const updatedHistory = [
+                ...(order.statusHistory || []),
+                { status: "Cancelled", timestamp: new Date().toLocaleString(), note: "Order cancelled by customer" }
+              ];
+              return {
+                ...order, 
+                status: "Cancelled",
+                statusHistory: updatedHistory
+              };
+            }
+            // Return order unchanged if it can't be cancelled
+            return order;
           }
           return order;
         }); 
-        setOrders(updatedOrders); 
+        
+        // Check if the order was actually cancelled
+        const cancelledOrder = updatedOrders.find(order => order.id === orderId && order.status === "Cancelled");
+        if (cancelledOrder) {
+          setOrders(updatedOrders); 
+          alert("Order cancelled successfully.");
+        } else {
+          alert("This order cannot be cancelled at this stage.");
+        }
         setConfirmDialog(null); 
       }
     });
@@ -1100,7 +1113,7 @@ const WishlistModal = ({ wishlist, onClose, addToCart, removeFromWishlist }) => 
   </div>
 );
 
-const OrdersModal = ({ orders, onClose, cancelOrder, updateOrderStatus, trackOrder, ORDER_STATUS_FLOW }) => (
+const OrdersModal = ({ orders, onClose, cancelOrder, trackOrder, ORDER_STATUS_FLOW }) => (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-auto backdrop-blur-sm animate-fadeIn">
     <div className="bg-gray-800 rounded-2xl w-full max-w-6xl p-6 max-h-[90vh] overflow-y-auto border border-gray-700 animate-slideIn">
       <button className="float-right text-gray-400 hover:text-white text-xl font-bold transition transform hover:scale-110" onClick={onClose}>✕</button>
@@ -1148,15 +1161,7 @@ const OrdersModal = ({ orders, onClose, cancelOrder, updateOrderStatus, trackOrd
                     >
                       Track Order
                     </button>
-                    {order.status !== "Cancelled" && order.status !== "Delivered" && ORDER_STATUS_FLOW[order.status]?.next && (
-                      <button 
-                        onClick={() => updateOrderStatus(order.id, ORDER_STATUS_FLOW[order.status].next)}
-                        className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition font-medium transform hover:scale-105"
-                      >
-                        Mark as {ORDER_STATUS_FLOW[order.status].next}
-                      </button>
-                    )}
-                    {order.status === "Order Placed" && (
+                    {(order.status === "Order Placed" || order.status === "Order Confirmed") && (
                       <button 
                         onClick={() => cancelOrder(order.id)} 
                         className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 transition font-medium transform hover:scale-105"
@@ -1319,7 +1324,7 @@ const ReviewsModal = ({ reviews, products, onClose }) => {
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <svg key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400' : 'text-gray-600'}`} fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292z" />
                             </svg>
                           ))}
                         </div>

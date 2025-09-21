@@ -63,6 +63,17 @@ function AdminPanel() {
   });
   const [adminError, setAdminError] = useState("");
   const [adminSuccess, setAdminSuccess] = useState("");
+  
+  // Order status tracking
+  const [orderStatuses, setOrderStatuses] = useState({});
+  const orderStatusOptions = [
+    "Confirmed",
+    "Processing",
+    "Shipped",
+    "Out for Delivery",
+    "Delivered",
+    "Cancelled"
+  ];
 
   useEffect(() => {
     // Load all data from localStorage
@@ -156,13 +167,88 @@ function AdminPanel() {
           }
         ];
         
-        // Merge static users with existing users
+        // Define static orders that must always be present
+        const staticOrders = [
+          {
+            id: 1001,
+            buyerName: "Alex Johnson",
+            buyerEmail: "alex@example.com",
+            title: "Premium Car Wrap Package",
+            price: 18500,
+            payment: "Credit Card",
+            status: "Confirmed",
+            date: new Date(Date.now() - 86400000 * 3).toLocaleString(), // 3 days ago
+            address: "123 Main Street, Cityville",
+            image: null
+          },
+          {
+            id: 1002,
+            buyerName: "Sarah Williams",
+            buyerEmail: "sarah@example.com",
+            title: "LED Headlight Upgrade",
+            price: 9500,
+            payment: "Cash on Delivery",
+            status: "Processing",
+            date: new Date(Date.now() - 86400000 * 2).toLocaleString(), // 2 days ago
+            address: "456 Park Avenue, Townsville",
+            image: null
+          },
+          {
+            id: 1003,
+            buyerName: "Michael Chen",
+            buyerEmail: "michael@example.com",
+            title: "Performance Engine Tuning",
+            price: 27500,
+            payment: "Bank Transfer",
+            status: "Shipped",
+            date: new Date(Date.now() - 86400000 * 1).toLocaleString(), // 1 day ago
+            address: "789 Oak Road, Villageburg",
+            image: null
+          },
+          {
+            id: 1004,
+            buyerName: "Emma Rodriguez",
+            buyerEmail: "emma@example.com",
+            title: "Custom Interior Upholstery",
+            price: 22000,
+            payment: "Credit Card",
+            status: "Out for Delivery",
+            date: new Date().toLocaleString(), // today
+            address: "321 Pine Street, Hamletton",
+            image: null
+          },
+          {
+            id: 1005,
+            buyerName: "David Thompson",
+            buyerEmail: "david@example.com",
+            title: "Alloy Wheel Package",
+            price: 32000,
+            payment: "Cash on Delivery",
+            status: "Delivered",
+            date: new Date(Date.now() - 86400000 * 5).toLocaleString(), // 5 days ago
+            address: "654 Elm Avenue, Borough City",
+            image: null
+          }
+        ];
+        
+        // Initialize order statuses
+        const initialStatuses = {};
+        staticOrders.forEach(order => {
+          initialStatuses[order.id] = order.status;
+        });
+        ordersData.forEach(order => {
+          initialStatuses[order.id] = order.status;
+        });
+        setOrderStatuses(initialStatuses);
+        
+        // Merge static data with existing data
         const allUsers = [...staticUsers, ...existingUsers];
         const allMessages = [...staticMessages, ...existingMessages];
         const allEnquiries = [...staticEnquiries, ...existingEnquiries];
+        const allOrders = [...staticOrders, ...ordersData];
         
         setUsers(allUsers);
-        setOrders(ordersData);
+        setOrders(allOrders);
         setMessages(allMessages);
         setReviews(existingReviews);
         setEnquiries(allEnquiries);
@@ -174,6 +260,7 @@ function AdminPanel() {
         if (existingUsers.length === 0) safeStorage.setItem("users", allUsers);
         if (existingMessages.length === 0) safeStorage.setItem("submittedMessages", allMessages);
         if (existingEnquiries.length === 0) safeStorage.setItem("enquiries", allEnquiries);
+        if (ordersData.length === 0) safeStorage.setItem("orders", allOrders);
         if (existingAdmins.length === 0) safeStorage.setItem("admins", existingAdmins);
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
@@ -345,6 +432,25 @@ function AdminPanel() {
     updated[index].status = updated[index].status === "approved" ? "pending" : "approved";
     setReviews(updated);
     safeStorage.setItem("reviews", updated);
+  };
+
+  // Order status update handler
+  const handleUpdateOrderStatus = (orderId, newStatus) => {
+    const updatedOrders = orders.map(order => {
+      if (order.id === orderId) {
+        return { ...order, status: newStatus };
+      }
+      return order;
+    });
+    
+    setOrders(updatedOrders);
+    safeStorage.setItem("orders", updatedOrders);
+    
+    // Update the orderStatuses state
+    setOrderStatuses(prev => ({
+      ...prev,
+      [orderId]: newStatus
+    }));
   };
 
   // Admin handlers
@@ -745,16 +851,43 @@ function AdminPanel() {
                     <p style={styles.cardText}>Product: {o.title}</p>
                     <p style={styles.cardText}>Price: ₹{o.price.toLocaleString()}</p>
                     <p style={styles.cardText}>Payment: {o.payment}</p>
-                    <p style={styles.cardText}>Status: 
-                      <span style={{ 
-                        color: o.status === "Confirmed" ? "#2ecc71" : 
-                              o.status === "Cancelled" ? "#e74c3c" : "#f39c12",
-                        fontWeight: "bold",
-                        marginLeft: "5px"
-                      }}>
-                        {o.status}
-                      </span>
-                    </p>
+                    
+                    {/* Order Status Tracking */}
+                    <div style={styles.statusContainer}>
+                      <p style={styles.cardText}>Status: 
+                        <span style={{ 
+                          color: o.status === "Confirmed" ? "#3498db" : 
+                                o.status === "Processing" ? "#f39c12" :
+                                o.status === "Shipped" ? "#9b59b6" :
+                                o.status === "Out for Delivery" ? "#1abc9c" :
+                                o.status === "Delivered" ? "#2ecc71" : "#e74c3c",
+                          fontWeight: "bold",
+                          marginLeft: "5px"
+                        }}>
+                          {o.status}
+                        </span>
+                      </p>
+                      
+                      <div style={styles.statusControls}>
+                        <select
+                          value={orderStatuses[o.id] || o.status}
+                          onChange={(e) => setOrderStatuses({...orderStatuses, [o.id]: e.target.value})}
+                          style={styles.statusSelect}
+                        >
+                          {orderStatusOptions.map((status, idx) => (
+                            <option key={idx} value={status}>{status}</option>
+                          ))}
+                        </select>
+                        
+                        <button
+                          onClick={() => handleUpdateOrderStatus(o.id, orderStatuses[o.id] || o.status)}
+                          style={styles.updateStatusBtn}
+                        >
+                          Update Status
+                        </button>
+                      </div>
+                    </div>
+                    
                     <p style={styles.cardText}>Date: {o.date}</p>
                     <p style={styles.cardText}>Address: {o.address}</p>
                     {o.image && (
@@ -1335,12 +1468,6 @@ const styles = {
     position: "relative",
     overflow: "hidden",
   },
-  statCard: {
-    ":hover": {
-      transform: "translateY(-5px)",
-      boxShadow: "0 12px 25px rgba(0, 0, 0, 0.4)",
-    }
-  },
   statIcon: {
     fontSize: "32px",
     marginBottom: "15px",
@@ -1555,6 +1682,39 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontWeight: "600",
+    transition: "all 0.3s ease",
+    fontFamily: "'Montserrat', sans-serif",
+  },
+  // Order status tracking styles
+  statusContainer: {
+    margin: "15px 0",
+    padding: "10px",
+    backgroundColor: "rgba(45, 45, 77, 0.5)",
+    borderRadius: "8px",
+  },
+  statusControls: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "10px",
+  },
+  statusSelect: {
+    flex: 1,
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #3d3d6b",
+    backgroundColor: "#252547",
+    color: "#e6e6ff",
+    fontSize: "14px",
+  },
+  updateStatusBtn: {
+    background: "linear-gradient(45deg, #3498db, #2980b9)",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
     transition: "all 0.3s ease",
     fontFamily: "'Montserrat', sans-serif",
   },

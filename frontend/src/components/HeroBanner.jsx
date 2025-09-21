@@ -21,8 +21,7 @@ function HeroBanner() {
     email: "" 
   });
   const [forgotPasswordData, setForgotPasswordData] = useState({ 
-    identifier: "", 
-    isAdmin: false 
+    identifier: "" 
   });
   const [resetPasswordData, setResetPasswordData] = useState({ 
     username: "", 
@@ -45,8 +44,12 @@ function HeroBanner() {
   
   // Initialize admin password if not exists
   useEffect(() => {
-    if (!localStorage.getItem('adminPassword')) {
-      localStorage.setItem('adminPassword', JSON.stringify("1234"));
+    const adminPassword = localStorage.getItem('adminPassword');
+    if (!adminPassword) {
+      localStorage.setItem('adminPassword', "1234");
+      console.log("Admin password initialized to '1234'");
+    } else {
+      console.log("Admin password found in localStorage:", adminPassword);
     }
   }, []);
   
@@ -64,8 +67,13 @@ function HeroBanner() {
       const parsedData = JSON.parse(userData);
       setIsLoggedIn(true);
       setIsAdmin(parsedData.isAdmin || false);
+      
+      // If admin is already logged in, redirect to admin panel
+      if (parsedData.isAdmin) {
+        navigate('/admin');
+      }
     }
-  }, []);
+  }, [navigate]);
   
   // Load user profile data when profile is opened
   useEffect(() => {
@@ -132,9 +140,16 @@ function HeroBanner() {
     e.preventDefault();
     setAuthError("");
     
-    // Check admin credentials using stored password
-    const adminPassword = JSON.parse(localStorage.getItem('adminPassword') || '"1234"');
+    // Debug: Log the input values
+    console.log("Login attempt with:", loginData);
+    
+    // Get the admin password from localStorage
+    const adminPassword = localStorage.getItem('adminPassword');
+    console.log("Admin password from localStorage:", adminPassword);
+    
+    // Check admin credentials
     if (loginData.username === "admin" && loginData.password === adminPassword) {
+      console.log("Admin login successful");
       setIsLoggedIn(true);
       setIsAdmin(true);
       localStorage.setItem('userData', JSON.stringify({ 
@@ -142,6 +157,9 @@ function HeroBanner() {
         isAdmin: true 
       }));
       setShowLoginForm(false);
+      
+      // Navigate to admin panel after successful login
+      navigate('/admin');
       return;
     }
     
@@ -150,6 +168,7 @@ function HeroBanner() {
     const user = users.find(u => u.username === loginData.username && u.password === loginData.password);
     
     if (user) {
+      console.log("User login successful");
       setIsLoggedIn(true);
       setIsAdmin(false);
       localStorage.setItem('userData', JSON.stringify({ 
@@ -158,6 +177,7 @@ function HeroBanner() {
       }));
       setShowLoginForm(false);
     } else {
+      console.log("Login failed");
       setAuthError("Invalid username or password");
     }
   };
@@ -169,6 +189,12 @@ function HeroBanner() {
     
     if (signupData.password !== signupData.confirmPassword) {
       setAuthError("Passwords do not match");
+      return;
+    }
+    
+    // Prevent users from registering with "admin" username
+    if (signupData.username.toLowerCase() === "admin") {
+      setAuthError("This username is reserved");
       return;
     }
     
@@ -207,28 +233,25 @@ function HeroBanner() {
     setAuthError("");
     setResetMessage("");
     
-    if (forgotPasswordData.isAdmin) {
+    // Check if the identifier is "admin" -> then it's admin reset
+    if (forgotPasswordData.identifier === "admin") {
       // Handle admin password reset
-      if (forgotPasswordData.identifier === "admin") {
-        // Generate a simple token (in a real app, this would be more secure)
-        const token = Math.random().toString(36).substring(2, 15);
-        setResetToken(token);
-        localStorage.setItem('adminResetToken', token);
-        
-        setResetMessage("Admin password reset initiated. Check your console for the reset token.");
-        console.log("Admin Reset Token:", token);
-        
-        setTimeout(() => {
-          setShowForgotPassword(false);
-          setShowResetPassword(true);
-          setResetPasswordData({
-            ...resetPasswordData,
-            username: "admin"
-          });
-        }, 2000);
-      } else {
-        setAuthError("Admin username not found");
-      }
+      // Generate a simple token (in a real app, this would be more secure)
+      const token = Math.random().toString(36).substring(2, 15);
+      setResetToken(token);
+      localStorage.setItem('adminResetToken', token);
+      
+      setResetMessage("Admin password reset initiated. Check your console for the reset token.");
+      console.log("Admin Reset Token:", token);
+      
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setShowResetPassword(true);
+        setResetPasswordData({
+          ...resetPasswordData,
+          username: "admin"
+        });
+      }, 2000);
     } else {
       // Handle regular user password reset
       const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -280,7 +303,7 @@ function HeroBanner() {
     
     if (resetPasswordData.username === "admin") {
       // Update admin password in localStorage
-      localStorage.setItem('adminPassword', JSON.stringify(resetPasswordData.newPassword));
+      localStorage.setItem('adminPassword', resetPasswordData.newPassword);
       
       setResetMessage("Admin password has been reset successfully!");
       
@@ -332,8 +355,7 @@ function HeroBanner() {
     setShowProfile(false);
     setShowForgotPassword(true);
     setForgotPasswordData({
-      identifier: userData.username,
-      isAdmin: userData.isAdmin
+      identifier: userData.username
     });
     setAuthError("");
   };
@@ -514,25 +536,9 @@ function HeroBanner() {
             <h3 className="auth-title">Reset Password</h3>
             <p className="auth-subtitle">Enter your username or email to reset your password</p>
             <form onSubmit={handleForgotPassword}>
-              <div className="user-type-toggle">
-                <button
-                  type="button"
-                  className={`toggle-btn ${!forgotPasswordData.isAdmin ? 'active' : ''}`}
-                  onClick={() => setForgotPasswordData({...forgotPasswordData, isAdmin: false})}
-                >
-                  User
-                </button>
-                <button
-                  type="button"
-                  className={`toggle-btn ${forgotPasswordData.isAdmin ? 'active' : ''}`}
-                  onClick={() => setForgotPasswordData({...forgotPasswordData, isAdmin: true})}
-                >
-                  Admin
-                </button>
-              </div>
               <input
                 type="text"
-                placeholder={forgotPasswordData.isAdmin ? "Admin Username" : "Username or Email"}
+                placeholder="Username or Email"
                 value={forgotPasswordData.identifier}
                 onChange={(e) => setForgotPasswordData({...forgotPasswordData, identifier: e.target.value})}
                 className="input-field"
@@ -1297,29 +1303,6 @@ const addGlobalStyles = () => {
       font-size: 24px;
       cursor: pointer;
       font-weight: bold;
-    }
-    
-    .user-type-toggle {
-      display: flex;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .toggle-btn {
-      flex: 1;
-      padding: 10px;
-      background: transparent;
-      border: none;
-      color: rgba(255, 255, 255, 0.7);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .toggle-btn.active {
-      background: linear-gradient(135deg, #007bff, #00d4ff);
-      color: white;
     }
     
     /* Profile Section */
