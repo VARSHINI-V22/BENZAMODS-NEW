@@ -30,46 +30,16 @@ const saveServices = (services) => {
 
 // Initial services data
 const initialServices = [
-  { 
-    _id: "s1", 
-    name: "Engine Tuning", 
-    category: "car",
-    description: "Professional engine tuning for optimal performance.",
-    price: 12000, 
-    image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "s2", 
-    name: "Body Wrap Installation", 
-    category: "car",
-    description: "Premium body wrap installation with custom designs.",
-    price: 25000, 
-    image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" 
-  },
-  { 
-    _id: "s3", 
-    name: "Interior Customization", 
-    category: "car",
-    description: "Complete interior customization with premium materials.",
-    price: 40000, 
-    image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "s4", 
-    name: "Wheel Alignment", 
-    category: "car",
-    description: "Precision wheel alignment for optimal handling and tire longevity.",
-    price: 2500, 
-    image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" 
-  },
-  { 
-    _id: "s5", 
-    name: "Car Wash & Detailing", 
-    category: "car",
-    description: "Complete interior and exterior detailing for a showroom finish.",
-    price: 3500, 
-    image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" 
-  }
+  { _id: "s1", name: "Engine Tuning", description: "Professional engine tuning for optimal performance.", price: 12000, image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" },
+    { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" },
+    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" },
+    { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" },
+    { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" },
+    { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://tse3.mm.bing.net/th/id/OIP.M8k9NSGf2a8mlMuUc30VHgHaE7?pid=Api&P=0&h=220" },
+    { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://tse3.mm.bing.net/th/id/OIP.PdznukrEVKu2nvngXFC0hgHaHa?pid=Api&P=0&h=220" },
+    { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.aEVoNVK7wzp-9EFd-kRZcAHaEo?pid=Api&P=0&h=220" },
+    { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://tse1.mm.bing.net/th/id/OIP.KtO4Dq7chvlU418aBZ0LjwHaEK?pid=Api&P=0&h=220" },
+    { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://tse1.mm.bing.net/th/id/OIP.hh9Fgy01NNOzIn397Y-xAgHaEo?pid=Api&P=0&h=220" }
 ];
 
 export default function ServicesAdmin() {
