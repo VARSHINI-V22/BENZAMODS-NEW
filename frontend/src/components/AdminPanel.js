@@ -51,6 +51,9 @@ function AdminPanel() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [currentAdmin, setCurrentAdmin] = useState(null);
   
+  // Logout state
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
   // Admin profile states
   const [showAdminProfile, setShowAdminProfile] = useState(false);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
@@ -344,6 +347,14 @@ function AdminPanel() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Handle logout navigation
+  useEffect(() => {
+    if (isLoggingOut) {
+      navigate("/");
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, navigate]);
+
   // Admin authentication handlers
   const handleLogin = (e) => {
     e.preventDefault();
@@ -365,11 +376,11 @@ function AdminPanel() {
   };
   
   const handleLogout = () => {
+    setIsLoggingOut(true);
     setIsLoggedIn(false);
     setCurrentAdmin(null);
     safeStorage.setItem("currentAdmin", null);
     setShowLogin(true);
-    navigate("/");
   };
 
   // Remove handlers
