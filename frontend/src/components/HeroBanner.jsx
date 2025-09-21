@@ -22,7 +22,6 @@ function HeroBanner() {
   });
   const [forgotPasswordData, setForgotPasswordData] = useState({ 
     identifier: "" 
-    // Removed isAdmin property
   });
   const [resetPasswordData, setResetPasswordData] = useState({ 
     username: "", 
@@ -60,6 +59,8 @@ function HeroBanner() {
   // Check if user is already logged in (from localStorage)
   useEffect(() => {
     const userData = localStorage.getItem('userData');
+    const currentAdmin = localStorage.getItem('currentAdmin');
+    
     if (userData) {
       const parsedData = JSON.parse(userData);
       setIsLoggedIn(true);
@@ -69,6 +70,11 @@ function HeroBanner() {
       if (parsedData.isAdmin) {
         navigate('/admin');
       }
+    } else if (currentAdmin) {
+      // Handle legacy admin login
+      setIsLoggedIn(true);
+      setIsAdmin(true);
+      navigate('/admin');
     }
   }, [navigate]);
   
@@ -146,6 +152,7 @@ function HeroBanner() {
         username: loginData.username, 
         isAdmin: true 
       }));
+      localStorage.setItem('currentAdmin', loginData.username);
       setShowLoginForm(false);
       
       // Navigate to admin panel after successful login
@@ -334,6 +341,7 @@ function HeroBanner() {
     setIsLoggedIn(false);
     setIsAdmin(false);
     localStorage.removeItem('userData');
+    localStorage.removeItem('currentAdmin');
     setShowProfile(false);
   };
   
@@ -344,7 +352,6 @@ function HeroBanner() {
     setShowForgotPassword(true);
     setForgotPasswordData({
       identifier: userData.username
-      // Removed isAdmin property
     });
     setAuthError("");
   };
@@ -525,7 +532,6 @@ function HeroBanner() {
             <h3 className="auth-title">Reset Password</h3>
             <p className="auth-subtitle">Enter your username or email to reset your password</p>
             <form onSubmit={handleForgotPassword}>
-              {/* Removed the user-type toggle */}
               <input
                 type="text"
                 placeholder="Username or Email"
@@ -1214,7 +1220,7 @@ const addGlobalStyles = () => {
       background-color: rgba(0, 0, 0, 0.7);
       display: flex;
       justify-content: center;
-      align-items: center;
+      alignItems: center;
       z-index: 1000;
       backdrop-filter: blur(5px);
     }

@@ -149,6 +149,15 @@ function AdminPanel() {
           }
         ];
         
+        // Only add static messages if they don't already exist
+        const filteredStaticMessages = staticMessages.filter(staticMessage => 
+          !existingMessages.some(message => 
+            message.name === staticMessage.name && 
+            message.email === staticMessage.email && 
+            message.message === staticMessage.message
+          )
+        );
+        
         // Define static enquiries that must always be present
         const staticEnquiries = [
           { 
@@ -177,12 +186,21 @@ function AdminPanel() {
           }
         ];
         
-        // Define static orders that must always be present
+        // Only add static enquiries if they don't already exist
+        const filteredStaticEnquiries = staticEnquiries.filter(staticEnquiry => 
+          !existingEnquiries.some(enquiry => 
+            enquiry.name === staticEnquiry.name && 
+            enquiry.email === staticEnquiry.email && 
+            enquiry.message === staticEnquiry.message
+          )
+        );
+        
+        // Define static orders for varshini and ashwini
         const staticOrders = [
           {
             id: 1001,
-            buyerName: "Alex Johnson",
-            buyerEmail: "alex@example.com",
+            buyerName: "varshini",
+            buyerEmail: "varshini22@gmail.com",
             title: "Premium Car Wrap Package",
             price: 18500,
             payment: "Credit Card",
@@ -193,8 +211,8 @@ function AdminPanel() {
           },
           {
             id: 1002,
-            buyerName: "Sarah Williams",
-            buyerEmail: "sarah@example.com",
+            buyerName: "ashwini",
+            buyerEmail: "ashwini11@gmail.com",
             title: "LED Headlight Upgrade",
             price: 9500,
             payment: "Cash on Delivery",
@@ -205,8 +223,8 @@ function AdminPanel() {
           },
           {
             id: 1003,
-            buyerName: "Michael Chen",
-            buyerEmail: "michael@example.com",
+            buyerName: "varshini",
+            buyerEmail: "varshini22@gmail.com",
             title: "Performance Engine Tuning",
             price: 27500,
             payment: "Bank Transfer",
@@ -217,8 +235,8 @@ function AdminPanel() {
           },
           {
             id: 1004,
-            buyerName: "Emma Rodriguez",
-            buyerEmail: "emma@example.com",
+            buyerName: "ashwini",
+            buyerEmail: "ashwini11@gmail.com",
             title: "Custom Interior Upholstery",
             price: 22000,
             payment: "Credit Card",
@@ -229,8 +247,8 @@ function AdminPanel() {
           },
           {
             id: 1005,
-            buyerName: "David Thompson",
-            buyerEmail: "david@example.com",
+            buyerName: "varshini",
+            buyerEmail: "varshini22@gmail.com",
             title: "Alloy Wheel Package",
             price: 32000,
             payment: "Cash on Delivery",
@@ -240,6 +258,13 @@ function AdminPanel() {
             image: null
           }
         ];
+        
+        // Only add static orders if they don't already exist
+        const filteredStaticOrders = staticOrders.filter(staticOrder => 
+          !ordersData.some(order => 
+            order.id === staticOrder.id
+          )
+        );
         
         // Initialize order statuses
         const initialStatuses = {};
@@ -253,9 +278,9 @@ function AdminPanel() {
         
         // Merge static data with existing data
         const allUsers = [...filteredStaticUsers, ...existingUsers];
-        const allMessages = [...staticMessages, ...existingMessages];
-        const allEnquiries = [...staticEnquiries, ...existingEnquiries];
-        const allOrders = [...staticOrders, ...ordersData];
+        const allMessages = [...filteredStaticMessages, ...existingMessages];
+        const allEnquiries = [...filteredStaticEnquiries, ...existingEnquiries];
+        const allOrders = [...filteredStaticOrders, ...ordersData];
         
         setUsers(allUsers);
         setOrders(allOrders);
@@ -267,10 +292,10 @@ function AdminPanel() {
         setAdmins(existingAdmins);
         
         // Save to localStorage if needed
-        if (existingUsers.length === 0) safeStorage.setItem("users", allUsers);
-        if (existingMessages.length === 0) safeStorage.setItem("submittedMessages", allMessages);
-        if (existingEnquiries.length === 0) safeStorage.setItem("enquiries", allEnquiries);
-        if (ordersData.length === 0) safeStorage.setItem("orders", allOrders);
+        if (filteredStaticUsers.length > 0) safeStorage.setItem("users", allUsers);
+        if (filteredStaticMessages.length > 0) safeStorage.setItem("submittedMessages", allMessages);
+        if (filteredStaticEnquiries.length > 0) safeStorage.setItem("enquiries", allEnquiries);
+        if (filteredStaticOrders.length > 0) safeStorage.setItem("orders", allOrders);
         if (existingAdmins.length === 0) safeStorage.setItem("admins", existingAdmins);
       } catch (error) {
         console.error("Error loading data from localStorage:", error);
@@ -350,10 +375,10 @@ function AdminPanel() {
   // Handle logout navigation
   useEffect(() => {
     if (isLoggingOut) {
-      navigate("/");
-      setIsLoggingOut(false);
+      // Force a hard navigation to ensure all state is reset
+      window.location.href = "/";
     }
-  }, [isLoggingOut, navigate]);
+  }, [isLoggingOut]);
 
   // Admin authentication handlers
   const handleLogin = (e) => {
@@ -376,18 +401,20 @@ function AdminPanel() {
   };
   
   const handleLogout = () => {
+    // Clear all admin-related data from localStorage
+    localStorage.removeItem('currentAdmin');
+    localStorage.removeItem('userData');
+    
+    // Reset admin state
     setIsLoggingOut(true);
     setIsLoggedIn(false);
     setCurrentAdmin(null);
-    safeStorage.setItem("currentAdmin", null);
     setShowLogin(true);
   };
 
   // Remove handlers
   const handleRemoveUser = (index) => {
     const user = users[index];
-    
-    // Static user protection removed - now all users can be deleted
     
     if (window.confirm("Remove this user?")) {
       const updated = users.filter((_, i) => i !== index);
