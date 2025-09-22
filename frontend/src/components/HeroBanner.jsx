@@ -31,6 +31,7 @@ function HeroBanner() {
   const [authError, setAuthError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
   const [resetToken, setResetToken] = useState("");
+  const [signupSuccess, setSignupSuccess] = useState(false);
   
   // User profile data
   const [userProfile, setUserProfile] = useState({
@@ -213,13 +214,25 @@ function HeroBanner() {
     
     localStorage.setItem('users', JSON.stringify(users));
     
-    // Auto login after signup
-    setIsLoggedIn(true);
-    localStorage.setItem('userData', JSON.stringify({ 
-      username: signupData.username, 
-      isAdmin: false 
-    }));
-    setShowSignupForm(false);
+    // Show success message but don't auto login
+    setSignupSuccess(true);
+    
+    // Reset form
+    setSignupData({ 
+      username: "", 
+      password: "", 
+      confirmPassword: "",
+      email: "" 
+    });
+    
+    // After 2 seconds, switch to login form
+    setTimeout(() => {
+      setShowSignupForm(false);
+      setShowLoginForm(true);
+      setSignupSuccess(false);
+      // Pre-fill the username in the login form
+      setLoginData({ username: users[users.length - 1].username, password: "" });
+    }, 2000);
   };
   
   // Handle forgot password request
@@ -509,12 +522,26 @@ function HeroBanner() {
                   onClick={() => {
                     setShowLoginForm(false);
                     setShowSignupForm(true);
+                    setAuthError("");
                   }}
                 >
                   Create Account
                 </button>
               </div>
             </form>
+            <div className="auth-form-links">
+              <button 
+                type="button" 
+                className="auth-link"
+                onClick={() => {
+                  setShowLoginForm(false);
+                  setShowForgotPassword(true);
+                  setAuthError("");
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
             <button 
               onClick={() => setShowLoginForm(false)} 
               className="close-button"
@@ -550,6 +577,7 @@ function HeroBanner() {
                   onClick={() => {
                     setShowForgotPassword(false);
                     setShowLoginForm(true);
+                    setAuthError("");
                   }}
                 >
                   Back to Login
@@ -636,54 +664,61 @@ function HeroBanner() {
         <div className="modal-overlay">
           <div className="auth-form">
             <h3 className="auth-title">Create Account</h3>
-            <form onSubmit={handleSignup}>
-              <input
-                type="text"
-                placeholder="Username"
-                value={signupData.username}
-                onChange={(e) => setSignupData({...signupData, username: e.target.value})}
-                className="input-field"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={signupData.email}
-                onChange={(e) => setSignupData({...signupData, email: e.target.value})}
-                className="input-field"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={signupData.password}
-                onChange={(e) => setSignupData({...signupData, password: e.target.value})}
-                className="input-field"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                value={signupData.confirmPassword}
-                onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
-                className="input-field"
-                required
-              />
-              {authError && <p className="error-text">{authError}</p>}
-              <div className="auth-form-buttons">
-                <button type="submit" className="btn-primary">Sign Up</button>
-                <button 
-                  type="button" 
-                  className="btn-secondary"
-                  onClick={() => {
-                    setShowSignupForm(false);
-                    setShowLoginForm(true);
-                  }}
-                >
-                  Already have an account?
-                </button>
+            {signupSuccess ? (
+              <div className="success-message">
+                <p className="success-text">Account created successfully! Redirecting to login...</p>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleSignup}>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={signupData.username}
+                  onChange={(e) => setSignupData({...signupData, username: e.target.value})}
+                  className="input-field"
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={signupData.email}
+                  onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                  className="input-field"
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={signupData.password}
+                  onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                  className="input-field"
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={signupData.confirmPassword}
+                  onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                  className="input-field"
+                  required
+                />
+                {authError && <p className="error-text">{authError}</p>}
+                <div className="auth-form-buttons">
+                  <button type="submit" className="btn-primary">Sign Up</button>
+                  <button 
+                    type="button" 
+                    className="btn-secondary"
+                    onClick={() => {
+                      setShowSignupForm(false);
+                      setShowLoginForm(true);
+                      setAuthError("");
+                    }}
+                  >
+                    Already have an account?
+                  </button>
+                </div>
+              </form>
+            )}
             <button 
               onClick={() => setShowSignupForm(false)} 
               className="close-button"
@@ -1220,7 +1255,7 @@ const addGlobalStyles = () => {
       background-color: rgba(0, 0, 0, 0.7);
       display: flex;
       justify-content: center;
-      alignItems: center;
+      align-items: center;
       z-index: 1000;
       backdrop-filter: blur(5px);
     }
@@ -1287,6 +1322,25 @@ const addGlobalStyles = () => {
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+    
+    .auth-form-links {
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    .auth-link {
+      background: none;
+      border: none;
+      color: #00d4ff;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+    
+    .success-message {
+      text-align: center;
+      padding: 20px 0;
     }
     
     .close-button {

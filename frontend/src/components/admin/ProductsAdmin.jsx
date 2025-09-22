@@ -31,15 +31,15 @@ const saveProducts = (products) => {
 // Static products data - matching the demo products from CombinedApp
 const staticProducts = [
   { _id: "1", name: "Performance Exhaust System", category: "car", description: "High-performance exhaust system for improved engine efficiency and sound.", price: 25000, image: "https://tse2.mm.bing.net/th/id/OIP.FPvcDC0I2QAT2-ZMzMbvVQHaE8?pid=Api&P=0&h=220" },
-    { _id: "2", name: "Carbon Fiber Spoiler", category: "car", description: "Lightweight carbon fiber spoiler for enhanced aerodynamics.", price: 18000, image: "https://m.media-amazon.com/images/I/61gAb77Hs9L.jpg" },
-    { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://tse2.mm.bing.net/th/id/OIP.JulTBx1UPcpJ4JIhtMdR2wHaFe?pid=Api&P=0&h=220" },
-    { _id: "4", name: "LED Headlight Kit", category: "car", description: "Ultra-bright LED headlights with improved visibility and modern look.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.K1VijNzI40PetpAFkZSrMQHaHa?pid=Api&P=0&h=220" },
-    { _id: "5", name: "Alloy Wheels", category: "car", description: "Premium alloy wheels to enhance your vehicle's appearance and performance.", price: 45000, image: "https://tse4.mm.bing.net/th/id/OIP.DOeQUu06qYkdkobQAlO4ygHaHa?pid=Api&P=0&h=220" },
-    { _id: "6", name: "Performance Brakes", category: "car", description: "High-performance brake system for improved stopping power and safety.", price: 28000, image: "https://tse2.mm.bing.net/th/id/OIP.fDlAkDnxBDnMu_Z77e8X7AHaE7?pid=Api&P=0&h=220" },
-    { _id: "7", name: "Car Cover", category: "car", description: "Dust and water-resistant car cover for all-weather protection.", price: 3500, image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" },
-    { _id: "8", name: "Seat Covers", category: "car", description: "Premium leather seat covers for comfort and style.", price: 8500, image: "https://tse1.mm.bing.net/th/id/OIP.C3jpE0tjow0TPhfqf0usCgHaHa?pid=Api&P=0&h=220" },
-    { _id: "9", name: "Floor Mats", category: "car", description: "Heavy-duty rubber floor mats for all-weather protection.", price: 2500, image: "https://tse1.mm.bing.net/th/id/OIP.ifQJfWptFruDzownGRBhTQHaHa?pid=Api&P=0&h=220" },
-    { _id: "10", name: "High-Flow Air Filter", category: "car", description: "Performance air filter for improved engine airflow and efficiency.", price: 4500, image: "https://tse4.mm.bing.net/th/id/OIP.cJpgEEhbWs0dq9z4Ekjs-AHaHa?pid=Api&P=0&h=220" }
+  { _id: "2", name: "Carbon Fiber Spoiler", category: "car", description: "Lightweight carbon fiber spoiler for enhanced aerodynamics.", price: 18000, image: "https://m.media-amazon.com/images/I/61gAb77Hs9L.jpg" },
+  { _id: "3", name: "Sport Suspension Kit", category: "car", description: "Sport suspension kit for improved handling and performance.", price: 35000, image: "https://tse2.mm.bing.net/th/id/OIP.JulTBx1UPcpJ4JIhtMdR2wHaFe?pid=Api&P=0&h=220" },
+  { _id: "4", name: "LED Headlight Kit", category: "car", description: "Ultra-bright LED headlights with improved visibility and modern look.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.K1VijNzI40PetpAFkZSrMQHaHa?pid=Api&P=0&h=220" },
+  { _id: "5", name: "Alloy Wheels", category: "car", description: "Premium alloy wheels to enhance your vehicle's appearance and performance.", price: 45000, image: "https://tse4.mm.bing.net/th/id/OIP.DOeQUu06qYkdkobQAlO4ygHaHa?pid=Api&P=0&h=220" },
+  { _id: "6", name: "Performance Brakes", category: "car", description: "High-performance brake system for improved stopping power and safety.", price: 28000, image: "https://tse2.mm.bing.net/th/id/OIP.fDlAkDnxBDnMu_Z77e8X7AHaE7?pid=Api&P=0&h=220" },
+  { _id: "7", name: "Car Cover", category: "car", description: "Dust and water-resistant car cover for all-weather protection.", price: 3500, image: "https://tse4.mm.bing.net/th/id/OIP.OuybaUg1eQOefg2qY7lMfAHaDu?pid=Api&P=0&h=220" },
+  { _id: "8", name: "Seat Covers", category: "car", description: "Premium leather seat covers for comfort and style.", price: 8500, image: "https://tse1.mm.bing.net/th/id/OIP.C3jpE0tjow0TPhfqf0usCgHaHa?pid=Api&P=0&h=220" },
+  { _id: "9", name: "Floor Mats", category: "car", description: "Heavy-duty rubber floor mats for all-weather protection.", price: 2500, image: "https://tse1.mm.bing.net/th/id/OIP.ifQJfWptFruDzownGRBhTQHaHa?pid=Api&P=0&h=220" },
+  { _id: "10", name: "High-Flow Air Filter", category: "car", description: "Performance air filter for improved engine airflow and efficiency.", price: 4500, image: "https://tse4.mm.bing.net/th/id/OIP.cJpgEEhbWs0dq9z4Ekjs-AHaHa?pid=Api&P=0&h=220" }
 ];
 
 export default function ProductsAdmin() {
@@ -251,7 +251,7 @@ export default function ProductsAdmin() {
                 }}
               />
               <div className="absolute top-3 right-3 flex gap-2">
-                <span className="text-xs font-semibold px-2 py-1 rounded bg-green-600 text-white">
+                <span className="text-xs font-semibold px-2 py-1 rounded bg-indigo-600 text-white">
                   {p.category}
                 </span>
               </div>

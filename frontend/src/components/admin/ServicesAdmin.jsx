@@ -28,18 +28,18 @@ const saveServices = (services) => {
   localStorage.setItem('services', JSON.stringify(services));
 };
 
-// Initial services data
-const initialServices = [
+// Static services data - matching the demo services from CombinedApp
+const staticServices = [
   { _id: "s1", name: "Engine Tuning", description: "Professional engine tuning for optimal performance.", price: 12000, image: "https://tse4.mm.bing.net/th/id/OIP.XTDzDOraZgU5F63PW52rhQHaE8?pid=Api&P=0&h=220" },
-    { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" },
-    { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" },
-    { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" },
-    { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" },
-    { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://tse3.mm.bing.net/th/id/OIP.M8k9NSGf2a8mlMuUc30VHgHaE7?pid=Api&P=0&h=220" },
-    { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://tse3.mm.bing.net/th/id/OIP.PdznukrEVKu2nvngXFC0hgHaHa?pid=Api&P=0&h=220" },
-    { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.aEVoNVK7wzp-9EFd-kRZcAHaEo?pid=Api&P=0&h=220" },
-    { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://tse1.mm.bing.net/th/id/OIP.KtO4Dq7chvlU418aBZ0LjwHaEK?pid=Api&P=0&h=220" },
-    { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://tse1.mm.bing.net/th/id/OIP.hh9Fgy01NNOzIn397Y-xAgHaEo?pid=Api&P=0&h=220" }
+  { _id: "s2", name: "Body Wrap Installation", description: "Premium body wrap installation with custom designs.", price: 25000, image: "https://i.ytimg.com/vi/bR4u4S6sH64/maxresdefault.jpg" },
+  { _id: "s3", name: "Interior Customization", description: "Complete interior customization with premium materials.", price: 40000, image: "https://tse2.mm.bing.net/th/id/OIP.x4difOvxWCNlNdagoWsbLgHaEO?pid=Api&P=0&h=220" },
+  { _id: "s4", name: "Wheel Alignment", description: "Precision wheel alignment for optimal handling and tire longevity.", price: 2500, image: "https://tse3.mm.bing.net/th/id/OIP.9NBI-4qmd0HhRMivYUUcOAHaFj?pid=Api&P=0&h=220" },
+  { _id: "s5", name: "Car Wash & Detailing", description: "Complete interior and exterior detailing for a showroom finish.", price: 3500, image: "https://tse3.mm.bing.net/th/id/OIP.yVaOY54uohC12gwQXSR4ygHaEK?pid=Api&P=0&h=220" },
+  { _id: "s6", name: "Paint Protection Film", description: "Invisible paint protection film to preserve your car's finish.", price: 18000, image: "https://tse3.mm.bing.net/th/id/OIP.M8k9NSGf2a8mlMuUc30VHgHaE7?pid=Api&P=0&h=220" },
+  { _id: "s7", name: "Window Tinting", description: "Premium window tinting for privacy and UV protection.", price: 7500, image: "https://tse3.mm.bing.net/th/id/OIP.PdznukrEVKu2nvngXFC0hgHaHa?pid=Api&P=0&h=220" },
+  { _id: "s8", name: "Tire Replacement", description: "Professional tire replacement with premium brands.", price: 12000, image: "https://tse3.mm.bing.net/th/id/OIP.aEVoNVK7wzp-9EFd-kRZcAHaEo?pid=Api&P=0&h=220" },
+  { _id: "s9", name: "Battery Replacement", description: "Quick and reliable battery replacement service.", price: 5500, image: "https://tse1.mm.bing.net/th/id/OIP.KtO4Dq7chvlU418aBZ0LjwHaEK?pid=Api&P=0&h=220" },
+  { _id: "s10", name: "AC Service", description: "Complete air conditioning service for optimal cooling performance.", price: 4500, image: "https://tse1.mm.bing.net/th/id/OIP.hh9Fgy01NNOzIn397Y-xAgHaEo?pid=Api&P=0&h=220" }
 ];
 
 export default function ServicesAdmin() {
@@ -54,14 +54,14 @@ export default function ServicesAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   
-  // Load services from localStorage on component mount, or use initial data if empty
+  // Load services from localStorage on component mount, or use static data if empty
   useEffect(() => {
     const storedServices = getStoredServices();
     if (storedServices && storedServices.length > 0) {
       setServices(storedServices);
     } else {
-      setServices(initialServices);
-      saveServices(initialServices);
+      setServices(staticServices);
+      saveServices(staticServices);
     }
   }, []);
   
@@ -126,7 +126,7 @@ export default function ServicesAdmin() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 font-sans">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-green-500 to-teal-500 bg-clip-text text-transparent">
           Services Admin Dashboard
         </h1>
       </header>
@@ -158,7 +158,7 @@ export default function ServicesAdmin() {
                 placeholder="Enter service name" 
                 value={form.name} 
                 onChange={handleChange} 
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" 
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" 
                 required 
               />
             </div>
@@ -169,7 +169,7 @@ export default function ServicesAdmin() {
                 name="category" 
                 value={form.category} 
                 onChange={handleChange} 
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
               >
                 <option value="car">Car</option>
                 <option value="bike">Bike</option>
@@ -184,7 +184,7 @@ export default function ServicesAdmin() {
                 type="number" 
                 value={form.price} 
                 onChange={handleChange} 
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" 
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" 
                 required 
               />
             </div>
@@ -198,7 +198,7 @@ export default function ServicesAdmin() {
                 placeholder="Enter service description" 
                 value={form.description} 
                 onChange={handleChange} 
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" 
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" 
                 required 
               />
             </div>
@@ -210,7 +210,7 @@ export default function ServicesAdmin() {
                 placeholder="Enter image URL" 
                 value={form.image} 
                 onChange={handleChange} 
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" 
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" 
                 required 
               />
             </div>
@@ -218,7 +218,7 @@ export default function ServicesAdmin() {
             <div className="flex gap-2">
               <button 
                 type="submit" 
-                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1"
+                className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1"
               >
                 {editingId ? "Update Service" : "Add Service"}
               </button>
